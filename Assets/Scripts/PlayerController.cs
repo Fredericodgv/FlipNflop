@@ -13,7 +13,6 @@ public class PlayerController : MonoBehaviour
     public LayerMask isChaoLayer;
     private bool run;
     private bool jump;
-    public Transform GameOver;
     public Transform LevelClear;
     public int life = 3;
     public Transform Life1;
@@ -28,7 +27,7 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        GameOver.gameObject.SetActive(false);
+        //GameOver.gameObject.SetActive(false);
         LevelClear.gameObject.SetActive(false);
         sound = GetComponent<AudioSource>();
     }
@@ -108,7 +107,7 @@ public class PlayerController : MonoBehaviour
     void PlayerDeath()
     {
         Destroy(gameObject);
-        GameOver.gameObject.SetActive(true);
+        //GameOver.gameObject.SetActive(true);
     }
 
     public void DestroyPlayer()
