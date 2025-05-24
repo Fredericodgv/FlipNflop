@@ -28,7 +28,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         //GameOver.gameObject.SetActive(false);
-        LevelClear.gameObject.SetActive(false);
+        //LevelClear.gameObject.SetActive(false);
         sound = GetComponent<AudioSource>();
     }
 
