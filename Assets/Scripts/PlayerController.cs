@@ -47,16 +47,19 @@ public class PlayerController : MonoBehaviour
         run = Mathf.Abs(xInput) > 0.3f;
 
 
-        if(xInput > 0)
-            transform.eulerAngles = new Vector3(transform.eulerAngles.x, 0f, 0f);
-        else if(xInput < 0)
-            transform.eulerAngles = new Vector3(transform.eulerAngles.x, 180f, 0f);
-
         //Inverte a direção do sprite
-        if(jumpForce > 0)
-            transform.eulerAngles = new Vector3(0f,transform.eulerAngles.y, 0f);
-        else if(jumpForce < 0)
-            transform.eulerAngles = new Vector3(180f,transform.eulerAngles.y, 0f);
+        if(jumpForce > 0){
+            if(xInput > 0)
+                transform.eulerAngles = new Vector3(0f, 0f, 0f);
+            else if(xInput < 0)
+                transform.eulerAngles = new Vector3(0f, 180f, 0f);
+        }
+        else if(jumpForce < 0){
+            if(xInput > 0)
+                transform.eulerAngles = new Vector3(180f, 0f, 0f);
+            else if(xInput < 0)
+                transform.eulerAngles = new Vector3(180f, 180f, 0f);
+        }
 
         //Verifica se o jogador está no chão e se o botão de pulo foi pressionado
         if(Input.GetKeyDown(KeyCode.Space))
