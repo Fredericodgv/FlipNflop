@@ -8,9 +8,9 @@ public class PlayerController : MonoBehaviour
     public float xSpeed = 5.0f;
     public float jumpForce = 7.0f;
     private Rigidbody2D rb;
-    private bool isChao = false;
-    public Transform isChaoCheck;
-    public LayerMask isChaoLayer;
+    private bool isGround = false;
+    public Transform isGroundCheck;
+    public LayerMask isGroundLayer;
     private bool run;
     private bool jump;
     public Transform LevelClear;
@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
     private AudioSource sound;
 
 
-    
+
 
     void Start()
     {
@@ -36,9 +36,10 @@ public class PlayerController : MonoBehaviour
     {
         jump = false;
         
+        
 
         //Primeiro verifica se o jogador está no chão;
-        isChao = Physics2D.OverlapCircle(isChaoCheck.position, 0.5f, isChaoLayer);
+        isGround = Physics2D.OverlapCircle(isGroundCheck.position, 0.5f, isGroundLayer);
 
         //Movimenta o jogador horizontalmente
         float xInput = Input.GetAxis("Horizontal");
@@ -62,10 +63,29 @@ public class PlayerController : MonoBehaviour
         }
 
         //Verifica se o jogador está no chão e se o botão de pulo foi pressionado
-        if(Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.W) && isGround)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            jumpForce = -jumpForce;
+            jump = true;
+            jumpForce = -jumpForce; // Inverte a direção do pulo
+            rb.gravityScale = -rb.gravityScale; // Inverte a gravidade do Rigidbody2D
+        }
+        else
+        {
+            // reset da flag de pulo para a animação
+            jump = false;
+        }
+
+                //Verifica se o jogador está no chão e se o botão de pulo foi pressionado
+        if (Input.GetKeyDown(KeyCode.Space) && isGround)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            jump = true;
+        }
+        else
+        {
+            // reset da flag de pulo para a animação
+            jump = false;
         }
 
 
