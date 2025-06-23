@@ -96,7 +96,7 @@ public class PlayerController : MonoBehaviour
 
         Application.targetFrameRate = 60;
 
-        if(transform.position.y < -25)
+        if(transform.position.y < -25 || transform.position.y > 25)
         {
             PlayerDeath();
         }
