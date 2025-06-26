@@ -257,18 +257,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4482dbbee237d55d7b40b60f8614d3cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xSpeed: 5
   jumpForce: 12
-  isChaoCheck: {fileID: 4316527003275643004}
-  isChaoLayer:
+  xSpeed: 5
+  isGround: 0
+  isGroundCheck: {fileID: 4316527003275643004}
+  isGroundLayer:
     serializedVersion: 2
     m_Bits: 0
-  GameOver: {fileID: 0}
-  LevelClear: {fileID: 0}
+  run: 0
+  jump: 0
+  animator: {fileID: 0}
+  rb: {fileID: 0}
+  sound: {fileID: 0}
   life: 3
-  Life1: {fileID: 0}
-  Life2: {fileID: 0}
-  Life3: {fileID: 0}
+  life1: {fileID: 0}
+  life2: {fileID: 0}
+  life3: {fileID: 0}
+  levelClear: {fileID: 0}
+  gameOver: {fileID: 0}
 --- !u!95 &4568081835289535540
 Animator:
   serializedVersion: 5

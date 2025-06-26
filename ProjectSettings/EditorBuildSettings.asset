@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Menu.unity
     guid: 4fb366aa3f26b5842ac0b8259d881f68
   - enabled: 1
-    path: Assets/Scenes/Level 1.unity
+    path: Assets/Scenes/Level 1_old.unity
     guid: 2ae14b5760de8a04a861b0cef9a02b61
   - enabled: 1
     path: Assets/Scenes/JED.unity

@@ -57,14 +57,10 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\PauseManager.cs" />
     <Compile Include="Assets\Scripts\BackgroundMove.cs" />
-    <Compile Include="Assets\Scripts\SawController.cs" />
     <Compile Include="Assets\Scripts\ClockRenderer.cs" />
     <Compile Include="Assets\Scripts\PathTracer.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />
-    <Compile Include="Assets\Scripts\ChestController.cs" />
-    <Compile Include="Assets\Scripts\ChainController.cs" />
     <Compile Include="Assets\Scripts\MenuManager.cs" />
-    <Compile Include="Assets\Scripts\MaceController.cs" />
     <Compile Include="Assets\Scripts\LevelManager.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
   </ItemGroup>
@@ -77,7 +73,6 @@
     <None Include="Assets\BayatGames\Free Platform Game Assets\Readme.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
-    <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
