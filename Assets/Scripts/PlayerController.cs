@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask isGroundLayer;
     [SerializeField] private bool run;
     [SerializeField] private bool jump;
+    private float lastDirection = 1.0f;
 
     [Header("COMPONENT REFERENCES")]
     [SerializeField] private Animator animator;
@@ -47,28 +48,25 @@ public class PlayerController : MonoBehaviour
         isGround = Physics2D.OverlapCircle(isGroundCheck.position, 0.5f, isGroundLayer);
 
         //Movimenta o jogador horizontalmente
-        float xInput =Input.GetAxis("Horizontal");
+        float xInput = Input.GetAxis("Horizontal");
         rb.velocity = new Vector2(xInput * xSpeed, rb.velocity.y);
 
         run = Mathf.Abs(xInput) > 0.3;
 
+        // Atualiza a última direção apenas se houver movimento
+        if (xInput != 0)
+        {
+            lastDirection = Mathf.Sign(xInput);
+        }
 
-        //Inverte a direção do sprite
-        if(jumpForce > 0){
-            if(xInput > 0)
-                transform.eulerAngles = new Vector3(0f, 0f, 0f);
-            else if(xInput < 0)
-                transform.eulerAngles = new Vector3(0f, 180f, 0f);
-        }
-        else if(jumpForce < 0){
-            if(xInput > 0)
-                transform.eulerAngles = new Vector3(180f, 0f, 0f);
-            else if(xInput < 0)
-                transform.eulerAngles = new Vector3(180f, 180f, 0f);
-        }
+        // Calcula as rotações
+        float yRotation = (lastDirection > 0) ? 0f : 180f;
+        float xRotation = (jumpForce > 0) ? 0f : 180f;
+
+        transform.eulerAngles = new Vector3(xRotation, yRotation, 0f);
 
         //Verifica se o jogador está no chão e se o botão de pulo foi pressionado
-        if (Input.GetKeyDown(KeyCode.W) && isGround)
+        if (Input.GetKeyDown(KeyCode.W) && isGround && !run)
         {
             rb.velocity = new Vector2(0, jumpForce);
             jump = true;
@@ -114,27 +112,27 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.CompareTag("Enemy"))
-        {
-            sound.Play();
-            if(life == 3)
-            {
-                life3.gameObject.SetActive(false);
-                life--;
-            }
-            else if(life == 2)
-            {
-                life2.gameObject.SetActive(false);
-                life--;
-            }
-            else if(life == 1)
-            {
-                life1.gameObject.SetActive(false);
-                life--;
-                PlayerDeath();
-            }
-
-        }
+        // if(collision.gameObject.CompareTag("Enemy"))
+        // {
+        //     sound.Play();
+        //     if(life == 3)
+        //     {
+        //         life3.gameObject.SetActive(false);
+        //         life--;
+        //     }
+        //     else if(life == 2)
+        //     {
+        //         life2.gameObject.SetActive(false);
+        //         life--;
+        //     }
+        //     else if(life == 1)
+        //     {
+        //         life1.gameObject.SetActive(false);
+        //         life--;
+        //         PlayerDeath();
+        //     }
+        //
+        // }
     }
 
     void PlayerDeath()

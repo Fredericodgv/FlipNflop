@@ -37,17 +37,15 @@ public class PathTracer : MonoBehaviour
     {
         // Escolhe Y conforme sinal de jumpForce
         float fixedY = playerController.jumpForce > 0 ? groundY : ceilingY;
-
-        // Apenas distância em X para adicionar ponto
-        float deltaX = Mathf.Abs(transform.position.x - lastPoint.x);
-        if (deltaX >= pointSpacing)
+        // Verifica se o personagem se moveu o suficiente para adicionar um novo pontoAdd commentMore actions
+        if (Vector3.Distance(transform.position, lastPoint) > pointSpacing)
         {
             pointCount++;
-            lineRenderer.positionCount = pointCount + 1;
-
+            lineRenderer.positionCount = pointCount;
             Vector3 newPoint = new Vector3(transform.position.x, fixedY, transform.position.z);
-            lineRenderer.SetPosition(pointCount, newPoint);
-            lastPoint = newPoint;
+            lineRenderer.SetPosition(pointCount - 1, newPoint);
+            lastPoint = transform.position;
         }
+
     }
 }
