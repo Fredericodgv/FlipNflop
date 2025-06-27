@@ -1477,9 +1477,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 743c0101a76258447a2a029f2bfe1b2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nomeDoLevel: JED
   painelMenuInicial: {fileID: 934503609}
   painelSobre: {fileID: 33723235}
+  menu: 
+  nomeDoLevel: JED
+  nextLevel: 
+  levelAtual: 
 --- !u!4 &1458511523
 Transform:
   m_ObjectHideFlags: 0
@@ -1930,12 +1933,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Um jogo de plataforma classico!! Passe pelos obstaculos e encontre o bau
-    escondido!!
-
-
-    Criado por: Frederico Dondici, Lucas Herique de Araujo e Pedro
-    Lucas Botelho '
+  m_text: "Um JED para o ensino do funcionamento de Flip-Flops.\n\nCriado por: Frederico
+    Dondici, Jo\xE3o Vitor Fernandes e Pedro Crawford"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 64b462d8f3546474398be1578934975a, type: 2}
   m_sharedMaterial: {fileID: -4837787829608662726, guid: 64b462d8f3546474398be1578934975a, type: 2}

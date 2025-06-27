@@ -6,9 +6,12 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
-    [SerializeField] private string nomeDoLevel;
     [SerializeField] private GameObject painelMenuInicial;
     [SerializeField] private GameObject painelSobre;
+    [SerializeField] private string menu;
+    [SerializeField] private string nomeDoLevel;
+    [SerializeField] private string nextLevel;
+    [SerializeField] private string levelAtual;
 
     public void Jogar()
     {
@@ -32,5 +35,22 @@ public class MenuManager : MonoBehaviour
         UnityEditor.EditorApplication.isPlaying = false;
         //Application.Quit();
     }
+
+    // Level Manager
+    public void NextLevel()
+    {
+        SceneManager.LoadScene(nextLevel);
+    }
+
+    public void Menu()
+    {
+        SceneManager.LoadScene(menu);
+    }
+
+    public void Restart()
+    {
+        SceneManager.LoadScene(levelAtual);
+    }
+
     
 }
