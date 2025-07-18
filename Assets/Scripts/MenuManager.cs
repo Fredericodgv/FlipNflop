@@ -32,8 +32,8 @@ public class MenuManager : MonoBehaviour
 
     public void Sair()
     {
-        UnityEditor.EditorApplication.isPlaying = false;
-        //Application.Quit();
+        //UnityEditor.EditorApplication.isPlaying = false;
+        Application.Quit();
     }
 
     // Level Manager
