@@ -2,67 +2,94 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(LineRenderer))]
+[RequireComponent(typeof(LineRenderer), typeof(PlayerController))]
 public class PathTracer : MonoBehaviour
 {
-    [Header("Espaçamento entre pontos")]
-    public float pointSpacing = 0.1f;
+    [Header("Path Settings")]
+    [Tooltip("A distância mínima que o jogador deve se mover para um novo ponto ser adicionado.")]
+    [SerializeField] private float pointSpacing = 0.1f;
 
-    [Header("Alturas fixas")]
-    public float groundY = -2.5f;
-    public float ceilingY = 1.25f;
-
-    private PlayerController playerController;
+    [Header("World Constraints")]
+    [Tooltip("A coordenada Y do chão.")]
+    [SerializeField] private float groundY = -2.5f;
+    [Tooltip("A coordenada Y do teto.")]
+    [SerializeField] private float ceilingY = 1.25f;
+    
     private LineRenderer lineRenderer;
-
+    private PlayerController playerController;
     private List<Vector3> pathPoints = new List<Vector3>();
-    private Vector3 lastPoint;
+    private Vector3 lastPointPosition;
 
-    void Start()
+    private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
         playerController = GetComponent<PlayerController>();
-
-        float startY = playerController.jumpForce > 0 ? groundY : ceilingY;
-        Vector3 startPoint = new Vector3(transform.position.x, startY, transform.position.z);
-
-        pathPoints.Add(startPoint);
-        lineRenderer.positionCount = 1;
-        lineRenderer.SetPosition(0, startPoint);
-        lastPoint = startPoint;
     }
 
-    void Update()
+    private void Start()
     {
-        float fixedY = playerController.jumpForce > 0 ? groundY : ceilingY;
-        Vector3 currentPos = new Vector3(transform.position.x, fixedY, transform.position.z);
+        InitializePath();
+    }
 
-        float deltaX = Mathf.Abs(currentPos.x - lastPoint.x);
-        float deltaY = Mathf.Abs(currentPos.y - lastPoint.y);
+    private void Update()
+    {
+        float targetY = playerController.IsGravityInverted ? ceilingY : groundY;
+        Vector3 currentTargetPosition = new Vector3(transform.position.x, targetY, 0);
 
-        // ➤ Se andou para a direita (X) ou mudou em Y (ex: subiu ou desceu com gravidade)
-        if ((currentPos.x > lastPoint.x && deltaX >= pointSpacing) || deltaY >= pointSpacing)
+        if (currentTargetPosition.x < lastPointPosition.x)
         {
-            pathPoints.Add(currentPos);
-            lastPoint = currentPos;
-            UpdateLineRenderer();
+            RemovePointsAfter(currentTargetPosition.x);
         }
 
-        // ➤ Andou para a esquerda → remover pontos à frente
-        if (currentPos.x < lastPoint.x)
+        if (Vector3.Distance(currentTargetPosition, lastPointPosition) > pointSpacing)
         {
-            pathPoints.RemoveAll(p => p.x > currentPos.x + 0.01f);
-            lastPoint = currentPos;
-            UpdateLineRenderer();
+            AddPointToPath(currentTargetPosition);
         }
     }
 
-    void UpdateLineRenderer()
+    /// <summary>
+    /// Limpa a trilha e adiciona o primeiro ponto na posição inicial.
+    /// </summary>
+    private void InitializePath()
     {
+        pathPoints.Clear();
+        float startY = playerController.IsGravityInverted ? ceilingY : groundY;
+        Vector3 startPoint = new Vector3(transform.position.x, startY, 0);
+        AddPointToPath(startPoint);
+    }
+
+    /// <summary>
+    /// Adiciona um novo ponto à trilha e atualiza o LineRenderer.
+    /// </summary>
+    private void AddPointToPath(Vector3 point)
+    {
+        pathPoints.Add(point);
+        lastPointPosition = point;
         lineRenderer.positionCount = pathPoints.Count;
-        for (int i = 0; i < pathPoints.Count; i++)
+        lineRenderer.SetPosition(pathPoints.Count - 1, point);
+    }
+
+    /// <summary>
+    /// Remove todos os pontos da trilha à frente da posição X atual do jogador.
+    /// </summary>
+    private void RemovePointsAfter(float currentX)
+    {
+        int removalIndex = pathPoints.FindIndex(p => p.x > currentX);
+
+        if (removalIndex != -1)
         {
-            lineRenderer.SetPosition(i, pathPoints[i]);
+            int removeCount = pathPoints.Count - removalIndex;
+            pathPoints.RemoveRange(removalIndex, removeCount);
+            lineRenderer.positionCount = pathPoints.Count;
+
+            if (pathPoints.Count > 0)
+            {
+                lastPointPosition = pathPoints[pathPoints.Count - 1];
+            }
+            else
+            {
+                InitializePath();
+            }
         }
     }
 }

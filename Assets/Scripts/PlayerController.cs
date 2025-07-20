@@ -1,148 +1,218 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(SpriteRenderer))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("MOVEMENT SETTINGS")]
-    public float jumpForce = 7.0f;
-    [SerializeField] private float xSpeed = 5.0f;
-    [SerializeField] private bool isGround = false;
-    [SerializeField] private Transform isGroundCheck;
-    [SerializeField] private LayerMask isGroundLayer;
-    [SerializeField] private bool run;
-    [SerializeField] private bool jump;
-    private float lastDirection = 1.0f;
+    [Header("Movement Settings")]
+    [SerializeField] private float moveSpeed = 5.0f;
+    [SerializeField] private float jumpForce = 12.0f;
+    [SerializeField] private float groundCheckRadius = 0.2f;
 
-    [Header("COMPONENT REFERENCES")]
-    [SerializeField] private Animator animator;
-    [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private AudioSource sound;
+    [Header("Gameplay Settings")]
+    [SerializeField] private float fallKillThreshold = -25f;
+    [SerializeField] private float winPositionX = 25f;
 
-    [Header("LIFE SYSTEM")]
-    [SerializeField] private int life = 3;
-    [SerializeField] private Transform life1;
-    [SerializeField] private Transform life2;
-    [SerializeField] private Transform life3;
+    [Header("Object References")]
+    [SerializeField] private Transform groundCheckPoint;
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private GameObject levelClearUI;
+    [SerializeField] private GameObject gameOverUI;
+    
+    public bool IsGravityInverted => rb.gravityScale < 0;
 
-    [Header("LEVEL PROGRESS")]
-    [SerializeField] private Transform levelClear;
-    [SerializeField] private Transform gameOver;
+    // --- Componentes ---
+    private Rigidbody2D rb;
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
+    private AudioSource audioSource;
 
-
-
-    void Start()
+    // --- Variáveis de Estado ---
+    private float horizontalInput;
+    private bool isGrounded;
+    private bool jumpInput;
+    private bool gravityFlipInput;
+    
+    private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        gameOver.gameObject.SetActive(false);
-        levelClear.gameObject.SetActive(false);
-        sound = GetComponent<AudioSource>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        audioSource = GetComponent<AudioSource>();
     }
 
-    void Update()
+    private void Start()
     {
-        jump = false;
+        gameOverUI.SetActive(false);
+        levelClearUI.SetActive(false);
 
-        //Verifica se o jogador está no chão;
-        isGround = Physics2D.OverlapCircle(isGroundCheck.position, 0.5f, isGroundLayer);
+        rb.gravityScale = Mathf.Abs(rb.gravityScale);
+    }
 
-        //Movimenta o jogador horizontalmente
-        float xInput = Input.GetAxis("Horizontal");
-        rb.velocity = new Vector2(xInput * xSpeed, rb.velocity.y);
+    private void Update()
+    {
+        HandleInput();
+        CheckWinAndLoseConditions();
+        UpdateAnimator();
+    }
 
-        run = Mathf.Abs(xInput) > 0.3;
+    private void FixedUpdate()
+    {
+        CheckIfGrounded();
+        HandleMovement();
+        HandleJump();
+        HandleGravityFlip();
+    }
 
-        // Atualiza a última direção apenas se houver movimento
-        if (xInput != 0)
+    #region Input & State Checks
+
+    /// <summary>
+    /// Lê e armazena os inputs do jogador.
+    /// </summary>
+    private void HandleInput()
+    {
+        horizontalInput = Input.GetAxis("Horizontal");
+
+        if (Input.GetButtonDown("Jump"))
         {
-            lastDirection = Mathf.Sign(xInput);
+            jumpInput = true;
         }
 
-        // Calcula as rotações
-        float yRotation = (lastDirection > 0) ? 0f : 180f;
-        float xRotation = (jumpForce > 0) ? 0f : 180f;
-
-        transform.eulerAngles = new Vector3(xRotation, yRotation, 0f);
-
-        //Verifica se o jogador está no chão e se o botão de pulo foi pressionado
-        if (Input.GetKeyDown(KeyCode.W) && isGround && !run)
+        if (Input.GetKeyDown(KeyCode.W))
         {
-            rb.velocity = new Vector2(0, jumpForce);
-            jump = true;
-            jumpForce = -jumpForce; // Inverte a direção do pulo
-            rb.gravityScale = -rb.gravityScale; // Inverte a gravidade do Rigidbody2D
+            gravityFlipInput = true;
         }
-        else
-        {
-            // reset da flag de pulo para a animação
-            jump = false;
-        }
+    }
 
-                //Verifica se o jogador está no chão e se o botão de pulo foi pressionado
-        if (Input.GetKeyDown(KeyCode.Space) && isGround)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            jump = true;
-        }
-        else
-        {
-            // reset da flag de pulo para a animação
-            jump = false;
-        }
+    /// <summary>
+    /// Verifica se o jogador está no chão.
+    /// </summary>
+    private void CheckIfGrounded()
+    {
+        isGrounded = Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, groundLayer);
+    }
 
-
-        animator.SetBool("Running", run);
-        animator.SetBool("Jumping", jump);
-
-        // Debug.Log("FPS: " + (1.0f / Time.deltaTime));
-
-        Application.targetFrameRate = 60;
-
-        if(transform.position.y < -25 || transform.position.y > 25)
+    /// <summary>
+    /// Verifica as condições de morte por queda ou vitória por posição.
+    /// </summary>
+    private void CheckWinAndLoseConditions()
+    {
+        if (transform.position.y < fallKillThreshold || transform.position.y > -fallKillThreshold)
         {
             PlayerDeath();
         }
 
-        if (transform.position.x > 25)
+        if (transform.position.x > winPositionX)
         {
-            levelClear.gameObject.SetActive(true);
+            levelClearUI.SetActive(true);
+            this.enabled = false;
         }
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
+    #endregion
+
+    #region Movement & Actions
+
+    /// <summary>
+    /// Aplica o movimento horizontal e gerencia o flip do personagem.
+    /// </summary>
+    private void HandleMovement()
     {
-        // if(collision.gameObject.CompareTag("Enemy"))
-        // {
-        //     sound.Play();
-        //     if(life == 3)
-        //     {
-        //         life3.gameObject.SetActive(false);
-        //         life--;
-        //     }
-        //     else if(life == 2)
-        //     {
-        //         life2.gameObject.SetActive(false);
-        //         life--;
-        //     }
-        //     else if(life == 1)
-        //     {
-        //         life1.gameObject.SetActive(false);
-        //         life--;
-        //         PlayerDeath();
-        //     }
-        //
-        // }
+        rb.velocity = new Vector2(horizontalInput * moveSpeed, rb.velocity.y);
+        Flip();
     }
 
-    void PlayerDeath()
+    /// <summary>
+    /// Vira o sprite do personagem para a direção correta do movimento.
+    /// </summary>
+    private void Flip()
     {
-        Destroy(gameObject);
-        gameOver.gameObject.SetActive(true);
+        if (Mathf.Abs(horizontalInput) < 0.1f)
+        {
+            return;
+        }
+
+        bool wantsToGoLeft = horizontalInput < 0;
+        spriteRenderer.flipX = wantsToGoLeft ^ IsGravityInverted;
     }
 
-    public void DestroyPlayer()
+    /// <summary>
+    /// Executa a ação de pulo.
+    /// </summary>
+    private void HandleJump()
     {
-        Destroy(gameObject);
+        if (jumpInput && isGrounded)
+        {
+            float jumpDirection = Mathf.Sign(rb.gravityScale);
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce * jumpDirection);
+        }
+        jumpInput = false;
+    }
+    
+    /// <summary>
+    /// Executa a ação de inverter a gravidade.
+    /// </summary>
+    private void HandleGravityFlip()
+    {
+        if (gravityFlipInput && isGrounded)
+        {
+            rb.gravityScale *= -1;
+            transform.Rotate(0f, 0f, 180f);
+
+            // Compensa a inversão visual da rotação para manter a direção.
+            spriteRenderer.flipX = !spriteRenderer.flipX;
+        }
+        gravityFlipInput = false;
+    }
+
+    #endregion
+
+    #region Collision & Death
+
+
+    /// <summary>
+    /// Desativa o jogador e ativa a tela de Game Over.
+    /// </summary>
+    private void PlayerDeath()
+    {
+        gameOverUI.SetActive(true);
+        gameObject.SetActive(false);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            PlayerDeath();
+        }
+    }
+
+    #endregion
+
+    #region Animation
+
+    /// <summary>
+    /// Atualiza os parâmetros do Animator.
+    /// </summary>
+    private void UpdateAnimator()
+    {
+        bool isRunning = Mathf.Abs(rb.velocity.x) > 0.1f;
+        animator.SetBool("Running", isRunning);
+        
+        animator.SetBool("Jumping", !isGrounded);
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Desenha um Gizmo na Scene View para visualizar o raio do GroundCheck.
+    /// </summary>
+    private void OnDrawGizmosSelected()
+    {
+        if (groundCheckPoint == null) return;
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
     }
 }
