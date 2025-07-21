@@ -2,7 +2,7 @@
 
 ![Versão do Jogo](https://img.shields.io/github/v/release/Fredericodgv/JEDcircuitos?style=for-the-badge&label=Vers%C3%A3o)
 
-Bem-vindo ao repositório do JEDcircuitos! Este documento serve como guia para o desenvolvimento e a contribuição com o projeto.
+Bem-vindo ao repositório do Flip’n Flop! Este documento serve como guia para o desenvolvimento e a contribuição com o projeto.
 
 ---
 
