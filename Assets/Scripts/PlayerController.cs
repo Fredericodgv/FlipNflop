@@ -18,18 +18,17 @@ public class PlayerController : MonoBehaviour
     [Header("Object References")]
     [SerializeField] private Transform groundCheckPoint;
     [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private GameObject levelClearUI;
     [SerializeField] private GameObject gameOverUI;
+    // --- ALTERAÇÃO AQUI ---
+    // Removemos a referência da UI de vitória e adicionamos a do Verificador.
+    [SerializeField] private PathVerifier pathVerifier;
     
     public bool IsGravityInverted => rb.gravityScale < 0;
 
-    // --- Componentes ---
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer spriteRenderer;
     private AudioSource audioSource;
-
-    // --- Variáveis de Estado ---
     private float horizontalInput;
     private bool isGrounded;
     private bool jumpInput;
@@ -45,9 +44,8 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        gameOverUI.SetActive(false);
-        levelClearUI.SetActive(false);
-
+        // A referência para levelClearUI foi removida, então a linha abaixo foi deletada.
+        if (gameOverUI != null) gameOverUI.SetActive(false);
         rb.gravityScale = Mathf.Abs(rb.gravityScale);
     }
 
@@ -68,35 +66,18 @@ public class PlayerController : MonoBehaviour
 
     #region Input & State Checks
 
-    /// <summary>
-    /// Lê e armazena os inputs do jogador.
-    /// </summary>
     private void HandleInput()
     {
         horizontalInput = Input.GetAxis("Horizontal");
-
-        if (Input.GetButtonDown("Jump"))
-        {
-            jumpInput = true;
-        }
-
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            gravityFlipInput = true;
-        }
+        if (Input.GetButtonDown("Jump")) { jumpInput = true; }
+        if (Input.GetKeyDown(KeyCode.W)) { gravityFlipInput = true; }
     }
-
-    /// <summary>
-    /// Verifica se o jogador está no chão.
-    /// </summary>
+    
     private void CheckIfGrounded()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, groundLayer);
     }
 
-    /// <summary>
-    /// Verifica as condições de morte por queda ou vitória por posição.
-    /// </summary>
     private void CheckWinAndLoseConditions()
     {
         if (transform.position.y < fallKillThreshold || transform.position.y > -fallKillThreshold)
@@ -106,7 +87,15 @@ public class PlayerController : MonoBehaviour
 
         if (transform.position.x > winPositionX)
         {
-            levelClearUI.SetActive(true);
+            if (pathVerifier != null)
+            {
+                pathVerifier.CheckPlayerPath();
+            }
+            else
+            {
+                Debug.LogError("Referência para o PathVerifier não definida no PlayerController!");
+            }
+            
             this.enabled = false;
         }
     }
@@ -115,54 +104,38 @@ public class PlayerController : MonoBehaviour
 
     #region Movement & Actions
 
-    /// <summary>
-    /// Aplica o movimento horizontal e gerencia o flip do personagem.
-    /// </summary>
     private void HandleMovement()
     {
         rb.velocity = new Vector2(horizontalInput * moveSpeed, rb.velocity.y);
         Flip();
     }
 
-    /// <summary>
-    /// Vira o sprite do personagem para a direção correta do movimento.
-    /// </summary>
     private void Flip()
     {
-        if (Mathf.Abs(horizontalInput) < 0.1f)
-        {
-            return;
-        }
-
+        if (Mathf.Abs(horizontalInput) < 0.1f) return;
         bool wantsToGoLeft = horizontalInput < 0;
         spriteRenderer.flipX = wantsToGoLeft ^ IsGravityInverted;
     }
 
-    /// <summary>
-    /// Executa a ação de pulo.
-    /// </summary>
     private void HandleJump()
     {
         if (jumpInput && isGrounded)
         {
             float jumpDirection = Mathf.Sign(rb.gravityScale);
             rb.velocity = new Vector2(rb.velocity.x, jumpForce * jumpDirection);
+            animator.SetTrigger("jump");
         }
         jumpInput = false;
     }
     
-    /// <summary>
-    /// Executa a ação de inverter a gravidade.
-    /// </summary>
     private void HandleGravityFlip()
     {
         if (gravityFlipInput && isGrounded)
         {
             rb.gravityScale *= -1;
             transform.Rotate(0f, 0f, 180f);
-
-            // Compensa a inversão visual da rotação para manter a direção.
             spriteRenderer.flipX = !spriteRenderer.flipX;
+            animator.SetTrigger("jump");
         }
         gravityFlipInput = false;
     }
@@ -171,13 +144,10 @@ public class PlayerController : MonoBehaviour
 
     #region Collision & Death
 
-
-    /// <summary>
-    /// Desativa o jogador e ativa a tela de Game Over.
-    /// </summary>
     private void PlayerDeath()
     {
-        gameOverUI.SetActive(true);
+        // Usamos a sua lógica original para o Game Over.
+        if (gameOverUI != null) gameOverUI.SetActive(true);
         gameObject.SetActive(false);
     }
 
@@ -193,22 +163,15 @@ public class PlayerController : MonoBehaviour
 
     #region Animation
 
-    /// <summary>
-    /// Atualiza os parâmetros do Animator.
-    /// </summary>
     private void UpdateAnimator()
     {
         bool isRunning = Mathf.Abs(rb.velocity.x) > 0.1f;
-        animator.SetBool("Running", isRunning);
-        
-        animator.SetBool("Jumping", !isGrounded);
+        animator.SetBool("run", isRunning);
+        animator.SetBool("grounded", isGrounded);
     }
 
     #endregion
 
-    /// <summary>
-    /// Desenha um Gizmo na Scene View para visualizar o raio do GroundCheck.
-    /// </summary>
     private void OnDrawGizmosSelected()
     {
         if (groundCheckPoint == null) return;

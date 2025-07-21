@@ -66,9 +66,9 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\PauseManager.cs" />
     <Compile Include="Assets\Scripts\BackgroundMove.cs" />
-    <Compile Include="Assets\Scripts\PlayerController copy.cs" />
     <Compile Include="Assets\Scripts\ClockRenderer.cs" />
-    <Compile Include="Assets\Scripts\PathTracer.cs" />
+    <Compile Include="Assets\Scripts\SignalPath.cs" />
+    <Compile Include="Assets\Scripts\PathVerifier.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />
     <Compile Include="Assets\Scripts\PrintController.cs" />
     <Compile Include="Assets\Scripts\MenuManager.cs" />
