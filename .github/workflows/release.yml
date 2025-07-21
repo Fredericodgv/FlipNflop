@@ -9,6 +9,11 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Essencial para ler e escrever no repo
+      issues: write
+      pull-requests: write
+      id-token: write
 
     steps:
       # 1. Faz o checkout do código do seu repositório
