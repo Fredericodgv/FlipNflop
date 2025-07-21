@@ -19,8 +19,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform groundCheckPoint;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private GameObject gameOverUI;
-    // --- ALTERAÇÃO AQUI ---
-    // Removemos a referência da UI de vitória e adicionamos a do Verificador.
     [SerializeField] private PathVerifier pathVerifier;
     
     public bool IsGravityInverted => rb.gravityScale < 0;
