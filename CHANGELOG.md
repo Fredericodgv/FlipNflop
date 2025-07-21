@@ -1,3 +1,12 @@
+## [0.0.5](https://github.com/Fredericodgv/JEDcircuitos/compare/v0.0.4...v0.0.5) (2025-07-21)
+
+
+### Bug Fixes
+
+* remove comentário do player ([96f1959](https://github.com/Fredericodgv/JEDcircuitos/commit/96f1959d9ab9ccf68315dc9bae9ae982b7dc2203))
+
+
+
 ## [0.0.4](https://github.com/Fredericodgv/JEDcircuitos/compare/v0.0.3...v0.0.4) (2025-07-21)
 
 
