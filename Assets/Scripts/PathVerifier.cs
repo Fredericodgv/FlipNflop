@@ -191,18 +191,37 @@ public class PathVerifier : MonoBehaviour
         return corners;
     }
 
+    /// <summary>
+    /// FERRAMENTA DE DEPURAÇÃO VISUAL
+    /// </summary>
     private void OnDrawGizmos()
     {
-        if (correctCorners == null || correctCorners.Count < 2) return;
-        Gizmos.color = Color.green;
-        for (int i = 0; i < correctCorners.Count - 1; i++)
+        // 1. Desenha o gabarito verde (como antes)
+        if (correctCorners != null && correctCorners.Count >= 2)
         {
-            Gizmos.DrawSphere(correctCorners[i], 0.1f);
-            Gizmos.DrawLine(correctCorners[i], correctCorners[i + 1]);
+            Gizmos.color = Color.green;
+            for (int i = 0; i < correctCorners.Count - 1; i++)
+            {
+                Gizmos.DrawLine(correctCorners[i], correctCorners[i + 1]);
+            }
         }
-        if (correctCorners.Count > 0)
+        
+        // 2. Desenha esferas nos pontos de checagem de entrada
+        // Isso nos mostrará EXATAMENTE onde o script está lendo.
+        if(j_InputTilemap == null || k_InputTilemap == null) return;
+
+        for (float x = startX; x < endX; x += clockStepX)
         {
-            Gizmos.DrawSphere(correctCorners[correctCorners.Count - 1], 0.1f);
+            // Ponto de checagem para a entrada J
+            Vector3 j_checkPos = new Vector3(x + 0.1f, j_InputCheckY, 0);
+            // Se o script detectar um sinal ALTO, a esfera será CIANO. Se for BAIXO, será MAGENTA.
+            Gizmos.color = IsSignalHigh(j_InputTilemap, x, j_InputCheckY) ? Color.cyan : Color.magenta;
+            Gizmos.DrawSphere(j_checkPos, 0.2f);
+            
+            // Ponto de checagem para a entrada K
+            Vector3 k_checkPos = new Vector3(x + 0.1f, k_InputCheckY, 0);
+            Gizmos.color = IsSignalHigh(k_InputTilemap, x, k_InputCheckY) ? Color.cyan : Color.magenta;
+            Gizmos.DrawSphere(k_checkPos, 0.2f);
         }
     }
 }
