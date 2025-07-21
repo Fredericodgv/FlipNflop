@@ -1,3 +1,12 @@
+## [0.0.3](https://github.com/Fredericodgv/JEDcircuitos/compare/v0.0.2...v0.0.3) (2025-07-21)
+
+
+### Bug Fixes
+
+* **ci:** corrige erro de regex no script de atualização da versão ([620b530](https://github.com/Fredericodgv/JEDcircuitos/commit/620b530b505aa595136bfef2fcd55e0d522ab5ed))
+
+
+
 ## [0.0.2](https://github.com/Fredericodgv/JEDcircuitos/compare/v0.0.1...v0.0.2) (2025-07-21)
 
 
