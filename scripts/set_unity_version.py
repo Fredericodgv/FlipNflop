@@ -12,11 +12,12 @@ def update_version(version):
         with open(settings_file, "r") as f:
             content = f.read()
 
-        # AQUI ESTÁ A CORREÇÃO: trocamos r"\g" por r"\1"
-        # Esta é a forma padrão de referenciar o primeiro grupo capturado.
+        # AQUI ESTÁ A CORREÇÃO FINAL: Usamos uma função lambda para a substituição.
+        # Isso evita qualquer ambiguidade com a string da nova versão.
+        # 'm.group(1)' se refere ao primeiro grupo capturado (a parte 'bundleVersion: ').
         new_content, count = re.subn(
             r"(\bbundleVersion:\s*).*",
-            r"\1" + version,
+            lambda m: m.group(1) + version,
             content
         )
 
