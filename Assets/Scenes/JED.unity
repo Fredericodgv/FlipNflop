@@ -457,9 +457,6 @@ GameObject:
   - component: {fileID: 347850101}
   - component: {fileID: 347850100}
   - component: {fileID: 347850099}
-  - component: {fileID: 347850104}
-  - component: {fileID: 347850102}
-  - component: {fileID: 347850103}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -517,76 +514,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &347850102
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 347850098}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57546f37ccc59e147b330c85699ba22c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &347850103
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 347850098}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 017b8883d49e04c47ae5f9f236722905, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  j_InputTilemap: {fileID: 1489212623}
-  j_InputCheckY: 8.5
-  k_InputTilemap: {fileID: 598443477}
-  k_InputCheckY: 5.5
-  highSignalTile: {fileID: 11400000, guid: c23dd63339d55fd44963aadfbee6726e, type: 2}
-  lowY: -2.5
-  highY: 1.25
-  startX: -10
-  endX: 25
-  clockStepX: 5
-  correctCorners:
-  - {x: -5, y: -2.5, z: 0}
-  - {x: 0, y: -2.5, z: 0}
-  - {x: 0, y: 1.25, z: 0}
-  - {x: 10, y: 1.25, z: 0}
-  - {x: 10, y: -2.5, z: 0}
-  - {x: 15, y: -2.5, z: 0}
-  - {x: 15, y: 1.25, z: 0}
-  - {x: 20, y: 1.25, z: 0}
-  - {x: 20, y: -2.5, z: 0}
-  signalPath: {fileID: 810242248}
-  successUI: {fileID: 2567244112535100235}
-  failureUI: {fileID: 619987737}
-  cornerTolerance: 0.5
---- !u!114 &347850104
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 347850098}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98fce2e2becf3854ebe814565c813978, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  j_InputTilemap: {fileID: 1489212623}
-  k_InputTilemap: {fileID: 598443477}
-  levelFile: {fileID: 4900000, guid: e70d647fc6788b44d8a6baf431b3fbf4, type: 3}
-  tile_0_Normal: {fileID: 11400000, guid: 31d5e7c91e2c7f2409ef386dfd88e02c, type: 2}
-  tile_1_Rising: {fileID: 11400000, guid: 4c5d72659a781a34d89ce92c9cf8117c, type: 2}
-  tile_2_Falling: {fileID: 11400000, guid: 195b6b0e99381e24282ea9badd0d4584, type: 2}
-  tile_3_High: {fileID: 11400000, guid: c23dd63339d55fd44963aadfbee6726e, type: 2}
-  startX: -10
-  j_YRow: 8
-  k_YRow: 5
 --- !u!224 &490808039 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6188697341902253472, guid: 69796dc3257f98bea9f2bdfa7d40a96c, type: 3}
@@ -2280,6 +2207,101 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1169909294
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1169909298}
+  - component: {fileID: 1169909297}
+  - component: {fileID: 1169909296}
+  - component: {fileID: 1169909295}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1169909295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169909294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 017b8883d49e04c47ae5f9f236722905, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  j_InputTilemap: {fileID: 1489212623}
+  j_InputCheckY: 8.5
+  k_InputTilemap: {fileID: 598443477}
+  k_InputCheckY: 5.5
+  highSignalTile: {fileID: 11400000, guid: c23dd63339d55fd44963aadfbee6726e, type: 2}
+  lowY: -2.5
+  highY: 1.25
+  startX: -10
+  endX: 25
+  clockStepX: 5
+  correctCorners: []
+  signalPath: {fileID: 810242248}
+  successUI: {fileID: 2567244112535100235}
+  failureUI: {fileID: 619987737}
+  cornerTolerance: 0.5
+--- !u!114 &1169909296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169909294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57546f37ccc59e147b330c85699ba22c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1169909297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169909294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98fce2e2becf3854ebe814565c813978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  j_InputTilemap: {fileID: 1489212623}
+  k_InputTilemap: {fileID: 598443477}
+  levelFile: {fileID: 4900000, guid: e70d647fc6788b44d8a6baf431b3fbf4, type: 3}
+  tile_0_Normal: {fileID: 11400000, guid: 31d5e7c91e2c7f2409ef386dfd88e02c, type: 2}
+  tile_1_Rising: {fileID: 11400000, guid: 4c5d72659a781a34d89ce92c9cf8117c, type: 2}
+  tile_2_Falling: {fileID: 11400000, guid: 195b6b0e99381e24282ea9badd0d4584, type: 2}
+  tile_3_High: {fileID: 11400000, guid: c23dd63339d55fd44963aadfbee6726e, type: 2}
+  startX: -10
+  j_YRow: 8
+  k_YRow: 5
+--- !u!4 &1169909298
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169909294}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1253582755
 GameObject:
   m_ObjectHideFlags: 0
@@ -2944,7 +2966,7 @@ PrefabInstance:
     - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: pathVerifier
       value: 
-      objectReference: {fileID: 347850103}
+      objectReference: {fileID: 1169909295}
     - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: isGroundCheck
       value: 
@@ -4962,6 +4984,7 @@ SceneRoots:
   - {fileID: 1896920979}
   - {fileID: 72391401}
   - {fileID: 1289131808}
+  - {fileID: 1169909298}
   - {fileID: 347850101}
   - {fileID: 2049129475}
   - {fileID: 1357466845}
