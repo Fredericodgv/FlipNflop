@@ -44,7 +44,6 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        // A referência para levelClearUI foi removida, então a linha abaixo foi deletada.
         if (gameOverUI != null) gameOverUI.SetActive(false);
         rb.gravityScale = Mathf.Abs(rb.gravityScale);
     }
