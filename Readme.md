@@ -23,8 +23,7 @@ O jogador controla um personagem em um cenário que representa um diagrama de te
 Este projeto utiliza **[Conventional Commits](https://www.conventionalcommits.org/)** para automatizar o versionamento e a criação de changelogs. Seguir este padrão é **obrigatório** para todos os commits.
 
 A estrutura de uma mensagem de commit deve ser:
-
-<tipo>(escopo opcional): <descrição>
+```<tipo>(escopo opcional): <descrição>```
 
 ### Tipos de Commit
 A parte mais importante é o **tipo**, que define o impacto da sua alteração na versão do jogo:
@@ -49,8 +48,11 @@ Para alterações que quebram a compatibilidade e exigem um incremento de versã
 
 **Exemplo:**
 
+````
 refactor(save)!: altera o formato do arquivo de save
 BREAKING CHANGE: Saves criados em versões anteriores não são mais compatíveis.
+
+`````
 
 ### ⚙️ O Processo de Release Automatizado
 1.  **Faça suas alterações** em uma branch separada.
