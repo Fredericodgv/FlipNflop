@@ -1,3 +1,12 @@
+## [0.0.4](https://github.com/Fredericodgv/JEDcircuitos/compare/v0.0.3...v0.0.4) (2025-07-21)
+
+
+### Bug Fixes
+
+* **ci:** usa lambda em regex para substituição de versão robusta ([fbadae9](https://github.com/Fredericodgv/JEDcircuitos/commit/fbadae9d085b7c1eae4bb166caa352ad2de6d420))
+
+
+
 ## [0.0.3](https://github.com/Fredericodgv/JEDcircuitos/compare/v0.0.2...v0.0.3) (2025-07-21)
 
 
