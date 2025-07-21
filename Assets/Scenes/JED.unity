@@ -547,7 +547,7 @@ MonoBehaviour:
   highSignalTile: {fileID: 11400000, guid: c23dd63339d55fd44963aadfbee6726e, type: 2}
   lowY: -2.5
   highY: 1.25
-  startX: -5
+  startX: -10
   endX: 25
   clockStepX: 5
   correctCorners:
@@ -563,7 +563,7 @@ MonoBehaviour:
   signalPath: {fileID: 810242248}
   successUI: {fileID: 2567244112535100235}
   failureUI: {fileID: 619987737}
-  cornerTolerance: 1.5
+  cornerTolerance: 0.5
 --- !u!224 &490808039 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6188697341902253472, guid: 69796dc3257f98bea9f2bdfa7d40a96c, type: 3}
