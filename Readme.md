@@ -17,8 +17,6 @@ O jogador controla um personagem em um cenário que representa um diagrama de te
 * **Construção da Saída:** A trajetória escolhida pelo jogador ao pular e alternar entre as plataformas desenha a linha do sinal de saída Q, que deve refletir corretamente o funcionamento do circuito.
 * **Desafios Pedagógicos:** Obstáculos são posicionados estrategicamente para forçar o jogador a tomar decisões baseadas no seu conhecimento teórico, tornando o aprendizado um desafio divertido.
 
-![Imagem do jogo Flip'n Flop](https://i.imgur.com/uN8G32p.png)
-
 ## 🚀 Como Contribuir com Commits
 Este projeto utiliza **[Conventional Commits](https://www.conventionalcommits.org/)** para automatizar o versionamento e a criação de changelogs. Seguir este padrão é **obrigatório** para todos os commits.
 
