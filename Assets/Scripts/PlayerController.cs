@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool jumpInput;
     private bool gravityFlipInput;
+    private bool isLevelFinished = false;
     
     private void Awake()
     {
@@ -86,7 +87,7 @@ public class PlayerController : MonoBehaviour
         {
             if (pathVerifier != null)
             {
-                pathVerifier.CheckPlayerPath();
+                pathVerifier.FinalizeAndCheckPath();
             }
             else
             {

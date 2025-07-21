@@ -14,11 +14,12 @@ public class SignalPath : MonoBehaviour
     [SerializeField] private float groundY = -2.5f;
     [Tooltip("A coordenada Y do teto.")]
     [SerializeField] private float ceilingY = 1.5f;
-    
+
     private LineRenderer lineRenderer;
     private PlayerController playerController;
     private List<Vector3> pathPoints = new List<Vector3>();
     private Vector3 lastPointPosition;
+    private bool isDrawing = true;
 
     public List<Vector3> PathPoints => pathPoints;
 
@@ -35,6 +36,8 @@ public class SignalPath : MonoBehaviour
 
     private void Update()
     {
+        if (!isDrawing) return;
+        
         float targetY = playerController.IsGravityInverted ? ceilingY : groundY;
         Vector3 currentTargetPosition = new Vector3(transform.position.x, targetY, 0);
 
@@ -71,6 +74,8 @@ public class SignalPath : MonoBehaviour
         lineRenderer.SetPosition(pathPoints.Count - 1, point);
     }
 
+
+
     /// <summary>
     /// Remove todos os pontos da trilha à frente da posição X atual do jogador.
     /// </summary>
@@ -94,4 +99,19 @@ public class SignalPath : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Finaliza o caminho adicionando um último ponto em uma posição X específica.
+    /// Isso garante que a linha do jogador termine de forma limpa, criando a última quina.
+    /// </summary>
+    public void FinalizePath(float finalX)
+    {
+        if (pathPoints.Count == 0) return;
+
+        Vector3 lastPoint = pathPoints[pathPoints.Count - 1];
+
+        Vector3 finalPoint = new Vector3(finalX, lastPoint.y, 0);
+        AddPointToPath(finalPoint);
+    }
+
 }
