@@ -1,3 +1,12 @@
+## [0.0.7](https://github.com/Fredericodgv/JEDcircuitos/compare/v0.0.6...v0.0.7) (2025-07-21)
+
+
+### Bug Fixes
+
+* Verificaação automárica de saida baseada nos diagramas de entrada feita (Ainda existem bugs a se corrigir) ([3e5f0bb](https://github.com/Fredericodgv/JEDcircuitos/commit/3e5f0bb6eb75b336db892f01ebd24cdce72f7725))
+
+
+
 ## [0.0.6](https://github.com/Fredericodgv/JEDcircuitos/compare/v0.0.5...v0.0.6) (2025-07-21)
 
 
@@ -32,15 +41,6 @@
 ### Bug Fixes
 
 * **ci:** corrige erro de regex no script de atualização da versão ([620b530](https://github.com/Fredericodgv/JEDcircuitos/commit/620b530b505aa595136bfef2fcd55e0d522ab5ed))
-
-
-
-## [0.0.2](https://github.com/Fredericodgv/JEDcircuitos/compare/v0.0.1...v0.0.2) (2025-07-21)
-
-
-### Bug Fixes
-
-* Novo detalhe no scripot de automacão ([9a3dba3](https://github.com/Fredericodgv/JEDcircuitos/commit/9a3dba3560e931158dc39a67d78f35569cc805be))
 
 
 
