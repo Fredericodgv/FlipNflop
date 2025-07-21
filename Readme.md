@@ -1,4 +1,4 @@
-# JEDcircuitos - Um Jogo de Lógica e Circuitos
+# Flip’n Flop: um jogo educacional para construção interativa de diagramas de tempo
 
 ![Versão do Jogo](https://img.shields.io/github/v/release/Fredericodgv/JEDcircuitos?style=for-the-badge&label=Vers%C3%A3o)
 
