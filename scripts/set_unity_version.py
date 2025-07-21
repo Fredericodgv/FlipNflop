@@ -12,14 +12,15 @@ def update_version(version):
         with open(settings_file, "r") as f:
             content = f.read()
 
-        # Usa regex para encontrar e substituir a bundleVersion de forma segura
-        new_content = re.sub(
+        # AQUI ESTÁ A CORREÇÃO: trocamos r"\g" por r"\1"
+        # Esta é a forma padrão de referenciar o primeiro grupo capturado.
+        new_content, count = re.subn(
             r"(\bbundleVersion:\s*).*",
-            r"\g" + version,
+            r"\1" + version,
             content
         )
 
-        if new_content == content:
+        if count == 0:
             print(f"Erro: 'bundleVersion' não encontrada no arquivo {settings_file}.")
             sys.exit(1)
 
