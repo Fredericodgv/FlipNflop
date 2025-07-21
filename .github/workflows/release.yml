@@ -8,7 +8,7 @@ on:
 jobs:
   release:
     name: Release
-    runs-on: Windows 11
+    runs-on: ubuntu-latest
 
     steps:
       # 1. Faz o checkout do código do seu repositório
