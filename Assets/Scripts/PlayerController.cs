@@ -68,7 +68,7 @@ public class PlayerController : MonoBehaviour
     {
         horizontalInput = Input.GetAxis("Horizontal");
         if (Input.GetButtonDown("Jump")) { jumpInput = true; }
-        if (Input.GetKeyDown(KeyCode.W)) { gravityFlipInput = true; }
+        if (Input.GetButtonDown("Invert")) { gravityFlipInput = true; }
     }
     
     private void CheckIfGrounded()

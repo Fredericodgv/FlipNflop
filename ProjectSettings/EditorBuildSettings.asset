@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/JED.unity
     guid: dd20218c685d6c54a816fbe7be19f642
+  - enabled: 1
+    path: Assets/Scenes/Menu/Settings/SettingsMenu.unity
+    guid: 2705389684baccb44a724fb70ad12630
   m_configObjects: {}
