@@ -3,24 +3,26 @@ name: Release Game
 on:
   push:
     branches:
-      - main # ou master
+      - main
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Essencial para ler e escrever no repo
+      contents: write
       issues: write
       pull-requests: write
       id-token: write
 
     steps:
-      # 1. Faz o checkout do código do seu repositório
+      # 1. Faz o checkout do código e das tags
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Necessário para analisar todo o histórico de commits
+          # Alteração: fetch-depth: 0 já busca todo o histórico, incluindo tags.
+          # Garantir que a automação tenha acesso a todo o histórico é crucial.
+          fetch-depth: 0
 
       # 2. Instala Python para rodar nosso script
       - name: Setup Python
@@ -29,20 +31,19 @@ jobs:
           python-version: '3.x'
 
       # 3. Determina a próxima versão e gera as notas do release
-      # Esta action analisa os commits e gera a nova versão e o changelog
       - name: Generate Changelog and Version
         id: changelog
         uses: TriPSs/conventional-changelog-action@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          skip-version-file: true # Não queremos que ele crie um arquivo de versão, nós mesmos vamos atualizar
+          skip-version-file: true
 
-      # 4. Atualiza a versão no arquivo da Unity SE uma nova versão foi determinada
+      # 4. Atualiza a versão no arquivo da Unity
       - name: Update Unity Project Version
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         run: python scripts/set_unity_version.py ${{ steps.changelog.outputs.version }}
 
-      # 5. Instala o Git-cliff para um changelog mais bonito (opcional, mas recomendado)
+      # 5. Instala o Git-cliff para um changelog mais bonito
       - name: Install git-cliff
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         run: cargo install git-cliff --locked
@@ -57,20 +58,22 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
       
       # 7. Faz o Build do Jogo com GameCI
-      # IMPORTANTE: Você precisa de uma licença da Unity (pode ser a gratuita 'Personal') ativada para o GameCI.
-      # Siga as instruções em: https://game.ci/docs/github/activation
       - name: Build Unity Project
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          targetPlatform: StandaloneWindows64 # Mude para a sua plataforma (ex: Android, WebGL)
-          versioning: None # Já cuidamos disso com nosso script
+          targetPlatform: StandaloneWindows64
+          versioning: None
+          cache:
+            path: Library
+            key: ${{ runner.os }}-${{ matrix.targetPlatform || 'default' }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt') }}
+            restore-keys: |
+              ${{ runner.os }}-${{ matrix.targetPlatform || 'default' }}-
 
-      # 8. Commita os arquivos de versão e changelog de volta para o repositório
+      # 8. Commita os arquivos de versão e changelog
       - name: Commit version and changelog files
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         run: |
@@ -80,13 +83,14 @@ jobs:
           git commit -m "chore(release): version ${{ steps.changelog.outputs.version }} [skip ci]"
           git push
 
-      # 9. Cria o Release no GitHub com o build e o changelog
+      # 9. Cria o Release no GitHub
       - name: Create GitHub Release
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         uses: softprops/action-gh-release@v2
         with:
+          # Esta ação é inteligente o suficiente para usar a tag que já existe na main
           tag_name: ${{ steps.changelog.outputs.tag }}
           name: Release ${{ steps.changelog.outputs.version }}
           body: ${{ env.CHANGELOG_BODY }}
           files: |
-            build/StandaloneWindows64/* # Caminho para os seus arquivos de build
+            build/StandaloneWindows64/*
