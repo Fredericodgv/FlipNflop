@@ -37,7 +37,7 @@ public class SignalPath : MonoBehaviour
     private void Update()
     {
         if (!isDrawing) return;
-        
+
         float targetY = playerController.IsGravityInverted ? ceilingY : groundY;
         Vector3 currentTargetPosition = new Vector3(transform.position.x, targetY, 0);
 
@@ -113,5 +113,28 @@ public class SignalPath : MonoBehaviour
         Vector3 finalPoint = new Vector3(finalX, lastPoint.y, 0);
         AddPointToPath(finalPoint);
     }
+
+    /// <summary>
+    /// Altera a cor de toda a linha para uma única cor sólida.
+    /// </summary>
+    /// <param name="newColor">A nova cor para a linha.</param>
+    public void SetTrailColor(Color newColor)
+    {
+        if (lineRenderer == null) return;
+
+        // Cria um novo gradiente para aplicar à linha.
+        Gradient gradient = new Gradient();
+
+        // Define as "chaves" de cor do gradiente. Para uma cor sólida,
+        // o início e o fim do gradiente devem ter a mesma cor.
+        gradient.SetKeys(
+            new GradientColorKey[] { new GradientColorKey(newColor, 0.0f), new GradientColorKey(newColor, 1.0f) },
+            new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 1.0f) }
+        );
+
+        // Aplica o novo gradiente à propriedade colorGradient do LineRenderer.
+        lineRenderer.colorGradient = gradient;
+    }
+    
 
 }

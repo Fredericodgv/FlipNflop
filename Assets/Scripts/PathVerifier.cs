@@ -32,6 +32,7 @@ public class PathVerifier : MonoBehaviour
 
     [Header("Gabarito das Quinas (Gerado Automaticamente)")]
     public List<Vector3> correctCorners;
+    private List<string> verificationErrors;
 
     [Header("Referências Adicionais")]
     [SerializeField] private SignalPath signalPath;
@@ -39,9 +40,18 @@ public class PathVerifier : MonoBehaviour
     [SerializeField] private GameObject failureUI;
     [SerializeField] private float cornerTolerance = 0.5f;
 
+    [Header("Configuração de Feedback Visual")]
+    [Tooltip("A cor da linha quando o caminho está correto.")]
+    [SerializeField] private Color successColor = Color.green;
+    [Tooltip("A cor da linha quando o caminho está incorreto.")]
+    [SerializeField] private Color failureColor = Color.red;
+
+
+
     private void Awake()
     {
         GenerateCorrectPath();
+        verificationErrors = new List<string>();
     }
 
     private void Start()
@@ -49,68 +59,27 @@ public class PathVerifier : MonoBehaviour
         if (successUI != null) successUI.SetActive(false);
         if (failureUI != null) failureUI.SetActive(false);
     }
-    
 
     private void GenerateCorrectPath()
     {
-        if (j_InputTilemap == null || k_InputTilemap == null || highSignalTile == null)
-        {
-            correctCorners = new List<Vector3>();
-            return;
-        }
-
+        if (j_InputTilemap == null || k_InputTilemap == null || highSignalTile == null) { correctCorners = new List<Vector3>(); return; }
         correctCorners = new List<Vector3>();
-        bool outputState = false; // Estado Q inicial é 0 (baixo)
-
-        // Itera pelos PONTOS DE TRANSIÇÃO (as bordas do clock)
+        bool outputState = false;
         for (float x = startX; x <= endX; x += clockStepX)
         {
-            // Pega a altura Y da linha ANTES deste ponto de transição 'x'
             float previousY = outputState ? highY : lowY;
-
-            // Adiciona o ponto que finaliza o segmento horizontal anterior
             correctCorners.Add(new Vector3(x, previousY, 0));
-
-            // Se já chegamos ao final do percurso, não precisamos calcular o próximo estado
-            if (x >= endX)
-            {
-                break;
-            }
-
-            // Lê as entradas no início do segmento (em 'x') para determinar o PRÓXIMO estado
+            if (x >= endX) break;
             bool j_input = IsSignalHigh(j_InputTilemap, x, j_InputCheckY);
             bool k_input = IsSignalHigh(k_InputTilemap, x, k_InputCheckY);
-            
-            // Aplica a tabela verdade do Flip-Flop JK para definir o novo estado da saída
             if (j_input && !k_input) outputState = true;
             else if (!j_input && k_input) outputState = false;
             else if (j_input && k_input) outputState = !outputState;
-            else if (!j_input && !k_input) continue; // Estado permanece o mesmo
-
+            else if (!j_input && !k_input) continue;
             float currentY = outputState ? highY : lowY;
-
-            // Se o estado mudou, precisamos de uma linha vertical.
-            // Para isso, adicionamos um novo ponto na MESMA posição X, mas na NOVA altura Y.
-            if (!Mathf.Approximately(currentY, previousY))
-            {
-                correctCorners.Add(new Vector3(x, currentY, 0));
-            }
+            if (!Mathf.Approximately(currentY, previousY)) { correctCorners.Add(new Vector3(x, currentY, 0)); }
         }
-
-
-        for (int i = correctCorners.Count - 1; i > 0; i--)
-        {
-            if (Vector3.Distance(correctCorners[i], correctCorners[i - 1]) < 0.01f)
-            {
-                correctCorners.RemoveAt(i);
-            }
-            if (i == 0 || i == correctCorners.Count - 1) continue;
-            // Remove quinas desnecessárias (se a quina não muda a altura)
-            if (correctCorners[i - 1].y == correctCorners[i].y && correctCorners[i + 1].y == correctCorners[i].y)
-            {
-                correctCorners.RemoveAt(i);
-            }
-        }
+        for (int i = correctCorners.Count - 1; i > 0; i--) { if (Vector3.Distance(correctCorners[i], correctCorners[i - 1]) < 0.01f) { correctCorners.RemoveAt(i); } if (i == 0 || i >= correctCorners.Count - 1) continue; if (correctCorners[i - 1].y == correctCorners[i].y && correctCorners[i + 1].y == correctCorners[i].y) { correctCorners.RemoveAt(i); } }
     }
 
     private bool IsSignalHigh(Tilemap tilemap, float x, float checkY)
@@ -121,59 +90,85 @@ public class PathVerifier : MonoBehaviour
         TileBase tile = tilemap.GetTile(cellPos);
         return tile == highSignalTile;
     }
-    
+
     public void FinalizeAndCheckPath()
     {
-        if (signalPath != null)
-        {
-            signalPath.FinalizePath(endX);
-        }
-        else
-        {
-            Debug.LogError("Referência ao SignalPath não está definida no PathVerifier!");
-            return;
-        }
-
+        if (signalPath != null) { signalPath.FinalizePath(endX); }
+        else { Debug.LogError("Referência ao SignalPath não está definida no PathVerifier!"); return; }
         CheckPlayerPath();
     }
 
-
+    // --- FUNÇÃO MODIFICADA ---
     private void CheckPlayerPath()
     {
-        if (signalPath == null) { Debug.LogError("Referência ao SignalPath não definida!"); return; }
+        if (signalPath == null) 
+        { 
+            Debug.LogError("Referência ao SignalPath não definida!"); 
+            return; 
+        }
+        
         bool isPathCorrect = VerifyCorners(signalPath.PathPoints);
-        if (isPathCorrect) { if (successUI != null) successUI.SetActive(true); }
-        else { if (failureUI != null) failureUI.SetActive(true); }
+
+        if (isPathCorrect) 
+        {
+            Debug.Log("VERIFICAÇÃO BEM-SUCEDIDA! O caminho está correto.");
+            // 1. Altera a cor da linha para a cor de sucesso.
+            signalPath.SetTrailColor(successColor);
+            // 2. Ativa a UI de sucesso.
+            if (successUI != null) successUI.SetActive(true);
+        }
+        else 
+        {
+            Debug.LogError("VERIFICAÇÃO FALHOU! Erros encontrados:");
+            foreach (string error in verificationErrors)
+            {
+                Debug.LogWarning(error);
+            }
+            // 1. Altera a cor da linha para a cor de falha.
+            signalPath.SetTrailColor(failureColor);
+            // 2. Ativa a UI de falha.
+            if (failureUI != null) failureUI.SetActive(true);
+        }
     }
 
- private bool VerifyCorners(List<Vector3> playerPath)
+    // --- FUNÇÃO MODIFICADA ---
+    private bool VerifyCorners(List<Vector3> playerPath)
     {
+        verificationErrors.Clear(); // Limpa os erros da verificação anterior
+        bool pathIsCorrect = true; // Assume que está correto até encontrar um erro
+
         List<Vector3> playerCorners = ExtractCorners(playerPath);
 
+        // Normaliza a posição inicial do jogador para corresponder ao gabarito
         if (playerCorners.Count > 0)
         {
             Vector3 firstCorner = playerCorners[0];
-            firstCorner.x = this.startX; // "this.startX" é o -5 do nosso gabarito
+            firstCorner.x = this.startX;
             playerCorners[0] = firstCorner;
         }
 
-        if (playerCorners.Count != correctCorners.Count) 
-        { 
-            Debug.Log($"Contagem de quinas incorreta. Esperado: {correctCorners.Count}, Jogador: {playerCorners.Count}"); 
-            return false; 
+        // --- MUDANÇA PRINCIPAL AQUI ---
+        // 1. Verifica a contagem de quinas, mas em vez de parar, registra o erro.
+        if (playerCorners.Count != correctCorners.Count)
+        {
+            pathIsCorrect = false; // O caminho já está incorreto.
+            verificationErrors.Add($"Contagem de quinas incorreta. Esperado: {correctCorners.Count}, Jogador: {playerCorners.Count}");
         }
 
-        for (int i = 0; i < correctCorners.Count; i++)
+        // 2. Compara as posições das quinas, mas apenas até o limite do menor dos dois caminhos.
+        // Isso evita erros de "índice fora do alcance" se as contagens forem diferentes.
+        int cornersToCompare = Mathf.Min(playerCorners.Count, correctCorners.Count);
+
+        for (int i = 0; i < cornersToCompare; i++)
         {
-            if (Vector3.Distance(playerCorners[i], correctCorners[i]) > cornerTolerance) 
-            { 
-                Debug.Log($"Posição da quina {i} incorreta. Player: {playerCorners[i]} | Correta: {correctCorners[i]}"); 
-                return false; 
+            if (Vector3.Distance(playerCorners[i], correctCorners[i]) > cornerTolerance)
+            {
+                pathIsCorrect = false; // Encontrou um erro de posição.
+                verificationErrors.Add($"Posição da quina {i} incorreta. Player: {playerCorners[i]} | Correta: {correctCorners[i]}");
             }
         }
-        
-        Debug.Log("VERIFICAÇÃO BEM-SUCEDIDA! O caminho está correto.");
-        return true;
+
+        return pathIsCorrect;
     }
 
     private List<Vector3> ExtractCorners(List<Vector3> allPoints)
@@ -205,4 +200,5 @@ public class PathVerifier : MonoBehaviour
             Gizmos.DrawSphere(correctCorners[correctCorners.Count - 1], 0.1f);
         }
     }
+    
 }
