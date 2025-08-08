@@ -564,6 +564,8 @@ MonoBehaviour:
   successUI: {fileID: 2567244112535100235}
   failureUI: {fileID: 619987737}
   cornerTolerance: 0.5
+  successColor: {r: 0, g: 1, b: 0, a: 1}
+  failureColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!224 &490808039 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6188697341902253472, guid: 69796dc3257f98bea9f2bdfa7d40a96c, type: 3}
@@ -2302,7 +2304,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 8b1bff553c7eeef4c858e2f2539f4f42, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
