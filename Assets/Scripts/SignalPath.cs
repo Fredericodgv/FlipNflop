@@ -1,3 +1,5 @@
+// /Assets/Scripts/SignalPath.cs
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -52,9 +54,6 @@ public class SignalPath : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Limpa a trilha e adiciona o primeiro ponto na posição inicial.
-    /// </summary>
     private void InitializePath()
     {
         pathPoints.Clear();
@@ -63,9 +62,6 @@ public class SignalPath : MonoBehaviour
         AddPointToPath(startPoint);
     }
 
-    /// <summary>
-    /// Adiciona um novo ponto à trilha e atualiza o LineRenderer.
-    /// </summary>
     private void AddPointToPath(Vector3 point)
     {
         pathPoints.Add(point);
@@ -74,11 +70,6 @@ public class SignalPath : MonoBehaviour
         lineRenderer.SetPosition(pathPoints.Count - 1, point);
     }
 
-
-
-    /// <summary>
-    /// Remove todos os pontos da trilha à frente da posição X atual do jogador.
-    /// </summary>
     private void RemovePointsAfter(float currentX)
     {
         int removalIndex = pathPoints.FindIndex(p => p.x > currentX);
@@ -99,17 +90,12 @@ public class SignalPath : MonoBehaviour
             }
         }
     }
-
-    /// <summary>
-    /// Finaliza o caminho adicionando um último ponto em uma posição X específica.
-    /// Isso garante que a linha do jogador termine de forma limpa, criando a última quina.
-    /// </summary>
+    
     public void FinalizePath(float finalX)
     {
         if (pathPoints.Count == 0) return;
 
         Vector3 lastPoint = pathPoints[pathPoints.Count - 1];
-
         Vector3 finalPoint = new Vector3(finalX, lastPoint.y, 0);
         AddPointToPath(finalPoint);
     }
@@ -117,24 +103,26 @@ public class SignalPath : MonoBehaviour
     /// <summary>
     /// Altera a cor de toda a linha para uma única cor sólida.
     /// </summary>
-    /// <param name="newColor">A nova cor para a linha.</param>
     public void SetTrailColor(Color newColor)
     {
         if (lineRenderer == null) return;
 
-        // Cria um novo gradiente para aplicar à linha.
         Gradient gradient = new Gradient();
-
-        // Define as "chaves" de cor do gradiente. Para uma cor sólida,
-        // o início e o fim do gradiente devem ter a mesma cor.
         gradient.SetKeys(
             new GradientColorKey[] { new GradientColorKey(newColor, 0.0f), new GradientColorKey(newColor, 1.0f) },
             new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 1.0f) }
         );
-
-        // Aplica o novo gradiente à propriedade colorGradient do LineRenderer.
         lineRenderer.colorGradient = gradient;
     }
-    
 
+    /// <summary>
+    /// Altera a cor da linha com base em um gradiente para colorir segmentos.
+    /// </summary>
+    public void SetTrailColor(Gradient newGradient)
+    {
+        if (lineRenderer != null)
+        {
+            lineRenderer.colorGradient = newGradient;
+        }
+    }
 }
