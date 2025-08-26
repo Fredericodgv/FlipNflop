@@ -1,3 +1,12 @@
+## [0.0.11](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.10...v0.0.11) (2025-08-26)
+
+
+### Bug Fixes
+
+* **ci:** rebase before committing version and changelog files ([8f915eb](https://github.com/Fredericodgv/FlipNflop/commit/8f915eba136be1314f76a6c4c8b59f8994811c55))
+
+
+
 ## [0.0.10](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.9...v0.0.10) (2025-08-26)
 
 
@@ -33,16 +42,6 @@
 ### Bug Fixes
 
 * Verificaação automárica de saida baseada nos diagramas de entrada feita (Ainda existem bugs a se corrigir) ([3e5f0bb](https://github.com/Fredericodgv/FlipNflop/commit/3e5f0bb6eb75b336db892f01ebd24cdce72f7725))
-
-
-
-## [0.0.6](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.5...v0.0.6) (2025-07-21)
-
-
-### Bug Fixes
-
-* Corrige canvas de fim de jogo ([a450398](https://github.com/Fredericodgv/FlipNflop/commit/a45039896587b97b75de07c9722f7bdad6f3bce1))
-* Corrige instacia do feedback canvas ([a75dbcf](https://github.com/Fredericodgv/FlipNflop/commit/a75dbcf412e7a970670cc76ebcd23bec8e134770))
 
 
 
