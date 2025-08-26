@@ -69,9 +69,11 @@
     <Compile Include="Assets\Scripts\ClockRenderer.cs" />
     <Compile Include="Assets\Scripts\SignalPath.cs" />
     <Compile Include="Assets\Scripts\PathVerifier.cs" />
+    <Compile Include="Assets\Scripts\InputDiagramGenerator.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />
     <Compile Include="Assets\Scripts\PrintController.cs" />
     <Compile Include="Assets\Scripts\MenuManager.cs" />
+    <Compile Include="Assets\Scripts\LevelData.cs" />
     <Compile Include="Assets\Scripts\MaceController.cs" />
     <Compile Include="Assets\Scripts\LevelManager.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
