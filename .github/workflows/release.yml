@@ -76,12 +76,16 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
+          
+          # Adiciona e commita explicitamente os arquivos desejados
           git add ProjectSettings/ProjectSettings.asset CHANGELOG.md
-          # 1. Cria um commit local com as alterações
           git commit -m "chore(release): version ${{ steps.changelog.outputs.version }} [skip ci]"
-          # 2. Puxa as alterações remotas e coloca o nosso commit no topo
-          git pull origin main --rebase
-          # 3. Envia as alterações para o repositório
+          
+          # Guarda quaisquer outras alterações não rastreadas para limpar o diretório
+          git stash
+          
+          # Agora o pull --rebase deve funcionar em um diretório limpo
+          git pull --rebase origin main
           git push origin main
 
       # 9. Cria o Release no GitHub com o build e o changelog
