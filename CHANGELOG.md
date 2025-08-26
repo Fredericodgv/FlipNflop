@@ -1,3 +1,12 @@
+## [0.0.13](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.12...v0.0.13) (2025-08-26)
+
+
+### Bug Fixes
+
+* **ci:** improve commit process by adding explicit file staging and handling untracked changes ([c02e5fe](https://github.com/Fredericodgv/FlipNflop/commit/c02e5fef727396d9dc1c2a9ef6aad7a17595e11b))
+
+
+
 ## [0.0.12](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.11...v0.0.12) (2025-08-26)
 
 
@@ -33,15 +42,6 @@
 * Adiciona material à linha renderizada ([047c90f](https://github.com/Fredericodgv/FlipNflop/commit/047c90f269f46be2532dd14ea03badcda3b3882f))
 * Adiciona prefab LineSegment e implementa melhorias na verificação de caminhos ([ab75756](https://github.com/Fredericodgv/FlipNflop/commit/ab757560d0b59ce6bdda3e27c5d1b95861e9e5d7))
 * Cria outras duas fases ([22ea1f2](https://github.com/Fredericodgv/FlipNflop/commit/22ea1f208bedcd2b9d10bd9e730e3f9a51959cdf))
-
-
-
-## [0.0.8](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.7...v0.0.8) (2025-07-21)
-
-
-### Bug Fixes
-
-* Geração automática de linhas de entrada baseada em arquivo json ([46f79b5](https://github.com/Fredericodgv/FlipNflop/commit/46f79b58b534de08656f46fd3f1ae3e9da286f4b))
 
 
 
