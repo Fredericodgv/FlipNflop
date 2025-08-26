@@ -2881,7 +2881,7 @@ MonoBehaviour:
   menu: Menu
   nomeDoLevel: 
   nextLevel: 
-  levelAtual: JED
+  levelAtual: JED 2
 --- !u!1001 &1357466845
 PrefabInstance:
   m_ObjectHideFlags: 0

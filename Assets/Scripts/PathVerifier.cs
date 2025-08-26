@@ -268,7 +268,11 @@ public class PathVerifier : MonoBehaviour
             float currentY = outputState ? highY : lowY;
             if (!Mathf.Approximately(currentY, previousY)) { correctCorners.Add(new Vector3(x, currentY, 0)); }
         }
-        for (int i = correctCorners.Count - 1; i > 0; i--) { if (Vector3.Distance(correctCorners[i], correctCorners[i - 1]) < 0.01f) { correctCorners.RemoveAt(i); } if (i == 0 || i >= correctCorners.Count - 1) continue; if (correctCorners[i - 1].y == correctCorners[i].y && correctCorners[i + 1].y == correctCorners[i].y) { correctCorners.RemoveAt(i); } }
+        for (int i = correctCorners.Count - 1; i > 0; i--) {
+            if (Vector3.Distance(correctCorners[i], correctCorners[i - 1]) < 0.01f) { correctCorners.RemoveAt(i); }
+            if (i == 0 || i >= correctCorners.Count - 1) continue;
+            if (correctCorners[i - 1].y == correctCorners[i].y && correctCorners[i + 1].y == correctCorners[i].y) { correctCorners.RemoveAt(i); }
+        }
     }
 
     private bool IsSignalHigh(Tilemap tilemap, float x, float checkY)
