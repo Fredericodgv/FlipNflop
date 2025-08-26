@@ -1,47 +1,135 @@
-## [0.0.13](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.12...v0.0.13) (2025-08-26)
+## [0.0.13] - 2025-08-26
 
+### ⚙️ Miscellaneous Tasks
 
-### Bug Fixes
+- *(release)* V0.0.13 [skip ci]
+## [0.0.12] - 2025-08-26
 
-* **ci:** improve commit process by adding explicit file staging and handling untracked changes ([c02e5fe](https://github.com/Fredericodgv/FlipNflop/commit/c02e5fef727396d9dc1c2a9ef6aad7a17595e11b))
+### 🐛 Bug Fixes
 
+- *(release)* Improve commit process in GitHub Actions workflow
+- *(ci)* Improve commit process by adding explicit file staging and handling untracked changes
 
+### ⚙️ Miscellaneous Tasks
 
-## [0.0.12](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.11...v0.0.12) (2025-08-26)
+- *(release)* V0.0.12 [skip ci]
+## [0.0.11] - 2025-08-26
 
+### 🐛 Bug Fixes
 
-### Bug Fixes
+- *(ci)* Rebase before committing version and changelog files
 
-* **release:** improve commit process in GitHub Actions workflow ([4b2180a](https://github.com/Fredericodgv/FlipNflop/commit/4b2180a0aa3254ca75349955439b0f6c0a0584b8))
+### ⚙️ Miscellaneous Tasks
 
+- *(release)* V0.0.11 [skip ci]
+## [0.0.10] - 2025-08-26
 
+### 🐛 Bug Fixes
 
-## [0.0.11](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.10...v0.0.11) (2025-08-26)
+- Teste do versionamento
 
+### ⚙️ Miscellaneous Tasks
 
-### Bug Fixes
+- *(release)* V0.0.10 [skip ci]
+## [0.0.9] - 2025-08-26
 
-* **ci:** rebase before committing version and changelog files ([8f915eb](https://github.com/Fredericodgv/FlipNflop/commit/8f915eba136be1314f76a6c4c8b59f8994811c55))
+### ⚙️ Miscellaneous Tasks
 
+- *(release)* Version 0.0.8 [skip ci]
+- *(ci)* Atualiza arquivo release.yml para funcionar melhor com o git-flow
+- Remove alteração do release.yml
+- *(release)* V0.0.9 [skip ci]
+## [0.0.8] - 2025-07-21
 
+### 🐛 Bug Fixes
 
-## [0.0.10](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.9...v0.0.10) (2025-08-26)
+- Geração automática de linhas de entrada baseada em arquivo json
 
+### 💼 Other
 
-### Bug Fixes
+- Adiciona GameMAnager para controlar as interações do jogo
 
-* teste do versionamento ([24ed05c](https://github.com/Fredericodgv/FlipNflop/commit/24ed05c12ccbce583158be4eb45cef8ec28ba2bb))
+### ⚙️ Miscellaneous Tasks
 
+- *(release)* Version 0.0.7 [skip ci]
+- *(release)* V0.0.8 [skip ci]
+## [0.0.7] - 2025-07-21
 
+### 🐛 Bug Fixes
 
-## [0.0.9](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.8...v0.0.9) (2025-08-26)
+- Verificaação automárica de saida baseada nos diagramas de entrada feita (Ainda existem bugs a se corrigir)
+- Adiciona material à linha renderizada
+- Adiciona prefab LineSegment e implementa melhorias na verificação de caminhos
+- Cria outras duas fases
 
+### 🚜 Refactor
 
-### Bug Fixes
+- Organiza o código do PathVerifier e adiciona novos métodos de debug
+- Termina de resolver a lógica de verificação de caminhos
 
-* Adiciona material à linha renderizada ([047c90f](https://github.com/Fredericodgv/FlipNflop/commit/047c90f269f46be2532dd14ea03badcda3b3882f))
-* Adiciona prefab LineSegment e implementa melhorias na verificação de caminhos ([ab75756](https://github.com/Fredericodgv/FlipNflop/commit/ab757560d0b59ce6bdda3e27c5d1b95861e9e5d7))
-* Cria outras duas fases ([22ea1f2](https://github.com/Fredericodgv/FlipNflop/commit/22ea1f208bedcd2b9d10bd9e730e3f9a51959cdf))
+### ⚙️ Miscellaneous Tasks
 
+- Adiciona readme do projeto [skip ci]
+- Corrige bug de geração de saida esperada do ultimo commit
+- Adiciona prefab para linhas de feedback e ajusta propriedades de renderização
+- Limpa cenas
+- *(release)* V0.0.7 [skip ci]
+## [0.0.6] - 2025-07-21
 
+### 🐛 Bug Fixes
 
+- Corrige canvas de fim de jogo
+- Corrige instacia do feedback canvas
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* Version 0.0.5 [skip ci]
+- Termina correções
+- *(release)* V0.0.6 [skip ci]
+## [0.0.5] - 2025-07-21
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V0.0.5 [skip ci]
+## [0.0.4] - 2025-07-21
+
+### 🐛 Bug Fixes
+
+- Remove comentário do player
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V0.0.4 [skip ci]
+## [0.0.3] - 2025-07-21
+
+### 🐛 Bug Fixes
+
+- *(ci)* Usa lambda em regex para substituição de versão robusta
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V0.0.3 [skip ci]
+## [0.0.2] - 2025-07-21
+
+### 🐛 Bug Fixes
+
+- Novo detalhe no scripot de automacão
+- *(ci)* Corrige erro de regex no script de atualização da versão
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V0.0.2 [skip ci]
+## [0.0.1] - 2025-07-21
+
+### 🚀 Features
+
+- Verificação de caminho implementada
+- Testa automação
+
+### 🐛 Bug Fixes
+
+- Corrige script yml do github
+
+### ⚙️ Miscellaneous Tasks
+
+- Configura automação de release com GitHub Actions
