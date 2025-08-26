@@ -1,3 +1,12 @@
+## [0.0.12](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.11...v0.0.12) (2025-08-26)
+
+
+### Bug Fixes
+
+* **release:** improve commit process in GitHub Actions workflow ([4b2180a](https://github.com/Fredericodgv/FlipNflop/commit/4b2180a0aa3254ca75349955439b0f6c0a0584b8))
+
+
+
 ## [0.0.11](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.10...v0.0.11) (2025-08-26)
 
 
@@ -33,15 +42,6 @@
 ### Bug Fixes
 
 * Geração automática de linhas de entrada baseada em arquivo json ([46f79b5](https://github.com/Fredericodgv/FlipNflop/commit/46f79b58b534de08656f46fd3f1ae3e9da286f4b))
-
-
-
-## [0.0.7](https://github.com/Fredericodgv/FlipNflop/compare/v0.0.6...v0.0.7) (2025-07-21)
-
-
-### Bug Fixes
-
-* Verificaação automárica de saida baseada nos diagramas de entrada feita (Ainda existem bugs a se corrigir) ([3e5f0bb](https://github.com/Fredericodgv/FlipNflop/commit/3e5f0bb6eb75b336db892f01ebd24cdce72f7725))
 
 
 
