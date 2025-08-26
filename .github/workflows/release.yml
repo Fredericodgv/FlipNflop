@@ -70,16 +70,19 @@ jobs:
           targetPlatform: StandaloneWindows64 # Mude para a sua plataforma (ex: Android, WebGL)
           versioning: None # Já cuidamos disso com nosso script
 
-# 8. Commita os arquivos de versão e changelog de volta para o repositório
+      # 8. Commita os arquivos de versão e changelog de volta para o repositório
       - name: Commit version and changelog files
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          git pull origin main --rebase
           git add ProjectSettings/ProjectSettings.asset CHANGELOG.md
+          # 1. Cria um commit local com as alterações
           git commit -m "chore(release): version ${{ steps.changelog.outputs.version }} [skip ci]"
-          git push
+          # 2. Puxa as alterações remotas e coloca o nosso commit no topo
+          git pull origin main --rebase
+          # 3. Envia as alterações para o repositório
+          git push origin main
 
       # 9. Cria o Release no GitHub com o build e o changelog
       - name: Create GitHub Release
