@@ -1,51 +1,31 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
+    [Header("Player Settings")]
+    public Transform target; 
+    public float smoothSpeed = 0.125f; 
+    public Vector3 offset; 
 
-    //1 - Camera segue o player
+    [Header("Camera X Limits")]
+    public float minX = 6.9f;
+    public float maxX;
 
-    //offset da camera em relacao ao player
-    private Vector3 offset = new Vector3(0f, 0f, -10f);
-    //tempo para a camera se mover
-    private float smoothTime = 0.25f;
-    //velocidade da camera
-    private Vector3 velocity = Vector3.zero;
-
-    //2 - Valores mínimos e máximos de x,y,z para a camera
-    public Vector3 minValue, maxValue;
-
-    //Alvo da camera
-    [SerializeField] private Transform alvo;
-
-    void Update()
+    void LateUpdate()
     {
-        Camera();
-    }
-
-    /*
-    se for usar FixedUpdate, por n motivos, mudar o Interpolate do Rigidbody2D para Interpolate
-    */
-
-    void Camera()
-    {
-        //Definir valores mínimos e máximos de x,y,z para a camera
-
-        if(alvo != null)
+        // Verifica se o alvo (jogador) foi definido
+        if (target != null)
         {
-            Vector3 posicaoAlvo = alvo.position + offset;
-            //Verificar se posicaoAlvo está dentro dos limites
-            //Limitar para os valores mínimos e máximos
-            Vector3 posicaoLimite = new Vector3(
-            Mathf.Clamp(posicaoAlvo.x, minValue.x, maxValue.x), //permite apenas que o valor de x fique entre o min e o max
-            Mathf.Clamp(posicaoAlvo.y, minValue.y, maxValue.y), //permite apenas que o valor de y fique entre o min e o max
-            Mathf.Clamp(posicaoAlvo.z, minValue.z, maxValue.z)  //permite apenas que o valor de z fique entre o min e o max
-            );
-            transform.position = Vector3.SmoothDamp(transform.position, posicaoLimite, ref velocity, smoothTime);
+            //A câmera seguirá o jogador no eixo X, 
+            Vector3 desiredPosition = new Vector3(target.position.x + offset.x, transform.position.y, transform.position.z);
+            
+            // Aplica os limites de X
+            desiredPosition.x = Mathf.Clamp(desiredPosition.x, minX, maxX);
+
+            // Suaviza o movimento da câmera
+            Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
+            
+            transform.position = smoothedPosition;
         }
-
     }
-
 }
