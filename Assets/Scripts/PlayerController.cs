@@ -13,7 +13,6 @@ public class PlayerController : MonoBehaviour
 
     [Header("Gameplay Settings")]
     [SerializeField] private float fallKillThreshold = -25f;
-    [SerializeField] private float winPositionX = 25f;
 
     [Header("Object References")]
     [SerializeField] private Transform groundCheckPoint;
@@ -83,7 +82,7 @@ public class PlayerController : MonoBehaviour
             PlayerDeath();
         }
 
-        if (transform.position.x > winPositionX)
+        if (transform.position.x > LevelManager.Instance.levelEndX)
         {
             if (pathVerifier != null)
             {

@@ -9,7 +9,6 @@ public class CameraController : MonoBehaviour
 
     [Header("Camera X Limits")]
     public float minX = 6.9f;
-    public float maxX;
 
     void LateUpdate()
     {
@@ -20,7 +19,7 @@ public class CameraController : MonoBehaviour
             Vector3 desiredPosition = new Vector3(target.position.x + offset.x, transform.position.y, transform.position.z);
             
             // Aplica os limites de X
-            desiredPosition.x = Mathf.Clamp(desiredPosition.x, minX, maxX);
+            desiredPosition.x = Mathf.Clamp(desiredPosition.x, minX, LevelManager.Instance.levelEndX);
 
             // Suaviza o movimento da câmera
             Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);

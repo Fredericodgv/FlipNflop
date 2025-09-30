@@ -31,8 +31,7 @@ public class PathVerifier : MonoBehaviour
     [SerializeField] private float highY = 1.25f;
     [Tooltip("A posição X onde a verificação começa.")]
     [SerializeField] private float startX = -5f;
-    [Tooltip("A posição X onde a verificação termina.")]
-    [SerializeField] private float endX = 25f;
+
     [Tooltip("O intervalo em X para cada verificação (o 'pulso do clock').")]
     [SerializeField] private float clockStepX = 5f;
 
@@ -95,7 +94,7 @@ public class PathVerifier : MonoBehaviour
     {
         if (signalPath != null)
         {
-            signalPath.FinalizePath(endX);
+            signalPath.FinalizePath(LevelManager.Instance.levelEndX);
         }
         else
         {
@@ -255,11 +254,11 @@ public class PathVerifier : MonoBehaviour
         if (j_InputTilemap == null || k_InputTilemap == null || highSignalTile == null) { correctCorners = new List<Vector3>(); return; }
         correctCorners = new List<Vector3>();
         bool outputState = false;
-        for (float x = startX; x <= endX; x += clockStepX)
+        for (float x = startX; x <= LevelManager.Instance.levelEndX; x += clockStepX)
         {
             float previousY = outputState ? highY : lowY;
             correctCorners.Add(new Vector3(x, previousY, 0));
-            if (x >= endX) break;
+            if (x >= LevelManager.Instance.levelEndX) break;
             bool j_input = IsSignalHigh(j_InputTilemap, x, j_InputCheckY);
             bool k_input = IsSignalHigh(k_InputTilemap, x, k_InputCheckY);
             if (j_input && !k_input) outputState = true;
