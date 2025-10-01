@@ -5432,7 +5432,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6903937909891257827, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7925535299687764392, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
       propertyPath: m_LocalScale.x
@@ -5508,7 +5508,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6903937909891257827, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7925535299687764392, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
       propertyPath: m_LocalScale.x
@@ -5584,7 +5584,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6903937909891257827, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7925535299687764392, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
       propertyPath: m_LocalScale.x
@@ -7732,6 +7732,10 @@ PrefabInstance:
       propertyPath: isGroundCheck
       value: 
       objectReference: {fileID: 103264247}
+    - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: cameraController
+      value: 
+      objectReference: {fileID: 2050752304}
     - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: groundCheckPoint
       value: 
@@ -11021,6 +11025,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2050752304 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7116851868823320505, guid: fcef18d1d042aec4088970412c12fd2c, type: 3}
+  m_PrefabInstance: {fileID: 8474901099412338956}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e007216210e4162994e7eea2b55bf63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &2096175626 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3310666884381157187, guid: 69796dc3257f98bea9f2bdfa7d40a96c, type: 3}
