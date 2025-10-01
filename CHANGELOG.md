@@ -1,3 +1,13 @@
+## [0.1.1] - 2025-09-30
+
+### 🐛 Bug Fixes
+
+- Refatora limite horizontal da fase para centralizar a manutenção da hierarquia do jogo
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* Version 0.1.0 [skip ci]
+- *(release)* V0.1.1 [skip ci]
 ## [0.1.0] - 2025-09-30
 
 ### 🚀 Features
