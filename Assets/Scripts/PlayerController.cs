@@ -19,7 +19,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private GameObject gameOverUI;
     [SerializeField] private PathVerifier pathVerifier;
-    
+    [SerializeField] private CameraController cameraController;
+
     public bool IsGravityInverted => rb.gravityScale < 0;
 
     private Rigidbody2D rb;
@@ -30,8 +31,7 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool jumpInput;
     private bool gravityFlipInput;
-    private bool isLevelFinished = false;
-    
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -69,7 +69,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump")) { jumpInput = true; }
         if (Input.GetKeyDown(KeyCode.W)) { gravityFlipInput = true; }
     }
-    
+
     private void CheckIfGrounded()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, groundLayer);
@@ -92,7 +92,16 @@ public class PlayerController : MonoBehaviour
             {
                 Debug.LogError("Referência para o PathVerifier não definida no PlayerController!");
             }
-            
+
+            if (cameraController != null)
+            {
+                cameraController.EnableManualControl();
+            }
+            else
+            {
+                Debug.LogError("Referência para o CameraController não definida no PlayerController!");
+            }
+
             this.enabled = false;
         }
     }
@@ -124,7 +133,7 @@ public class PlayerController : MonoBehaviour
         }
         jumpInput = false;
     }
-    
+
     private void HandleGravityFlip()
     {
         if (gravityFlipInput && isGrounded)
