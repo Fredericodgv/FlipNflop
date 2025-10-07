@@ -17,7 +17,6 @@ public class CameraController : MonoBehaviour
     [Header("Limites da Fase")]
     [Tooltip("A posição X onde a câmera PARA no início da fase.")]
     public float minX;
-    // >>> MUDANÇA AQUI <<<
     [Tooltip("Uma folga para a câmera ir um pouco além do final da tela. Use 0 para parar na borda.")]
     public float endPadding = 2f;
     private float maxX;
@@ -35,11 +34,8 @@ public class CameraController : MonoBehaviour
 
         if (LevelManager.Instance != null)
         {
-            // Calcula a metade da largura da tela em unidades do mundo
             float halfScreenWidth = cam.orthographicSize * cam.aspect;
 
-            // >>> MUDANÇA AQUI <<<
-            // O novo limite máximo considera a folga que você pediu
             maxX = (LevelManager.Instance.levelEndX - halfScreenWidth) + endPadding;
         }
         else
