@@ -15,18 +15,32 @@ public class CameraController : MonoBehaviour
     public float manualMoveSpeed = 10f;
 
     [Header("Limites da Fase")]
+    [Tooltip("A posição X onde a câmera PARA no início da fase.")]
     public float minX;
+    // >>> MUDANÇA AQUI <<<
+    [Tooltip("Uma folga para a câmera ir um pouco além do final da tela. Use 0 para parar na borda.")]
+    public float endPadding = 2f;
     private float maxX;
+
+    private Camera cam;
+
+    void Awake()
+    {
+        cam = GetComponent<Camera>();
+    }
 
     void Start()
     {
-
         currentMode = CameraMode.FollowPlayer;
 
-        // Buscando os limites do LevelManager
         if (LevelManager.Instance != null)
         {
-            maxX = LevelManager.Instance.levelEndX;
+            // Calcula a metade da largura da tela em unidades do mundo
+            float halfScreenWidth = cam.orthographicSize * cam.aspect;
+
+            // >>> MUDANÇA AQUI <<<
+            // O novo limite máximo considera a folga que você pediu
+            maxX = (LevelManager.Instance.levelEndX - halfScreenWidth) + endPadding;
         }
         else
         {
@@ -46,43 +60,28 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Lógica para a câmera seguir o jogador.
-    /// </summary>
     private void FollowPlayer()
     {
         if (target != null)
         {
             Vector3 desiredPosition = new Vector3(target.position.x + offset.x, transform.position.y, transform.position.z);
-
             desiredPosition.x = Mathf.Clamp(desiredPosition.x, minX, maxX);
-
             Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
             transform.position = smoothedPosition;
         }
     }
 
-    /// <summary>
-    /// Lógica para o jogador controlar a câmera manualmente.
-    /// </summary>
     private void HandleManualControl()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
-
+        float horizontalInput = Input.GetAxisRaw("Horizontal");
         Vector3 movement = new Vector3(horizontalInput * manualMoveSpeed * Time.deltaTime, 0, 0);
-
         Vector3 newPosition = transform.position + movement;
         newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
-
         transform.position = newPosition;
     }
 
-    /// <summary>
-    /// Método público para ser chamado de fora (pelo PlayerController) para trocar o modo.
-    /// </summary>
     public void EnableManualControl()
     {
         currentMode = CameraMode.ManualControl;
-        //        target = null;
     }
 }
