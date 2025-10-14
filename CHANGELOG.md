@@ -1,209 +1,47 @@
-## [0.1.6] - 2025-10-14
+## [0.1.7](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.6...v0.1.7) (2025-10-14)
 
-### 🐛 Bug Fixes
 
-- Atualiza as configurações dos gizmos do nível e ajusta as posições dos prefabs para melhor alinhamento.
+### Bug Fixes
 
-### ⚙️ Miscellaneous Tasks
+* diminui o tamanho da cena principal ([5ef91b7](https://github.com/Fredericodgv/FlipNflop/commit/5ef91b79b8e3b801043efa39fd596304d5c2499e))
 
-- *(release)* Version 0.1.5 [skip ci]
-- *(release)* V0.1.6 [skip ci]
-## [0.1.5] - 2025-10-14
 
-### 🐛 Bug Fixes
 
-- Implementa diagramas de tempo da fase de teste
-- Atualiza funcionamento dos inimigos "mace"
-- Adiciona gizmos para facilitar a criação de fases através do editor
+## [0.1.6](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.5...v0.1.6) (2025-10-14)
 
-### ⚙️ Miscellaneous Tasks
 
-- *(release)* Version 0.1.4 [skip ci]
-- Corrige ativação das telas de fim de jogo
-- *(release)* V0.1.5 [skip ci]
-## [0.1.4] - 2025-10-07
+### Bug Fixes
 
-### 🐛 Bug Fixes
+* Atualiza as configurações dos gizmos do nível e ajusta as posições dos prefabs para melhor alinhamento. ([0dd1925](https://github.com/Fredericodgv/FlipNflop/commit/0dd19255dca9e9ab4205dae410dfefbdf57519f1))
 
-- Ajusta elementos da HUD de final da fase
 
-### ⚙️ Miscellaneous Tasks
 
-- Remove comentários desnecessários
-- *(release)* Version 0.1.3 [skip ci]
-- *(release)* V0.1.4 [skip ci]
-## [0.1.3] - 2025-10-07
+## [0.1.5](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.4...v0.1.5) (2025-10-14)
 
-### 🐛 Bug Fixes
 
-- A câmera para no final da fase antes do jogador chegar ao fim
+### Bug Fixes
 
-### ⚙️ Miscellaneous Tasks
+* Adiciona gizmos para facilitar a criação de fases através do editor ([7ee995b](https://github.com/Fredericodgv/FlipNflop/commit/7ee995b7a15ab817adf4795b72c0d14795a9d045))
+* Atualiza funcionamento dos inimigos "mace" ([5a96e81](https://github.com/Fredericodgv/FlipNflop/commit/5a96e81bb8caf0b0592527471236cc9e8cabe18e))
+* Implementa diagramas de tempo da fase de teste ([daa7843](https://github.com/Fredericodgv/FlipNflop/commit/daa7843c6a5536c41f9e3c53e3fa68ba0da341b8))
 
-- *(release)* Version 0.1.2 [skip ci]
-- Update scene settings for optimization
-- *(release)* V0.1.3 [skip ci]
-## [0.1.2] - 2025-10-01
 
-### ⚙️ Miscellaneous Tasks
 
-- *(release)* Version 0.1.1 [skip ci]
-- *(release)* V0.1.2 [skip ci]
-## [0.1.1] - 2025-09-30
+## [0.1.4](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.3...v0.1.4) (2025-10-07)
 
-### 🐛 Bug Fixes
 
-- Refatora limite horizontal da fase para centralizar a manutenção da hierarquia do jogo
-- Implementa lógica de controle da câmera para final da fase
+### Bug Fixes
 
-### ⚙️ Miscellaneous Tasks
+* ajusta elementos da HUD de final da fase ([ecc5e94](https://github.com/Fredericodgv/FlipNflop/commit/ecc5e9476226d64da5c62d9d1c82d892a27b027d))
 
-- *(release)* Version 0.1.0 [skip ci]
-- *(release)* V0.1.1 [skip ci]
-## [0.1.0] - 2025-09-30
 
-### 🚀 Features
 
-- Implementa câmera para seguir o jogador ao longo da fase.
+## [0.1.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.2...v0.1.3) (2025-10-07)
 
-### ⚙️ Miscellaneous Tasks
 
-- *(release)* Version 0.0.13 [skip ci]
-- Normalize line endings in ProjectVersion.txt and TagManager.asset files; update Readme.md for clarity and formatting
-- Aumenta a cena do JED e ajusta alguns parametros para isso
-- *(release)* V0.1.0 [skip ci]
-## [0.0.13] - 2025-08-26
+### Bug Fixes
 
-### ⚙️ Miscellaneous Tasks
+* A câmera para no final da fase antes do jogador chegar ao fim ([306dc4c](https://github.com/Fredericodgv/FlipNflop/commit/306dc4cec0dce6bbae9b04f99835094c5e3a04c4))
 
-- *(release)* V0.0.13 [skip ci]
-## [0.0.12] - 2025-08-26
 
-### 🐛 Bug Fixes
 
-- *(release)* Improve commit process in GitHub Actions workflow
-- *(ci)* Improve commit process by adding explicit file staging and handling untracked changes
-
-### ⚙️ Miscellaneous Tasks
-
-- *(release)* V0.0.12 [skip ci]
-## [0.0.11] - 2025-08-26
-
-### 🐛 Bug Fixes
-
-- *(ci)* Rebase before committing version and changelog files
-
-### ⚙️ Miscellaneous Tasks
-
-- *(release)* V0.0.11 [skip ci]
-## [0.0.10] - 2025-08-26
-
-### 🐛 Bug Fixes
-
-- Teste do versionamento
-
-### ⚙️ Miscellaneous Tasks
-
-- *(release)* V0.0.10 [skip ci]
-## [0.0.9] - 2025-08-26
-
-### ⚙️ Miscellaneous Tasks
-
-- *(release)* Version 0.0.8 [skip ci]
-- *(ci)* Atualiza arquivo release.yml para funcionar melhor com o git-flow
-- Remove alteração do release.yml
-- *(release)* V0.0.9 [skip ci]
-## [0.0.8] - 2025-07-21
-
-### 🐛 Bug Fixes
-
-- Geração automática de linhas de entrada baseada em arquivo json
-
-### 💼 Other
-
-- Adiciona GameMAnager para controlar as interações do jogo
-
-### ⚙️ Miscellaneous Tasks
-
-- *(release)* Version 0.0.7 [skip ci]
-- *(release)* V0.0.8 [skip ci]
-## [0.0.7] - 2025-07-21
-
-### 🐛 Bug Fixes
-
-- Verificaação automárica de saida baseada nos diagramas de entrada feita (Ainda existem bugs a se corrigir)
-- Adiciona material à linha renderizada
-- Adiciona prefab LineSegment e implementa melhorias na verificação de caminhos
-- Cria outras duas fases
-
-### 🚜 Refactor
-
-- Organiza o código do PathVerifier e adiciona novos métodos de debug
-- Termina de resolver a lógica de verificação de caminhos
-
-### ⚙️ Miscellaneous Tasks
-
-- Adiciona readme do projeto [skip ci]
-- Corrige bug de geração de saida esperada do ultimo commit
-- Adiciona prefab para linhas de feedback e ajusta propriedades de renderização
-- Limpa cenas
-- *(release)* V0.0.7 [skip ci]
-## [0.0.6] - 2025-07-21
-
-### 🐛 Bug Fixes
-
-- Corrige canvas de fim de jogo
-- Corrige instacia do feedback canvas
-
-### ⚙️ Miscellaneous Tasks
-
-- *(release)* Version 0.0.5 [skip ci]
-- Termina correções
-- *(release)* V0.0.6 [skip ci]
-## [0.0.5] - 2025-07-21
-
-### ⚙️ Miscellaneous Tasks
-
-- *(release)* V0.0.5 [skip ci]
-## [0.0.4] - 2025-07-21
-
-### 🐛 Bug Fixes
-
-- Remove comentário do player
-
-### ⚙️ Miscellaneous Tasks
-
-- *(release)* V0.0.4 [skip ci]
-## [0.0.3] - 2025-07-21
-
-### 🐛 Bug Fixes
-
-- *(ci)* Usa lambda em regex para substituição de versão robusta
-
-### ⚙️ Miscellaneous Tasks
-
-- *(release)* V0.0.3 [skip ci]
-## [0.0.2] - 2025-07-21
-
-### 🐛 Bug Fixes
-
-- Novo detalhe no scripot de automacão
-- *(ci)* Corrige erro de regex no script de atualização da versão
-
-### ⚙️ Miscellaneous Tasks
-
-- *(release)* V0.0.2 [skip ci]
-## [0.0.1] - 2025-07-21
-
-### 🚀 Features
-
-- Verificação de caminho implementada
-- Testa automação
-
-### 🐛 Bug Fixes
-
-- Corrige script yml do github
-
-### ⚙️ Miscellaneous Tasks
-
-- Configura automação de release com GitHub Actions
