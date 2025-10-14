@@ -127,14 +127,22 @@ public class PathVerifier : MonoBehaviour
 
         if (isPathCorrectOverall)
         {
-            if (successUI != null) successUI.SetActive(true);
+            if (successUI != null)
+            {
+                ActivateWithParent(successUI);
+                if (failureUI != null) failureUI.SetActive(false);
+            }
         }
         else
         {
-            if (failureUI != null) failureUI.SetActive(true);
+            if (failureUI != null)
+            {
+                ActivateWithParent(failureUI);
+                if (successUI != null) successUI.SetActive(false);
+            }
         }
     }
-    
+
     /// <summary>
     /// LÓGICA FINAL: Desenha o feedback iterando sobre cada pequeno segmento do caminho do jogador.
     /// </summary>
@@ -142,7 +150,7 @@ public class PathVerifier : MonoBehaviour
     {
         if (linePrefab == null || feedbackLinesParent == null) return;
         foreach (Transform child in feedbackLinesParent) Destroy(child.gameObject);
-        
+
         // Itera sobre cada pequeno segmento que o jogador desenhou.
         for (int i = 0; i < playerPath.Count - 1; i++)
         {
@@ -159,7 +167,7 @@ public class PathVerifier : MonoBehaviour
 
             // O segmento só é verde se AMBOS os pontos estiverem na trajetória.
             bool isSegmentCorrect = startIsOnPath && endIsOnPath;
-            
+
             Color segmentColor = isSegmentCorrect ? successColor : failureColor;
 
             LineRenderer lineSegment = Instantiate(linePrefab, feedbackLinesParent);
@@ -169,11 +177,23 @@ public class PathVerifier : MonoBehaviour
             lineSegment.endColor = segmentColor;
         }
     }
-    
+
     #endregion
 
     #region Helper Functions
-    
+
+    // Ativa o objeto alvo e garante que seu pai (container comum) também esteja ativo.
+    private void ActivateWithParent(GameObject target)
+    {
+        if (target == null) return;
+        Transform parent = target.transform.parent;
+        if (parent != null && !parent.gameObject.activeSelf)
+        {
+            parent.gameObject.SetActive(true);
+        }
+        if (!target.activeSelf) target.SetActive(true);
+    }
+
     /// <summary>
     /// Avalia se a linha completa do jogador passa perto de cada quina do gabarito. Usado para o resultado final (sucesso/falha).
     /// </summary>
@@ -245,8 +265,8 @@ public class PathVerifier : MonoBehaviour
     }
 
     #endregion
-    
-    
+
+
     #region Gabarito Generation
 
     private void GenerateCorrectPath()
@@ -288,7 +308,7 @@ public class PathVerifier : MonoBehaviour
     #endregion
 
     #region Debug Functions
-    
+
     private void PrintVectorListToDebug(string header, List<Vector3> list)
     {
         StringBuilder sb = new StringBuilder();
