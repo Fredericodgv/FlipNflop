@@ -1,3 +1,13 @@
+## [0.1.6] - 2025-10-14
+
+### 🐛 Bug Fixes
+
+- Atualiza as configurações dos gizmos do nível e ajusta as posições dos prefabs para melhor alinhamento.
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* Version 0.1.5 [skip ci]
+- *(release)* V0.1.6 [skip ci]
 ## [0.1.5] - 2025-10-14
 
 ### 🐛 Bug Fixes
