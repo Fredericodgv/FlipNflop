@@ -349,7 +349,7 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     /// <summary>
-    /// Draws the ground check gizmo in the scene when selected.
+    /// Draws the ground check gizmo in the scene when selected
     /// </summary>
     private void OnDrawGizmosSelected()
     {
