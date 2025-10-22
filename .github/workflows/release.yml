@@ -43,6 +43,10 @@ jobs:
         run: python scripts/set_unity_version.py ${{ steps.changelog.outputs.version }}
 
       # 5. Instala o Git-cliff para um changelog mais bonito (opcional, mas recomendado)
+      - name: Setup Rust toolchain (for git-cliff)
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Install git-cliff
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         run: cargo install git-cliff --locked
@@ -59,6 +63,16 @@ jobs:
       # 7. Faz o Build do Jogo com GameCI
       # IMPORTANTE: Você precisa de uma licença da Unity (pode ser a gratuita 'Personal') ativada para o GameCI.
       # Siga as instruções em: https://game.ci/docs/github/activation
+      # (Opcional) Cache da pasta Library para acelerar builds subsequentes
+      - name: Cache Unity Library
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ runner.os }}-${{ hashFiles('**/Packages/manifest.json') }}
+          restore-keys: |
+            Library-${{ runner.os }}-
+
       - name: Build Unity Project
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         uses: game-ci/unity-builder@v4
@@ -68,6 +82,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: StandaloneWindows64 # Mude para a sua plataforma (ex: Android, WebGL)
+          scriptingBackend: il2cpp # Evita imagens "windows-mono" que podem não existir em versões recentes
           versioning: None # Já cuidamos disso com nosso script
 
       # 8. Commita os arquivos de versão e changelog de volta para o repositório
