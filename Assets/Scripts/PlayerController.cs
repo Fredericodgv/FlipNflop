@@ -174,6 +174,10 @@ public class PlayerController : MonoBehaviour
         bool isRunning = Mathf.Abs(rb.linearVelocity.x) > 0.1f;
         animator.SetBool("run", isRunning);
         animator.SetBool("grounded", isGrounded);
+
+        float gravitySign = Mathf.Sign(rb.gravityScale);
+        bool isFalling = !isGrounded && (rb.linearVelocity.y * gravitySign) < 0f;
+        animator.SetBool("fall", isFalling);
     }
 
     #endregion

@@ -584,9 +584,6 @@ MonoBehaviour:
   cornerTolerance: 0.5
   successColor: {r: 0, g: 1, b: 0, a: 1}
   failureColor: {r: 1, g: 0, b: 0, a: 1}
-  colorTolerance: 0.12
-  colorSampleStep: 0.12
-  colorCoverageRequired: 0.95
   linePrefab: {fileID: 3090148692481908950, guid: f6794afdb432aaa46b21434cb386774a, type: 3}
   feedbackLinesParent: {fileID: 581705960}
 --- !u!4 &240583825 stripped
@@ -5392,6 +5389,14 @@ PrefabInstance:
     - target: {fileID: 2569735990315611887, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: m_Enabled
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4568081835289535540, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: m_AnimatePhysics
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4568081835289535540, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6196048222136151847, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: m_Mass
