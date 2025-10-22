@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main # ou master
+      - develop
+  workflow_dispatch:
 
 jobs:
   release:
@@ -46,7 +48,6 @@ jobs:
       - name: Setup Rust toolchain (for git-cliff)
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         uses: dtolnay/rust-toolchain@stable
-
       - name: Install git-cliff
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         run: cargo install git-cliff --locked
@@ -72,7 +73,6 @@ jobs:
           key: Library-${{ runner.os }}-${{ hashFiles('**/Packages/manifest.json') }}
           restore-keys: |
             Library-${{ runner.os }}-
-
       - name: Build Unity Project
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         uses: game-ci/unity-builder@v4
@@ -82,7 +82,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: StandaloneWindows64 # Mude para a sua plataforma (ex: Android, WebGL)
-          scriptingBackend: il2cpp # Evita imagens "windows-mono" que podem não existir em versões recentes
+          customImage: unityci/editor:ubuntu-6000.2.9f1-windows-il2cpp-3 # força imagem válida para Windows+IL2CPP
           versioning: None # Já cuidamos disso com nosso script
 
       # 8. Commita os arquivos de versão e changelog de volta para o repositório
