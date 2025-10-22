@@ -1,3 +1,12 @@
+## [0.2.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.0...v0.2.1) (2025-10-22)
+
+
+### Bug Fixes
+
+* Atualiza método legado no ClockRenderer ([9958598](https://github.com/Fredericodgv/FlipNflop/commit/9958598e3ee212c6fcf2c673111f89ef4920d707))
+
+
+
 # [0.2.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.8...v0.2.0) (2025-10-22)
 
 
@@ -32,17 +41,6 @@
 ### Bug Fixes
 
 * Atualiza as configurações dos gizmos do nível e ajusta as posições dos prefabs para melhor alinhamento. ([0dd1925](https://github.com/Fredericodgv/FlipNflop/commit/0dd19255dca9e9ab4205dae410dfefbdf57519f1))
-
-
-
-## [0.1.5](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.4...v0.1.5) (2025-10-14)
-
-
-### Bug Fixes
-
-* Adiciona gizmos para facilitar a criação de fases através do editor ([7ee995b](https://github.com/Fredericodgv/FlipNflop/commit/7ee995b7a15ab817adf4795b72c0d14795a9d045))
-* Atualiza funcionamento dos inimigos "mace" ([5a96e81](https://github.com/Fredericodgv/FlipNflop/commit/5a96e81bb8caf0b0592527471236cc9e8cabe18e))
-* Implementa diagramas de tempo da fase de teste ([daa7843](https://github.com/Fredericodgv/FlipNflop/commit/daa7843c6a5536c41f9e3c53e3fa68ba0da341b8))
 
 
 
