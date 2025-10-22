@@ -1,3 +1,14 @@
+## [0.2.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.1...v0.2.2) (2025-10-22)
+
+
+### Bug Fixes
+
+* **ci:** Add Rust toolchain setup and caching for Unity Library in release workflow ([266c980](https://github.com/Fredericodgv/FlipNflop/commit/266c980b8b47cd97160ac13efdd064b5c1b01f13))
+* Melhora as animações do personagem ([91bd1d4](https://github.com/Fredericodgv/FlipNflop/commit/91bd1d44a18b1cc8e080c62bf4ad30486690b587))
+* Refatora inputs e melhora animação do personagem ([4876e92](https://github.com/Fredericodgv/FlipNflop/commit/4876e923dd9c45f9a6c2d6a6c7d2b467c72810ed))
+
+
+
 ## [0.2.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.0...v0.2.1) (2025-10-22)
 
 
@@ -32,15 +43,6 @@
 ### Bug Fixes
 
 * diminui o tamanho da cena principal ([5ef91b7](https://github.com/Fredericodgv/FlipNflop/commit/5ef91b79b8e3b801043efa39fd596304d5c2499e))
-
-
-
-## [0.1.6](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.5...v0.1.6) (2025-10-14)
-
-
-### Bug Fixes
-
-* Atualiza as configurações dos gizmos do nível e ajusta as posições dos prefabs para melhor alinhamento. ([0dd1925](https://github.com/Fredericodgv/FlipNflop/commit/0dd19255dca9e9ab4205dae410dfefbdf57519f1))
 
 
 
