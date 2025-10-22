@@ -82,7 +82,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: StandaloneWindows64 # Mude para a sua plataforma (ex: Android, WebGL)
-          customImage: unityci/editor:ubuntu-6000.2.9f1-windows-il2cpp-1 # força imagem válida para Windows+IL2CPP
+          customImage: unityci/editor:ubuntu-6000.2.9f1-windows-il2cpp-1 #força imagem válida para Windows+IL2CPP
           versioning: None # Já cuidamos disso com nosso script
 
       # 8. Commita os arquivos de versão e changelog de volta para o repositório
@@ -114,3 +114,4 @@ jobs:
           files: |
 
             build/StandaloneWindows64/* # Caminho para os seus arquivos de build
+
