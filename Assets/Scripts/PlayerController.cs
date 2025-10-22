@@ -112,7 +112,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
-        rb.velocity = new Vector2(horizontalInput * moveSpeed, rb.velocity.y);
+        rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
         Flip();
     }
 
@@ -128,7 +128,7 @@ public class PlayerController : MonoBehaviour
         if (jumpInput && isGrounded)
         {
             float jumpDirection = Mathf.Sign(rb.gravityScale);
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce * jumpDirection);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce * jumpDirection);
             animator.SetTrigger("jump");
         }
         jumpInput = false;
@@ -171,7 +171,7 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateAnimator()
     {
-        bool isRunning = Mathf.Abs(rb.velocity.x) > 0.1f;
+        bool isRunning = Mathf.Abs(rb.linearVelocity.x) > 0.1f;
         animator.SetBool("run", isRunning);
         animator.SetBool("grounded", isGrounded);
     }
