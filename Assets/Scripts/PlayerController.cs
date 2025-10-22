@@ -5,8 +5,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Controla o movimento, salto, inversão de gravidade e animações do jogador.
-/// Utiliza o novo Input System e integra com detecção de chão, câmera e verificação de caminho.
+/// Controls the player's movement, jumping, gravity inversion, and animations.
+/// Uses the new Input System and integrates with ground detection, camera, and path verification.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(SpriteRenderer))]
 public class PlayerController : MonoBehaviour
@@ -53,7 +53,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionReference flipGravityAction;
 
     /// <summary>
-    /// Indica se a gravidade está invertida (gravityScale &lt; 0).
+    /// Indicates whether gravity is inverted (gravityScale &lt; 0).
     /// </summary>
     public bool IsGravityInverted => rb.gravityScale < 0;
 
@@ -68,7 +68,7 @@ public class PlayerController : MonoBehaviour
 
 
     /// <summary>
-    /// Inicializa as referências aos componentes necessários.
+    /// Initializes references to required components.
     /// </summary>
     private void Awake()
     {
@@ -79,7 +79,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Configura o estado inicial do jogador e garante gravidade positiva.
+    /// Sets the initial state and ensures gravity is positive.
     /// </summary>
     private void Start()
     {
@@ -88,7 +88,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Atualiza verificações de vitória/derrota e parâmetros de animação por frame.
+    /// Updates win/lose checks and animation parameters per frame.
     /// </summary>
     private void Update()
     {
@@ -97,7 +97,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Atualiza física: chão, movimento, salto e flip de gravidade (em passos fixos).
+    /// Updates physics: ground check, movement, jump, and gravity flip (fixed steps).
     /// </summary>
     private void FixedUpdate()
     {
@@ -110,7 +110,7 @@ public class PlayerController : MonoBehaviour
     #region Input & State Checks
 
     /// <summary>
-    /// Assina e habilita as ações do Input System.
+    /// Subscribes to and enables Input System actions.
     /// </summary>
     private void OnEnable()
     {
@@ -135,7 +135,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Cancela a assinatura e desabilita as ações do Input System.
+    /// Unsubscribes from and disables Input System actions.
     /// </summary>
     private void OnDisable()
     {
@@ -160,43 +160,43 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Recebe o valor do eixo horizontal do movimento.
+    /// Receives the horizontal movement axis value.
     /// </summary>
-    /// <param name="ctx">Contexto do Input (float do eixo).</param>
+    /// <param name="ctx">Input context (axis float).</param>
     private void OnMovePerformed(InputAction.CallbackContext ctx)
     {
         horizontalInput = ctx.ReadValue<float>();
     }
 
     /// <summary>
-    /// Reseta o movimento horizontal quando o input é cancelado.
+    /// Resets horizontal movement when input is canceled.
     /// </summary>
-    /// <param name="ctx">Contexto do Input.</param>
+    /// <param name="ctx">Input context.</param>
     private void OnMoveCanceled(InputAction.CallbackContext ctx)
     {
         horizontalInput = 0f;
     }
 
     /// <summary>
-    /// Sinaliza o pedido de salto (consumido no FixedUpdate).
+    /// Flags the jump request (consumed in FixedUpdate).
     /// </summary>
-    /// <param name="ctx">Contexto do Input.</param>
+    /// <param name="ctx">Input context.</param>
     private void OnJumpPerformed(InputAction.CallbackContext ctx)
     {
         jumpInput = true;
     }
 
     /// <summary>
-    /// Sinaliza o pedido de inversão de gravidade (consumido no FixedUpdate).
+    /// Flags the gravity flip request (consumed in FixedUpdate).
     /// </summary>
-    /// <param name="ctx">Contexto do Input.</param>
+    /// <param name="ctx">Input context.</param>
     private void OnFlipGravityPerformed(InputAction.CallbackContext ctx)
     {
         gravityFlipInput = true;
     }
 
     /// <summary>
-    /// Atualiza o estado de contato com o chão via OverlapCircle.
+    /// Updates the grounded state via OverlapCircle.
     /// </summary>
     private void CheckIfGrounded()
     {
@@ -204,7 +204,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Verifica condições de derrota (queda) e fim de nível (e aciona PathVerifier/Câmera).
+    /// Checks lose (fall) and level end conditions and triggers PathVerifier/Camera.
     /// </summary>
     private void CheckWinAndLoseConditions()
     {
@@ -242,7 +242,7 @@ public class PlayerController : MonoBehaviour
     #region Movement & Actions
 
     /// <summary>
-    /// Aplica aceleração/desaceleração ao movimento horizontal e espelha o sprite.
+    /// Applies acceleration/deceleration to horizontal movement and flips the sprite.
     /// </summary>
     private void HandleMovement()
     {
@@ -257,7 +257,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Define a orientação visual do sprite com base na direção e gravidade.
+    /// Sets the sprite orientation based on direction and gravity.
     /// </summary>
     private void Flip()
     {
@@ -267,7 +267,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Executa o salto quando solicitado e em contato com o chão.
+    /// Performs the jump when requested and grounded.
     /// </summary>
     private void HandleJump()
     {
@@ -281,7 +281,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Inverte a gravidade e rotaciona o personagem quando solicitado e em solo.
+    /// Inverts gravity and rotates the character when requested and grounded.
     /// </summary>
     private void HandleGravityFlip()
     {
@@ -300,7 +300,7 @@ public class PlayerController : MonoBehaviour
     #region Collision & Death
 
     /// <summary>
-    /// Ativa a UI de Game Over e desativa o objeto do jogador.
+    /// Activates the Game Over UI and disables the player object.
     /// </summary>
     private void PlayerDeath()
     {
@@ -309,9 +309,9 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Mata o jogador ao colidir com inimigos.
+    /// Kills the player on collision with enemies.
     /// </summary>
-    /// <param name="collision">Dados da colisão 2D.</param>
+    /// <param name="collision">2D collision data.</param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Enemy"))
@@ -325,7 +325,7 @@ public class PlayerController : MonoBehaviour
     #region Animation
 
     /// <summary>
-    /// Atualiza parâmetros de animação (correr, cair, velocidade do clip de corrida).
+    /// Updates animation parameters (run, fall, run clip speed).
     /// </summary>
     private void UpdateAnimator()
     {
@@ -349,7 +349,7 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     /// <summary>
-    /// Desenha o gizmo de verificação de chão na cena quando selecionado.
+    /// Draws the ground check gizmo in the scene when selected.
     /// </summary>
     private void OnDrawGizmosSelected()
     {
