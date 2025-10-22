@@ -144,7 +144,7 @@ public class PathVerifier : MonoBehaviour
     }
 
     /// <summary>
-    /// LÓGICA FINAL: Desenha o feedback iterando sobre cada pequeno segmento do caminho do jogador.
+    /// Desenha o feedback iterando sobre cada pequeno segmento do caminho do jogador.
     /// </summary>
     private void DrawFeedbackLines(List<Vector3> playerPath)
     {

@@ -5339,9 +5339,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1751154540}
     - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: jumpAction
+      value: 
+      objectReference: {fileID: -2099379676528639254, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: levelClear
       value: 
       objectReference: {fileID: 6188697340073637024}
+    - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: moveAction
+      value: 
+      objectReference: {fileID: -1680190386980627800, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: groundCheck
       value: 
@@ -5367,6 +5375,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 103264247}
     - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: runSpeedParam
+      value: speed
+      objectReference: {fileID: 0}
+    - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: cameraController
       value: 
       objectReference: {fileID: 2050752304}
@@ -5374,6 +5386,10 @@ PrefabInstance:
       propertyPath: groundCheckPoint
       value: 
       objectReference: {fileID: 103264247}
+    - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: flipGravityAction
+      value: 
+      objectReference: {fileID: 3506434624590365720, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: groundLayer.m_Bits
       value: 64
@@ -5385,6 +5401,10 @@ PrefabInstance:
     - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: isGroundLayer.m_Bits
       value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: runAnimSpeedMultiplier
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 2569735990315611887, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: m_Enabled
