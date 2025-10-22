@@ -1,3 +1,12 @@
+## [0.2.4](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.3...v0.2.4) (2025-10-22)
+
+
+### Bug Fixes
+
+* teste ([d924de5](https://github.com/Fredericodgv/FlipNflop/commit/d924de5d19bdd7e6a5f2363f603caba1991e1893))
+
+
+
 ## [0.2.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.2...v0.2.3) (2025-10-22)
 
 
@@ -33,16 +42,6 @@
 ### Features
 
 * Atualiza versão da Unity ([cbfb947](https://github.com/Fredericodgv/FlipNflop/commit/cbfb947c71e98e212abd30eaa468cf5b9ddafea0))
-
-
-
-## [0.1.8](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.7...v0.1.8) (2025-10-22)
-
-
-### Bug Fixes
-
-* Adiciona música no jogo ([63a3a16](https://github.com/Fredericodgv/FlipNflop/commit/63a3a16e4af12960560d47ac72a3add5f2f71149))
-* Cria menu para WEB ([3981c7d](https://github.com/Fredericodgv/FlipNflop/commit/3981c7df5058db388745f7a0d7aba3215cd8424e))
 
 
 
