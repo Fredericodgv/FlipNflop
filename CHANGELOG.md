@@ -1,3 +1,12 @@
+## [0.2.5](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.4...v0.2.5) (2025-10-22)
+
+
+### Bug Fixes
+
+* teste do workflow ([e458bdc](https://github.com/Fredericodgv/FlipNflop/commit/e458bdc14591a1c61fa3697fb054644b4c238c90))
+
+
+
 ## [0.2.4](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.3...v0.2.4) (2025-10-22)
 
 
@@ -33,15 +42,6 @@
 ### Bug Fixes
 
 * Atualiza método legado no ClockRenderer ([9958598](https://github.com/Fredericodgv/FlipNflop/commit/9958598e3ee212c6fcf2c673111f89ef4920d707))
-
-
-
-# [0.2.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.8...v0.2.0) (2025-10-22)
-
-
-### Features
-
-* Atualiza versão da Unity ([cbfb947](https://github.com/Fredericodgv/FlipNflop/commit/cbfb947c71e98e212abd30eaa468cf5b9ddafea0))
 
 
 
