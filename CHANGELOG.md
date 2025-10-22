@@ -1,3 +1,12 @@
+## [0.2.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.2...v0.2.3) (2025-10-22)
+
+
+### Bug Fixes
+
+* teste ([a741800](https://github.com/Fredericodgv/FlipNflop/commit/a741800e33885b7de0c3f40fbd0b6aec7ddec8e9))
+
+
+
 ## [0.2.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.1...v0.2.2) (2025-10-22)
 
 
@@ -34,15 +43,6 @@
 
 * Adiciona música no jogo ([63a3a16](https://github.com/Fredericodgv/FlipNflop/commit/63a3a16e4af12960560d47ac72a3add5f2f71149))
 * Cria menu para WEB ([3981c7d](https://github.com/Fredericodgv/FlipNflop/commit/3981c7df5058db388745f7a0d7aba3215cd8424e))
-
-
-
-## [0.1.7](https://github.com/Fredericodgv/FlipNflop/compare/v0.1.6...v0.1.7) (2025-10-14)
-
-
-### Bug Fixes
-
-* diminui o tamanho da cena principal ([5ef91b7](https://github.com/Fredericodgv/FlipNflop/commit/5ef91b79b8e3b801043efa39fd596304d5c2499e))
 
 
 
