@@ -87,7 +87,7 @@ public class ClockRenderer : MonoBehaviour
         }
         else
         {
-            lm = FindObjectOfType<LevelManager>();
+            lm = FindFirstObjectByType<LevelManager>();
         }
 
         if (lm == null)
