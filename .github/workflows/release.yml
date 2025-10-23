@@ -113,3 +113,38 @@ jobs:
           body: ${{ env.CHANGELOG_BODY }}
           files: |
             build/StandaloneWindows64/* # Caminho para os seus arquivos de build
+
+  build-windows:
+    name: Build (Windows - dev/test)
+    # Roda em develop e manual; evita rodar em main por padrão
+    if: ${{ github.ref_name == 'develop' || github.event_name == 'workflow_dispatch' }}
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache Unity Library
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ runner.os }}-${{ hashFiles('**/Packages/manifest.json') }}
+          restore-keys: |
+            Library-${{ runner.os }}-
+
+      - name: Build Unity Project (Windows)
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: StandaloneWindows64
+          versioning: None
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StandaloneWindows64-build
+          path: build/StandaloneWindows64/
