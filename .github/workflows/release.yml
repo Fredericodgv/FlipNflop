@@ -1,17 +1,15 @@
-name: Release Game
+name: Version & README updater
 
 on:
   push:
     branches:
       - main # ou master
-      - develop
   workflow_dispatch:
 
 jobs:
   release:
-    name: Release
+    name: Versioning & Release
     runs-on: ubuntu-latest
-    needs: build-windows
     permissions:
       contents: write # Essencial para ler e escrever no repo
       issues: write
@@ -25,14 +23,7 @@ jobs:
         with:
           fetch-depth: 0 # Necessário para analisar todo o histórico de commits
 
-      # 2. Instala Python para rodar nosso script
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      # 3. Determina a próxima versão e gera as notas do release
-      # Esta action analisa os commits e gera a nova versão e o changelog
+      # 3. Determina a próxima versão com base em Conventional Commits
       - name: Generate Changelog and Version
         id: changelog
         uses: TriPSs/conventional-changelog-action@v5
@@ -40,97 +31,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-version-file: true # Não queremos que ele crie um arquivo de versão, nós mesmos vamos atualizar
 
-      # 4. Atualiza a versão no arquivo da Unity SE uma nova versão foi determinada
-      - name: Update Unity Project Version
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
-        run: python scripts/set_unity_version.py ${{ steps.changelog.outputs.version }}
-
-      # 5. Instala o Git-cliff para um changelog mais bonito (opcional, mas recomendado)
-      - name: Setup Rust toolchain (for git-cliff)
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
-        uses: dtolnay/rust-toolchain@stable
-      - name: Install git-cliff
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
-        run: cargo install git-cliff --locked
-        
-      # 6. Gera o arquivo CHANGELOG.md
-      - name: Generate CHANGELOG.md
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
-        run: |
-          git-cliff --tag ${{ steps.changelog.outputs.version }} -o CHANGELOG.md
-          echo "CHANGELOG_BODY<<EOF" >> $GITHUB_ENV
-          echo "$(git-cliff --tag ${{ steps.changelog.outputs.version }} --strip all)" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-      
-      # 7. Faz o Build do Jogo com GameCI em job separado (Windows)
-      # Aqui apenas baixa o artefato gerado pelo job build-windows
-      - name: Download Windows Build Artifact
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
-        uses: actions/download-artifact@v4
-        with:
-          name: StandaloneWindows64-build
-          path: build/StandaloneWindows64
-
-      # 8. Commita os arquivos de versão e changelog de volta para o repositório
-      - name: Commit version and changelog files
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
-        run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "actions@github.com"
-          
-          # Adiciona e commita explicitamente os arquivos desejados
-          git add ProjectSettings/ProjectSettings.asset CHANGELOG.md
-          git commit -m "chore(release): version ${{ steps.changelog.outputs.version }} [skip ci]"
-          
-          # Guarda quaisquer outras alterações não rastreadas para limpar o diretório
-          git stash
-          
-          # Agora o pull --rebase deve funcionar em um diretório limpo
-          git pull --rebase origin main
-          git push origin main
-
-      # 9. Cria o Release no GitHub com o build e o changelog
+      # 4. Cria um Release simples com a nova versão (sem anexos)
       - name: Create GitHub Release
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.changelog.outputs.tag }}
           name: Release ${{ steps.changelog.outputs.version }}
-          body: ${{ env.CHANGELOG_BODY }}
-          files: |
-            build/StandaloneWindows64/* # Caminho para os seus arquivos de build
-
-  build-windows:
-    name: Build (Windows - dev/test)
-    # Roda em develop, main e manual
-    if: ${{ github.ref_name == 'develop' || github.ref_name == 'main' || github.event_name == 'workflow_dispatch' }}
-    runs-on: windows-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Cache Unity Library
-        uses: actions/cache@v3
-        with:
-          path: Library
-          key: Library-${{ runner.os }}-${{ hashFiles('**/Packages/manifest.json') }}
-          restore-keys: |
-            Library-${{ runner.os }}-
-
-      - name: Build Unity Project (Windows)
-        uses: game-ci/unity-builder@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          targetPlatform: StandaloneWindows64
-          versioning: None
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: StandaloneWindows64-build
-          path: build/StandaloneWindows64/
+          body: "Automated release created by CI"
+  
