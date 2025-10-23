@@ -1,3 +1,18 @@
+# [0.3.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.8...v0.3.0) (2025-10-23)
+
+
+### Bug Fixes
+
+* camera free on gameOverpanel ([3933ab8](https://github.com/Fredericodgv/FlipNflop/commit/3933ab80bef787ddc58f4951939ee664f4f63c6d))
+* Centraliza variável de espaçamento do Clock ([4c17a36](https://github.com/Fredericodgv/FlipNflop/commit/4c17a36211dd39d15bf6ce027a2acdacf1ba9139))
+
+
+### Features
+
+* add path verification method even when game over cases ([b092393](https://github.com/Fredericodgv/FlipNflop/commit/b09239371eedc90892f575d26b91b574ac5c3c89))
+
+
+
 ## [0.2.8](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.7...v0.2.8) (2025-10-23)
 
 
@@ -32,15 +47,6 @@
 ### Bug Fixes
 
 * teste do workflow ([e458bdc](https://github.com/Fredericodgv/FlipNflop/commit/e458bdc14591a1c61fa3697fb054644b4c238c90))
-
-
-
-## [0.2.4](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.3...v0.2.4) (2025-10-22)
-
-
-### Bug Fixes
-
-* teste ([d924de5](https://github.com/Fredericodgv/FlipNflop/commit/d924de5d19bdd7e6a5f2363f603caba1991e1893))
 
 
 
