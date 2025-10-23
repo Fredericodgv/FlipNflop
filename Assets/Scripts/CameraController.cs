@@ -80,4 +80,19 @@ public class CameraController : MonoBehaviour
     {
         currentMode = CameraMode.ManualControl;
     }
+
+    // Ativa o controle manual e ajusta o limite direito da câmera para um X específico (posição de morte do jogador, por exemplo).
+    public void EnableManualControlWithRightLimit(float rightLimitWorldX)
+    {
+        // Mantém o centro da câmera exatamente onde já estava (no momento da morte)
+        // e usa essa posição atual como limite direito de deslocamento.
+        float desiredCenter = transform.position.x;
+        maxX = Mathf.Max(minX, desiredCenter);
+        currentMode = CameraMode.ManualControl;
+
+        // Garante que a posição atual respeita os novos limites imediatamente
+        Vector3 pos = transform.position;
+        pos.x = Mathf.Clamp(pos.x, minX, maxX);
+        transform.position = pos;
+    }
 }

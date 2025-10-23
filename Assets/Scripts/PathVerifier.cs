@@ -32,8 +32,7 @@ public class PathVerifier : MonoBehaviour
     [Tooltip("A posição X onde a verificação começa.")]
     [SerializeField] private float startX = -5f;
 
-    [Tooltip("O intervalo em X para cada verificação (o 'pulso do clock').")]
-    [SerializeField] private float clockStepX = 5f;
+    // ClockStepX agora é centralizado no LevelManager.
 
     [Header("Gabarito das Quinas (Gerado Automaticamente)")]
     public List<Vector3> correctCorners;
@@ -95,6 +94,24 @@ public class PathVerifier : MonoBehaviour
         if (signalPath != null)
         {
             signalPath.FinalizePath(LevelManager.Instance.levelEndX);
+        }
+        else
+        {
+            Debug.LogError("Referência ao SignalPath não está definida no PathVerifier!");
+            return;
+        }
+        CheckPlayerPath();
+    }
+
+    /// <summary>
+    /// Finaliza e avalia o caminho até um X específico (ex.: posição de morte do jogador).
+    /// </summary>
+    /// <param name="endX">Coordenada X limite do traçado.</param>
+    public void FinalizeAndCheckPathUntil(float endX)
+    {
+        if (signalPath != null)
+        {
+            signalPath.FinalizePath(endX);
         }
         else
         {
@@ -274,7 +291,11 @@ public class PathVerifier : MonoBehaviour
         if (j_InputTilemap == null || k_InputTilemap == null || highSignalTile == null) { correctCorners = new List<Vector3>(); return; }
         correctCorners = new List<Vector3>();
         bool outputState = false;
-        for (float x = startX; x <= LevelManager.Instance.levelEndX; x += clockStepX)
+        float step = (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
+            ? LevelManager.Instance.clockStepX
+            : 5f; // fallback não-serializado
+        if (step <= 0f) step = 0.0001f;
+        for (float x = startX; x <= LevelManager.Instance.levelEndX; x += step)
         {
             float previousY = outputState ? highY : lowY;
             correctCorners.Add(new Vector3(x, previousY, 0));
