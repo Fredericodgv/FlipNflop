@@ -304,6 +304,16 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void PlayerDeath()
     {
+        // Entrega o controle para a câmera com limite direito fixado na posição de morte
+        if (cameraController != null)
+        {
+            cameraController.EnableManualControlWithRightLimit(transform.position.x);
+        }
+        else
+        {
+            Debug.LogError("Referência para o CameraController não definida no PlayerController!");
+        }
+
         if (gameOverUI != null) gameOverUI.SetActive(true);
         gameObject.SetActive(false);
     }
