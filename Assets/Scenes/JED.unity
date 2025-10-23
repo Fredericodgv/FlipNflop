@@ -327,13 +327,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72c3b02a79829e94dba7e7dfcc4d7dd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spacing: 5
   lineLength: 30
   lineWidth: 0.15
   dottedLineMaterial: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
   linesPerChunk: 10
   drawFullLevelGizmos: 1
-  levelStartX: 0
   fullLevelGizmoColor: {r: 0, g: 0.9, b: 1, a: 0.6}
   labelEveryN: 0
   autoAlignToPlayer: 0
@@ -511,7 +509,6 @@ MonoBehaviour:
   lowY: -2.5
   highY: 1.25
   startX: -10
-  clockStepX: 5
   correctCorners: []
   signalPath: {fileID: 810242248}
   successUI: {fileID: 2567244112535100235}
@@ -3567,6 +3564,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levelEndX: 80
+  levelStartX: -10
+  clockStepX: 5
   nextLevel: 
   menu: 
   levelAtual: 
