@@ -50,7 +50,6 @@ public class PlayerController : MonoBehaviour
     [Header("Object References")]
     [SerializeField] private Transform groundCheckPoint;
     [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private GameObject gameOverUI;
     [SerializeField] private PathVerifier pathVerifier;
     [SerializeField] private CameraController cameraController;
 
@@ -74,7 +73,6 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer spriteRenderer;
-    private AudioSource audioSource;
     private float horizontalInput;
     private bool isGrounded;
     private bool jumpInput;
@@ -96,7 +94,6 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        audioSource = GetComponent<AudioSource>();
     }
 
     /// <summary>
@@ -104,7 +101,6 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        if (gameOverUI != null) gameOverUI.SetActive(false);
         rb.gravityScale = Mathf.Abs(rb.gravityScale);
     }
 
@@ -436,7 +432,6 @@ public class PlayerController : MonoBehaviour
             Debug.LogError("Referência para o PathVerifier não definida no PlayerController!");
         }
 
-        if (gameOverUI != null) gameOverUI.SetActive(true);
         gameObject.SetActive(false);
     }
 
