@@ -103,6 +103,24 @@ public class PathVerifier : MonoBehaviour
         CheckPlayerPath();
     }
 
+    /// <summary>
+    /// Finaliza e avalia o caminho até um X específico (ex.: posição de morte do jogador).
+    /// </summary>
+    /// <param name="endX">Coordenada X limite do traçado.</param>
+    public void FinalizeAndCheckPathUntil(float endX)
+    {
+        if (signalPath != null)
+        {
+            signalPath.FinalizePath(endX);
+        }
+        else
+        {
+            Debug.LogError("Referência ao SignalPath não está definida no PathVerifier!");
+            return;
+        }
+        CheckPlayerPath();
+    }
+
     #endregion
 
     #region Path Verification Core
