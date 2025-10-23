@@ -9,8 +9,6 @@ public class LevelManager : MonoBehaviour
     [Header("Configurações da Fase")]
     [Tooltip("A posição X onde a fase termina.")]
     public float levelEndX = 25f; // Valor padrão unificado
-    [Tooltip("A posição X onde a fase começa (âncora das linhas de clock).")]
-    public float levelStartX = -10f;
     [Tooltip("Passo do clock em X (distância entre linhas de clock / amostragem).")]
     public float clockStepX = 5f; // Centralizado aqui para uso global
 
