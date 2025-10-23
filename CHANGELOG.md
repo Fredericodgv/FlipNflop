@@ -1,3 +1,12 @@
+## [0.2.8](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.7...v0.2.8) (2025-10-23)
+
+
+### Bug Fixes
+
+* fix screen flickering ([e08845a](https://github.com/Fredericodgv/FlipNflop/commit/e08845ae3b1cf71acfade42c316bf09db74dfd9f))
+
+
+
 ## [0.2.7](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.6...v0.2.7) (2025-10-23)
 
 
@@ -32,15 +41,6 @@
 ### Bug Fixes
 
 * teste ([d924de5](https://github.com/Fredericodgv/FlipNflop/commit/d924de5d19bdd7e6a5f2363f603caba1991e1893))
-
-
-
-## [0.2.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.2...v0.2.3) (2025-10-22)
-
-
-### Bug Fixes
-
-* teste ([a741800](https://github.com/Fredericodgv/FlipNflop/commit/a741800e33885b7de0c3f40fbd0b6aec7ddec8e9))
 
 
 
