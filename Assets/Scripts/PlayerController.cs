@@ -11,7 +11,11 @@ public class PlayerController : MonoBehaviour
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5.0f;
     [SerializeField] private float jumpForce = 12.0f;
+
+    [Header("Ground Check Settings")]
     [SerializeField] private float groundCheckRadius = 0.2f;
+    [SerializeField] private Transform groundCheckPoint;
+    [SerializeField] private LayerMask groundLayer;
 
     [Header("Animation Settings")]
     [Tooltip("Multiplier applied to the normalized speed to feed the runSpeed parameter.")]
@@ -41,10 +45,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashDuration = 0.15f;
     [Tooltip("Cooldown between dashes in seconds.")]
     [SerializeField] private float dashCooldown = 0.5f;
+    [Range(0f, 1f)]
+    [Tooltip("Inertia factor kept right after dash ends (0 = snap to input speed, 1 = keep full dash speed)")]
+    [SerializeField] private float postDashInertiaFactor = 0.5f;
 
     [Header("Object References")]
-    [SerializeField] private Transform groundCheckPoint;
-    [SerializeField] private LayerMask groundLayer;
     [SerializeField] private PathVerifier pathVerifier;
     [SerializeField] private CameraController cameraController;
 
@@ -79,9 +84,7 @@ public class PlayerController : MonoBehaviour
     private float preDashGravityScale = 1f;
     private RigidbodyConstraints2D preDashConstraints;
     private float dashLockY;
-    [Range(0f, 1f)]
-    [Tooltip("Inertia factor kept right after dash ends (0 = snap to input speed, 1 = keep full dash speed)")]
-    [SerializeField] private float postDashInertiaFactor = 0.5f;
+
 
     // Debug fields removed after stabilization
 
