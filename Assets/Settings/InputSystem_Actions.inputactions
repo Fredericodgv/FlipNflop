@@ -222,6 +222,28 @@
                 },
                 {
                     "name": "",
+                    "id": "af05e090-32da-4d66-881e-a97a0a9d8e5d",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Flip",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e2676382-b490-4c75-9020-a910d9f1e813",
+                    "path": "<Keyboard>/downArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Flip",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "8d83f3ee-f821-4357-8ce2-664e74bbb0b4",
                     "path": "<XRController>/{PrimaryTrigger}",
                     "interactions": "",
