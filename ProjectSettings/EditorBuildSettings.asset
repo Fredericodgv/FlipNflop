@@ -18,7 +18,7 @@ EditorBuildSettings:
     path: Assets/Scenes/MenuWEB.unity
     guid: af538843e9a93a44d9a7f2eb56bc2278
   - enabled: 1
-    path: Assets/Scenes/JED.unity
+    path: Assets/Scenes/Custom.unity
     guid: fc350e4426601cf45b1572ae6a4168d5
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
