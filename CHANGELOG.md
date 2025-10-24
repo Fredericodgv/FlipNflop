@@ -1,3 +1,12 @@
+## [0.3.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.3.1...v0.3.2) (2025-10-24)
+
+
+### Bug Fixes
+
+* Implements player's dash ([65594bc](https://github.com/Fredericodgv/FlipNflop/commit/65594bc6fe7300053a419b77952f9515641e5478))
+
+
+
 ## [0.3.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.3.0...v0.3.1) (2025-10-24)
 
 
@@ -40,15 +49,6 @@
 
 * teste de workflow ([3ecd447](https://github.com/Fredericodgv/FlipNflop/commit/3ecd4470db21c43179636c40c20acb4ee4ff494c))
 * teste de workflow ([2107bc1](https://github.com/Fredericodgv/FlipNflop/commit/2107bc1f6cb310f848b49e374acb738c2f56917a))
-
-
-
-## [0.2.6](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.5...v0.2.6) (2025-10-23)
-
-
-### Bug Fixes
-
-* ajusta a primeira fase do jogo ([16971ea](https://github.com/Fredericodgv/FlipNflop/commit/16971ea55216c51237f25dceb4f1b3eb2f82861c))
 
 
 
