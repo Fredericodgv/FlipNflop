@@ -1,3 +1,14 @@
+## [0.3.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.3.0...v0.3.1) (2025-10-24)
+
+
+### Bug Fixes
+
+* Ajusta as posições do mundo para 0 ao invés de -10 ([6e17c22](https://github.com/Fredericodgv/FlipNflop/commit/6e17c22a59ad080eea37127d008ac23b550d5938))
+* centralize end game screens ([3ac1577](https://github.com/Fredericodgv/FlipNflop/commit/3ac1577264a15e1536f1c9acef9cd6d813441967))
+* Implements sprint and dash features to the player ([9ba2e3e](https://github.com/Fredericodgv/FlipNflop/commit/9ba2e3ea243bde53c5fa09abb67d8d13e62b8ebd))
+
+
+
 # [0.3.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.8...v0.3.0) (2025-10-23)
 
 
@@ -38,15 +49,6 @@
 ### Bug Fixes
 
 * ajusta a primeira fase do jogo ([16971ea](https://github.com/Fredericodgv/FlipNflop/commit/16971ea55216c51237f25dceb4f1b3eb2f82861c))
-
-
-
-## [0.2.5](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.4...v0.2.5) (2025-10-22)
-
-
-### Bug Fixes
-
-* teste do workflow ([e458bdc](https://github.com/Fredericodgv/FlipNflop/commit/e458bdc14591a1c61fa3697fb054644b4c238c90))
 
 
 
