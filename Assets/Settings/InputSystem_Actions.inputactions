@@ -34,7 +34,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Dash?",
+                    "name": "Sprint",
                     "type": "Button",
                     "id": "1089d5e9-19fb-48b6-9eee-aa57b5486350",
                     "expectedControlType": "",
@@ -234,11 +234,22 @@
                 {
                     "name": "",
                     "id": "1fbabe74-1992-45b8-82ab-cc3bf18a0f82",
-                    "path": "",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Dash?",
+                    "action": "Sprint",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "acabc006-395c-43da-8e58-119ef4a465f8",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Sprint",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

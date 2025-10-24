@@ -18,31 +18,10 @@ public class ClockRenderer : MonoBehaviour
     public Color fullLevelGizmoColor = new Color(0f, 0.9f, 1f, 0.6f);
     [Tooltip("Desenha também um índice pequeno (gizmos) a cada N linhas (0 = não desenha). Apenas visual.")]
     public int labelEveryN = 0;
-    [Tooltip("Alinha automaticamente o início (levelStartX) ao spawn do player")] public bool autoAlignToPlayer = false;
-    [Tooltip("Transform do spawn do player (usado se autoAlignToPlayer=true)")] public Transform playerSpawn;
-    [Tooltip("Linhas extras à esquerda do início alinhado (apenas gizmo)")] public int extraLinesBeforeStart = 0;
 
     private Transform cameraTransform;
     private float lastCameraX;
     private const float DefaultStep = 5f; // fallback não-serializado
-
-    private float GetAnchor(LevelManager lmContext = null)
-    {
-        if (autoAlignToPlayer && playerSpawn != null)
-        {
-            return playerSpawn.position.x;
-        }
-        if (Application.isPlaying && LevelManager.Instance != null)
-        {
-            return LevelManager.Instance.levelStartX;
-        }
-        if (!Application.isPlaying && lmContext != null)
-        {
-            return lmContext.levelStartX;
-        }
-        // Fallback caso não haja LevelManager disponível
-        return -10f;
-    }
 
     private float GetStep(LevelManager lmContext = null)
     {
@@ -86,8 +65,8 @@ public class ClockRenderer : MonoBehaviour
         // Gera novas linhas ao redor da câmera
         float cameraX = cameraTransform.position.x;
         float step = GetStep();
-        float anchor = GetAnchor();
-        float startX = anchor + Mathf.Floor((cameraX - anchor) / step) * step - (linesPerChunk / 2f * step);
+        // Âncora fixa em 0: linhas alinhadas ao X=0 do mundo
+        float startX = Mathf.Floor(cameraX / step) * step - (linesPerChunk / 2f * step);
 
         for (int i = 0; i < linesPerChunk; i++)
         {
@@ -112,47 +91,18 @@ public class ClockRenderer : MonoBehaviour
     {
         if (!drawFullLevelGizmos) return;
 
-        // Obter levelEndX e levelStartX (âncora) do LevelManager (em edição ou play)
-        float levelEndX = 0f;
-        LevelManager lm = null;
-        if (Application.isPlaying && LevelManager.Instance != null)
-        {
-            lm = LevelManager.Instance;
-        }
-        else
-        {
-            lm = FindFirstObjectByType<LevelManager>();
-        }
-
-        if (lm == null)
-        {
-            // Sem LevelManager não dá para saber o fim; desenha nada.
-            return;
-        }
-        levelEndX = lm.levelEndX;
+        // Obter levelEndX do LevelManager (em edição ou play)
+        LevelManager lm = Application.isPlaying ? LevelManager.Instance : FindFirstObjectByType<LevelManager>();
+        if (lm == null) return;
+        float levelEndX = lm.levelEndX;
 
         float step = GetStep(lm);
         if (step <= 0f) return;
 
-        float anchor = GetAnchor(lm);
-        float minX = Mathf.Min(anchor, levelEndX);
-        float maxX = Mathf.Max(anchor, levelEndX);
-
-        // Ajuste opcional de alinhamento ao player
-        // Já é contemplado em GetAnchor() por usar playerSpawn quando configurado
-
-        float firstX;
-        if (autoAlignToPlayer && playerSpawn != null)
-        {
-            // Alinha com base no spawn e adiciona linhas extras antes
-            float aligned = anchor; // quando autoAlign, anchor = playerSpawn.x
-            firstX = aligned - extraLinesBeforeStart * step;
-        }
-        else
-        {
-            // Primeira linha ancorada em 'anchor' e >= minX
-            firstX = anchor + Mathf.Ceil((minX - anchor) / step) * step;
-        }
+        // Âncora fixa em 0 para gizmos
+        float minX = Mathf.Min(0f, levelEndX);
+        float maxX = Mathf.Max(0f, levelEndX);
+        float firstX = Mathf.Ceil(minX / step) * step;
         int count = Mathf.FloorToInt((maxX - firstX) / step) + 1;
         if (count < 0) return;
 
@@ -165,11 +115,14 @@ public class ClockRenderer : MonoBehaviour
             Gizmos.DrawLine(p0, p1);
 
 #if UNITY_EDITOR
-            if (labelEveryN > 0 && (i % labelEveryN == 0))
+            if (labelEveryN > 0)
             {
-                // Desenha um pequeno rótulo (Editor somente)
-                UnityEditor.Handles.color = fullLevelGizmoColor;
-                UnityEditor.Handles.Label(p1 + Vector3.up * 0.2f, i.ToString());
+                int idxFromWorldZero = Mathf.RoundToInt(xPos / step);
+                if (idxFromWorldZero % labelEveryN == 0)
+                {
+                    UnityEditor.Handles.color = fullLevelGizmoColor;
+                    UnityEditor.Handles.Label(p1 + Vector3.up * 0.2f, idxFromWorldZero.ToString());
+                }
             }
 #endif
         }

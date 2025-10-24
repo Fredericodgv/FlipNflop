@@ -37,10 +37,19 @@ public class PlayerController : MonoBehaviour
     [Header("Gameplay Settings")]
     [SerializeField] private float fallKillThreshold = -25f;
 
+    [Header("Run / Dash Settings")]
+    [Tooltip("Speed multiplier applied while holding the Run action.")]
+    [SerializeField] private float runSpeedMultiplier = 1.5f;
+    [Tooltip("Horizontal dash speed applied during a dash.")]
+    [SerializeField] private float dashSpeed = 18f;
+    [Tooltip("Dash duration in seconds.")]
+    [SerializeField] private float dashDuration = 0.15f;
+    [Tooltip("Cooldown between dashes in seconds.")]
+    [SerializeField] private float dashCooldown = 0.5f;
+
     [Header("Object References")]
     [SerializeField] private Transform groundCheckPoint;
     [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private GameObject gameOverUI;
     [SerializeField] private PathVerifier pathVerifier;
     [SerializeField] private CameraController cameraController;
 
@@ -51,6 +60,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionReference jumpAction;
     [Tooltip("Reference to the Flip Gravity action (Button).")]
     [SerializeField] private InputActionReference flipGravityAction;
+    [Tooltip("Reference to the Run action (Button).")]
+    [SerializeField] private InputActionReference runAction;
+    [Tooltip("Reference to the Dash action (Button).")]
+    [SerializeField] private InputActionReference dashAction;
 
     /// <summary>
     /// Indicates whether gravity is inverted (gravityScale &lt; 0).
@@ -60,11 +73,17 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer spriteRenderer;
-    private AudioSource audioSource;
     private float horizontalInput;
     private bool isGrounded;
     private bool jumpInput;
     private bool gravityFlipInput;
+    private bool isRunActive;
+    private bool runHeld;
+    private bool isDashing;
+    private float dashEndTime;
+    private float nextDashTime;
+    private float dashDir = 1f;
+    private float lastMoveSign = 1f;
 
 
     /// <summary>
@@ -75,7 +94,6 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        audioSource = GetComponent<AudioSource>();
     }
 
     /// <summary>
@@ -83,7 +101,6 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        if (gameOverUI != null) gameOverUI.SetActive(false);
         rb.gravityScale = Mathf.Abs(rb.gravityScale);
     }
 
@@ -105,6 +122,7 @@ public class PlayerController : MonoBehaviour
         HandleMovement();
         HandleJump();
         HandleGravityFlip();
+        HandleDash();
     }
 
     #region Input & State Checks
@@ -132,6 +150,19 @@ public class PlayerController : MonoBehaviour
             flipGravityAction.action.performed += OnFlipGravityPerformed;
             flipGravityAction.action.Enable();
         }
+
+        if (runAction != null && runAction.action != null)
+        {
+            runAction.action.performed += OnRunPerformed;
+            runAction.action.canceled += OnRunCanceled;
+            runAction.action.Enable();
+        }
+
+        if (dashAction != null && dashAction.action != null)
+        {
+            dashAction.action.performed += OnDashPerformed;
+            dashAction.action.Enable();
+        }
     }
 
     /// <summary>
@@ -156,6 +187,19 @@ public class PlayerController : MonoBehaviour
         {
             flipGravityAction.action.performed -= OnFlipGravityPerformed;
             flipGravityAction.action.Disable();
+        }
+
+        if (runAction != null && runAction.action != null)
+        {
+            runAction.action.performed -= OnRunPerformed;
+            runAction.action.canceled -= OnRunCanceled;
+            runAction.action.Disable();
+        }
+
+        if (dashAction != null && dashAction.action != null)
+        {
+            dashAction.action.performed -= OnDashPerformed;
+            dashAction.action.Disable();
         }
     }
 
@@ -193,6 +237,28 @@ public class PlayerController : MonoBehaviour
     private void OnFlipGravityPerformed(InputAction.CallbackContext ctx)
     {
         gravityFlipInput = true;
+    }
+
+    private void OnRunPerformed(InputAction.CallbackContext ctx)
+    {
+        runHeld = true;
+        // Only allow run to start while grounded
+        if (isGrounded)
+        {
+            isRunActive = true;
+        }
+    }
+
+    private void OnRunCanceled(InputAction.CallbackContext ctx)
+    {
+        runHeld = false;
+        // Always stop running immediately on release (even in air)
+        isRunActive = false;
+    }
+
+    private void OnDashPerformed(InputAction.CallbackContext ctx)
+    {
+        TryStartDash();
     }
 
     /// <summary>
@@ -246,11 +312,32 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void HandleMovement()
     {
-        float targetX = horizontalInput * moveSpeed;
+        // Track last move direction when there's input
+        if (Mathf.Abs(horizontalInput) > 0.01f)
+            lastMoveSign = Mathf.Sign(horizontalInput);
+
+        // If dashing, override horizontal velocity
+        if (isDashing)
+        {
+            rb.linearVelocity = new Vector2(dashDir * dashSpeed, rb.linearVelocity.y);
+            Flip();
+            return;
+        }
+
         float currentX = rb.linearVelocity.x;
         bool hasInput = Mathf.Abs(horizontalInput) > 0.01f;
         float accel = hasInput ? acceleration : deceleration;
         if (!isGrounded) accel *= airControlMultiplier;
+
+        // Only allow enabling run while grounded; in air, keep previous state
+        if (isGrounded)
+        {
+            isRunActive = runHeld;
+        }
+
+        float effectiveSpeed = moveSpeed * (isRunActive ? runSpeedMultiplier : 1f);
+        float targetX = horizontalInput * effectiveSpeed;
+
         float newX = Mathf.MoveTowards(currentX, targetX, accel * Time.fixedDeltaTime);
         rb.linearVelocity = new Vector2(newX, rb.linearVelocity.y);
         Flip();
@@ -295,6 +382,27 @@ public class PlayerController : MonoBehaviour
         gravityFlipInput = false;
     }
 
+    private void TryStartDash()
+    {
+        if (Time.time < nextDashTime) return;
+
+        float inputSign = Mathf.Abs(horizontalInput) > 0.01f ? Mathf.Sign(horizontalInput) : lastMoveSign;
+        dashDir = Mathf.Sign(inputSign);
+
+        isDashing = true;
+        dashEndTime = Time.time + dashDuration;
+        nextDashTime = Time.time + dashCooldown;
+    }
+
+    private void HandleDash()
+    {
+        if (!isDashing) return;
+        if (Time.time >= dashEndTime)
+        {
+            isDashing = false;
+        }
+    }
+
     #endregion
 
     #region Collision & Death
@@ -324,7 +432,6 @@ public class PlayerController : MonoBehaviour
             Debug.LogError("Referência para o PathVerifier não definida no PlayerController!");
         }
 
-        if (gameOverUI != null) gameOverUI.SetActive(true);
         gameObject.SetActive(false);
     }
 

@@ -1,0 +1,67 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://JEDCIRCUITOS/Assets/Schema/level_configuration.schema.json",
+    "title": "Esquema de Nível de Jogo",
+    "description": "Define a estrutura de um arquivo JSON de configuração de nível.",
+    "type": "object",
+    "properties": {
+        "levelName": {
+            "type": "string",
+            "description": "O nome descritivo do nível (formato: 'Level N').",
+            "pattern": "^Level [0-9]+$"
+        },
+        "j_signal": {
+            "type": "string",
+            "description": "Sinais de controle para o J (sequência de 1s e 0s).",
+            "pattern": "^[01]{50}$",
+            "minLength": 50,
+            "maxLength": 50
+        },
+        "k_signal": {
+            "type": "string",
+            "description": "Sinais de controle para o K (sequência de 1s e 0s).",
+            "pattern": "^[01]{50}$",
+            "minLength": 50,
+            "maxLength": 50
+        },
+        "obstacleGeneration": {
+            "type": "array",
+            "description": "Lista de configurações para geração de diferentes obstáculos.",
+            "minItems": 10,
+            "maxItems": 20,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "obstacleName": {
+                        "type": "string",
+                        "description": "Nome/ID do obstáculo a ser gerado.",
+                        "enum": [
+                            "Rock",
+                            "Button",
+                            "Wall",
+                            "SpikeTrap",
+                            "MovingPlatform"
+                        ]
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "description": "A quantidade é forçada a ser 1, pois cada item representa um único obstáculo.",
+                        "const": 1
+                    }
+                },
+                "required": [
+                    "obstacleName",
+                    "quantity"
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": [
+        "levelName",
+        "j_signal",
+        "k_signal",
+        "obstacleGeneration"
+    ],
+    "additionalProperties": false
+}

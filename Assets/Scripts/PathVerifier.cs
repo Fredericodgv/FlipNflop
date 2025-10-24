@@ -29,8 +29,7 @@ public class PathVerifier : MonoBehaviour
     [SerializeField] private float lowY = -2.5f;
     [Tooltip("A posição Y para o nível lógico ALTO (1) da saída.")]
     [SerializeField] private float highY = 1.25f;
-    [Tooltip("A posição X onde a verificação começa.")]
-    [SerializeField] private float startX = -5f;
+    // A verificação agora sempre inicia em X = 0
 
     // ClockStepX agora é centralizado no LevelManager.
 
@@ -295,7 +294,7 @@ public class PathVerifier : MonoBehaviour
             ? LevelManager.Instance.clockStepX
             : 5f; // fallback não-serializado
         if (step <= 0f) step = 0.0001f;
-        for (float x = startX; x <= LevelManager.Instance.levelEndX; x += step)
+        for (float x = 0f; x <= LevelManager.Instance.levelEndX; x += step)
         {
             float previousY = outputState ? highY : lowY;
             correctCorners.Add(new Vector3(x, previousY, 0));
