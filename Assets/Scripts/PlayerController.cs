@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -62,13 +59,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionReference dashAction;
 
     /// <summary>
-    /// Indicates whether gravity is inverted (gravityScale &lt; 0).
+    /// Logical gravity inversion state (independent from temporary physics tweaks like gravityScale = 0 during dash).
     /// </summary>
-    public bool IsGravityInverted => rb.gravityScale < 0;
+    public bool IsGravityInverted => isGravityInvertedState;
 
     private Rigidbody2D rb;
     private Animator animator;
     private SpriteRenderer spriteRenderer;
+    private bool isGravityInvertedState;
     private float horizontalInput;
     private bool isGrounded;
     private bool jumpInput;
@@ -77,7 +75,15 @@ public class PlayerController : MonoBehaviour
     private float dashEndTime;
     private float nextDashTime;
     private float dashDir = 1f;
-    private float lastMoveSign = 1f;
+    // Dash physics preservation (Hollow Knight-style height lock)
+    private float preDashGravityScale = 1f;
+    private RigidbodyConstraints2D preDashConstraints;
+    private float dashLockY;
+    [Range(0f, 1f)]
+    [Tooltip("Inertia factor kept right after dash ends (0 = snap to input speed, 1 = keep full dash speed)")]
+    [SerializeField] private float postDashInertiaFactor = 0.5f;
+
+    // Debug fields removed after stabilization
 
 
     /// <summary>
@@ -96,6 +102,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         rb.gravityScale = Mathf.Abs(rb.gravityScale);
+        isGravityInvertedState = rb.gravityScale < 0f ? true : false;
     }
 
     /// <summary>
@@ -118,6 +125,8 @@ public class PlayerController : MonoBehaviour
         HandleGravityFlip();
         HandleDash();
     }
+
+    // Debug log method removed (kept locally during development)
 
     #region Input & State Checks
 
@@ -275,14 +284,13 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void HandleMovement()
     {
-        // Track last move direction when there's input
-        if (Mathf.Abs(horizontalInput) > 0.01f)
-            lastMoveSign = Mathf.Sign(horizontalInput);
-
         // If dashing, override horizontal velocity
         if (isDashing)
         {
-            rb.linearVelocity = new Vector2(dashDir * dashSpeed, rb.linearVelocity.y);
+            // Maintain constant height and fixed horizontal speed during dash
+            rb.linearVelocity = new Vector2(dashDir * dashSpeed, 0f);
+            // Force exact Y lock to avoid micro drift with some physics setups
+            rb.position = new Vector2(rb.position.x, dashLockY);
             Flip();
             return;
         }
@@ -304,6 +312,14 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void Flip()
     {
+        // During dash, face dash direction using the same gravity-aware rule used in normal movement
+        if (isDashing)
+        {
+            // Compute facing left for dash without introducing a new local conflicting name
+            spriteRenderer.flipX = (dashDir < 0f) ^ IsGravityInverted;
+            return;
+        }
+
         if (Mathf.Abs(horizontalInput) < 0.1f) return;
         bool wantsToGoLeft = horizontalInput < 0;
         spriteRenderer.flipX = wantsToGoLeft ^ IsGravityInverted;
@@ -316,7 +332,7 @@ public class PlayerController : MonoBehaviour
     {
         if (jumpInput && isGrounded)
         {
-            float jumpDirection = Mathf.Sign(rb.gravityScale);
+            float jumpDirection = IsGravityInverted ? -1f : 1f;
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce * jumpDirection);
             animator.SetTrigger("jump");
         }
@@ -333,29 +349,66 @@ public class PlayerController : MonoBehaviour
             rb.gravityScale *= -1;
             transform.Rotate(0f, 0f, 180f);
             spriteRenderer.flipX = !spriteRenderer.flipX;
+            isGravityInvertedState = !isGravityInvertedState;
             animator.SetTrigger("jump");
         }
         gravityFlipInput = false;
     }
 
+    /// <summary>
+    /// Starts a dash if off cooldown: chooses direction, locks height, and applies horizontal speed.
+    /// </summary>
     private void TryStartDash()
     {
         if (Time.time < nextDashTime) return;
 
-        float inputSign = Mathf.Abs(horizontalInput) > 0.01f ? Mathf.Sign(horizontalInput) : lastMoveSign;
-        dashDir = Mathf.Sign(inputSign);
+        // Choose dash direction robustly: prefer live input, then current velocity, then current facing
+        if (Mathf.Abs(horizontalInput) > 0.01f)
+        {
+            dashDir = Mathf.Sign(horizontalInput);
+        }
+        else if (Mathf.Abs(rb.linearVelocity.x) > 0.05f)
+        {
+            dashDir = Mathf.Sign(rb.linearVelocity.x);
+        }
+        else
+        {
+            // Fallback: derive intended left/right from current facing, compensating for gravity inversion
+            bool facingLeft = spriteRenderer.flipX ^ IsGravityInverted;
+            dashDir = facingLeft ? -1f : 1f;
+        }
+
+        // Lock height during dash
+        dashLockY = rb.position.y;
+        preDashGravityScale = rb.gravityScale;
+        preDashConstraints = rb.constraints;
+        rb.gravityScale = 0f;
+        rb.constraints = preDashConstraints | RigidbodyConstraints2D.FreezePositionY;
+        rb.linearVelocity = new Vector2(dashDir * dashSpeed, 0f);
 
         isDashing = true;
         dashEndTime = Time.time + dashDuration;
         nextDashTime = Time.time + dashCooldown;
     }
 
+    /// <summary>
+    /// Updates/ends the dash and restores physics when its duration elapses.
+    /// </summary>
     private void HandleDash()
     {
         if (!isDashing) return;
         if (Time.time >= dashEndTime)
         {
             isDashing = false;
+            // Restore physics
+            rb.gravityScale = preDashGravityScale;
+            rb.constraints = preDashConstraints;
+
+            // Reduce inertia so consecutive dashes don't keep excessive speed
+            float currentX = rb.linearVelocity.x;
+            float targetX = horizontalInput * moveSpeed;
+            float newX = Mathf.Lerp(currentX, targetX, 1f - Mathf.Clamp01(postDashInertiaFactor));
+            rb.linearVelocity = new Vector2(newX, rb.linearVelocity.y);
         }
     }
 
