@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 /// <summary>
-/// Loads level configuration from JSON (signals, floor/ceiling, length and step),
-/// applies LevelManager settings, and renders input diagrams and terrain bands.
+/// Loads level configuration from JSON (signals, floor/ceiling by tiles, total tiles and clock tiles),
+/// applies LevelManager settings, renders input diagrams and terrain bands, and spawns obstacles (prefabs).
 /// </summary>
 public class LevelJsonLoader : MonoBehaviour
 {
@@ -18,7 +18,7 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField] private Tilemap ceilingTilemap;
 
     [Header("Level JSON")]
-    [Tooltip(".json contendo j/k signals, chao, teto, levelEndX e clockStepX")]
+    [Tooltip(".json contendo jSignalTiles, kSignalTiles, floorTiles, ceilingTiles, levelTiles e clockTiles")]
     [SerializeField] private TextAsset levelFile;
 
     [Header("Tiles - Diagrams")]
@@ -40,20 +40,48 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField] private int floorYRow = 0;
     [SerializeField] private int ceilingYRow = 12;
 
+    [Header("Obstacles")]
+    [Tooltip("If true, obstacle startTileY is relative to floorYRow; otherwise it's absolute tile Y.")]
+    [SerializeField] private bool obstacleYRelativeToFloor = true;
+    [Tooltip("Parent transform for spawned obstacles (optional)")]
+    [SerializeField] private Transform obstaclesParent;
+    [Tooltip("Map JSON obstacle 'type' to prefab to spawn")]
+    [SerializeField] private List<ObstaclePrefabEntry> obstaclePrefabs = new List<ObstaclePrefabEntry>();
+
     /// <summary>
     /// JSON data model for level configuration.
     /// </summary>
     [Serializable]
     private class LevelData
     {
-        public string j_signal;
-        public string J_signal;
-        public string k_signal;
-        public string K_signal;
-        public string chao;
-        public string teto;
-        public float levelEndX;
-        public float clockStepX;
+        public string levelName;
+        public int levelTiles;
+        public int clockTiles;
+        public string jSignalTiles;
+        public string kSignalTiles;
+        public string floorTiles;
+        public string ceilingTiles;
+        public List<ObstacleData> obstacles;
+    }
+
+    [Serializable]
+    private class ObstacleData
+    {
+        public string type;
+        public int startTileX;
+        public int startTileY;
+        public float speed;
+        public int horizontalDistance;
+        public int verticalDistance;
+        public string starterCorner;
+        public bool clockwise;
+    }
+
+    [Serializable]
+    private class ObstaclePrefabEntry
+    {
+        public string type;
+        public GameObject prefab;
     }
 
     /// <summary>
@@ -67,10 +95,10 @@ public class LevelJsonLoader : MonoBehaviour
 
         ApplyLevelConfig(data);
 
-        var jSignal = ParseInputString(FirstNonEmpty(data.J_signal, data.j_signal));
-        var kSignal = ParseInputString(FirstNonEmpty(data.K_signal, data.k_signal));
-        var floorBand = ParseInputString(data.chao);
-        var ceilingBand = ParseInputString(data.teto);
+        var jSignal = ParseInputString(data.jSignalTiles);
+        var kSignal = ParseInputString(data.kSignalTiles);
+        var floorBand = ParseInputString(data.floorTiles);
+        var ceilingBand = ParseInputString(data.ceilingTiles);
 
         ClearAllTilemaps();
         GenerateDiagram(jInputTilemap, jSignal, j_YRow);
@@ -79,6 +107,11 @@ public class LevelJsonLoader : MonoBehaviour
         GenerateBand(ceilingTilemap, ceilingBand, ceilingYRow, ceilingTile, flipCeilingY);
 
         CompleteStaticScenery();
+
+        if (data.obstacles != null && data.obstacles.Count > 0)
+        {
+            SpawnObstacles(data.obstacles);
+        }
     }
 
     /// <summary>
@@ -103,14 +136,14 @@ public class LevelJsonLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// Applies levelEndX and clockStepX to LevelManager if available.
+    /// Applies levelTiles and clockTiles to LevelManager (as levelEndX and clockStepX) if available.
     /// </summary>
     private void ApplyLevelConfig(LevelData data)
     {
         if (LevelManager.Instance != null)
         {
-            if (data.clockStepX > 0f) LevelManager.Instance.clockStepX = data.clockStepX;
-            if (data.levelEndX > 0f) LevelManager.Instance.levelEndX = data.levelEndX;
+            if (data.clockTiles > 0) LevelManager.Instance.clockStepX = data.clockTiles;
+            if (data.levelTiles > 0) LevelManager.Instance.levelEndX = data.levelTiles;
         }
     }
 
@@ -185,6 +218,18 @@ public class LevelJsonLoader : MonoBehaviour
             int xFloor = startX - 1;
             floorTilemap.SetTile(new Vector3Int(xFloor, floorYRow, 0), floorTile);
         }
+
+        if (ceilingTilemap != null && ceilingTile != null)
+        {
+            int xCeil = startX - 1;
+            var pos = new Vector3Int(xCeil, ceilingYRow, 0);
+            ceilingTilemap.SetTile(pos, ceilingTile);
+            if (flipCeilingY)
+            {
+                ceilingTilemap.SetTileFlags(pos, TileFlags.None);
+                ceilingTilemap.SetTransformMatrix(pos, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
+            }
+        }
     }
 
     /// <summary>
@@ -249,5 +294,65 @@ public class LevelJsonLoader : MonoBehaviour
         if (!string.IsNullOrEmpty(a)) return a;
         if (!string.IsNullOrEmpty(b)) return b;
         return null;
+    }
+
+    /// <summary>
+    /// Spawns obstacle prefabs based on JSON data at cell-aligned positions.
+    /// </summary>
+    private void SpawnObstacles(List<ObstacleData> obstacles)
+    {
+        foreach (var o in obstacles)
+        {
+            var prefab = ResolveObstaclePrefab(o.type);
+            if (prefab == null)
+            {
+                Debug.LogWarning($"LevelJsonLoader: Nenhum prefab mapeado para obstacle type='{o.type}'.");
+                continue;
+            }
+
+            int cellX = startX + o.startTileX;
+            int cellY = obstacleYRelativeToFloor ? (floorYRow + o.startTileY) : o.startTileY;
+            var cell = new Vector3Int(cellX, cellY, 0);
+            var worldPos = floorTilemap.GetCellCenterWorld(cell);
+
+            var go = Instantiate(prefab, worldPos, Quaternion.identity, obstaclesParent);
+            AttachObstacleConfig(go, o);
+        }
+    }
+
+    /// <summary>
+    /// Resolves a prefab by obstacle type string.
+    /// </summary>
+    private GameObject ResolveObstaclePrefab(string type)
+    {
+        if (string.IsNullOrEmpty(type)) return null;
+        for (int i = 0; i < obstaclePrefabs.Count; i++)
+        {
+            if (obstaclePrefabs[i] != null && obstaclePrefabs[i].prefab != null && obstaclePrefabs[i].type == type)
+                return obstaclePrefabs[i].prefab;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Attaches a simple config component with JSON-provided parameters for the obstacle controller to consume.
+    /// </summary>
+    private void AttachObstacleConfig(GameObject go, ObstacleData o)
+    {
+        var cfg = go.AddComponent<ObstacleConfigData>();
+        var cellSize = floorTilemap != null && floorTilemap.layoutGrid != null
+            ? floorTilemap.layoutGrid.cellSize
+            : Vector3.one;
+
+        cfg.speedTilesPerSec = o.speed;
+        cfg.horizontalTiles = o.horizontalDistance;
+        cfg.verticalTiles = o.verticalDistance;
+
+        cfg.speedUnitsPerSec = o.speed * Mathf.Abs(cellSize.x);
+        cfg.horizontalUnits = o.horizontalDistance * Mathf.Abs(cellSize.x);
+        cfg.verticalUnits = o.verticalDistance * Mathf.Abs(cellSize.y);
+
+        cfg.starterCorner = o.starterCorner;
+        cfg.clockwise = o.clockwise;
     }
 }

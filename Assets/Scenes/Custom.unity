@@ -449,6 +449,37 @@ MonoBehaviour:
   failureColor: {r: 1, g: 0, b: 0, a: 1}
   linePrefab: {fileID: 3090148692481908950, guid: f6794afdb432aaa46b21434cb386774a, type: 3}
   feedbackLinesParent: {fileID: 581705960}
+--- !u!1 &278653048
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 278653049}
+  m_Layer: 0
+  m_Name: Enemies
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &278653049
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 278653048}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 20.98492, y: 1.47784, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &347850098
 GameObject:
   m_ObjectHideFlags: 0
@@ -1819,7 +1850,7 @@ Transform:
   m_GameObject: {fileID: 598443474}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0, z: 0}
+  m_LocalPosition: {x: -0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3417,11 +3448,17 @@ MonoBehaviour:
   floorTile: {fileID: 11400000, guid: e4d188e05d975c8b0a3760775a7beb30, type: 2}
   ceilingTile: {fileID: 11400000, guid: 623b77e9e1d1a30a58d955afe4ce44b8, type: 2}
   flipCeilingY: 1
+  wallTile: {fileID: 11400000, guid: 3352361ed783d638e98428dd037de778, type: 2}
   startX: 0
   j_YRow: 8
   k_YRow: 5
   floorYRow: -4
   ceilingYRow: 2
+  obstacleYRelativeToFloor: 1
+  obstaclesParent: {fileID: 278653049}
+  obstaclePrefabs:
+  - type: mace
+    prefab: {fileID: 8158824412335418091, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
 --- !u!1 &1039474733
 GameObject:
   m_ObjectHideFlags: 0
@@ -3915,7 +3952,7 @@ Transform:
   m_GameObject: {fileID: 1489212619}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0, z: 0}
+  m_LocalPosition: {x: -0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7491,3 +7528,4 @@ SceneRoots:
   - {fileID: 1896920979}
   - {fileID: 938301395}
   - {fileID: 2049129475}
+  - {fileID: 278653049}

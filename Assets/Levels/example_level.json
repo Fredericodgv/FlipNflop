@@ -1,8 +1,31 @@
 {
-    "levelEndX": 20,
-    "clockStepX": 5,
-    "j_signal": "001101110011011100111",
-    "k_signal": "010101010101010101010",
-    "chao": "111111111111111100000",
-    "teto": "111111000011111111111"
+    "levelName": "example_level",
+    "levelTiles": 40,
+    "clockTiles": 5,
+    "jSignalTiles": "001111110011001100111001111110011111100111",
+    "kSignalTiles": "011111110001111100011000111111111111101010",
+    "floorTiles": "11111111111111110000011111111111111111111",
+    "ceilingTiles": "111111000011111111111111111000011111111111",
+    "obstacles": [
+        {
+            "type": "mace",
+            "startTileX": 10,
+            "startTileY": 1,
+            "speed": 2,
+            "horizontalDistance": 3,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startTileX": 25,
+            "startTileY": 3,
+            "speed": 3,
+            "horizontalDistance": 5,
+            "verticalDistance": 0,
+            "starterCorner": "top-left",
+            "clockwise": true
+        }
+    ]
 }

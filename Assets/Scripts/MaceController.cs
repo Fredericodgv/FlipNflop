@@ -34,8 +34,15 @@ public class MaceController : MonoBehaviour
     private Direction[] dirCycle;
     private int dirIndex;
 
+    private void Awake()
+    {
+        TryApplyConfig();
+    }
+
     void Start()
     {
+        // Reaplica configuração vinda do JSON após a instância ter recebido ObstacleConfigData
+        TryApplyConfig();
         startPos = transform.position; // startPos é um CANTO do retângulo
         // Define a sequência de direções conforme o sentido e o canto inicial
         Direction startDir = GetStartDirection(startCorner, turning);
@@ -92,6 +99,42 @@ public class MaceController : MonoBehaviour
                 continue;
             }
             break;
+        }
+    }
+
+    private void TryApplyConfig()
+    {
+        var cfg = GetComponent<ObstacleConfigData>();
+        if (cfg == null) return;
+
+        // Always apply values from config; zero is a valid value and should not be ignored
+        speed = cfg.speedUnitsPerSec != 0f || cfg.speedTilesPerSec == 0f ? cfg.speedUnitsPerSec : cfg.speedTilesPerSec;
+        horizontalDistance = cfg.horizontalUnits != 0f || cfg.horizontalTiles == 0 ? cfg.horizontalUnits : cfg.horizontalTiles;
+        verticalDistance = cfg.verticalUnits != 0f || cfg.verticalTiles == 0 ? cfg.verticalUnits : cfg.verticalTiles;
+
+        startCorner = ParseCorner(cfg.starterCorner, startCorner);
+        turning = cfg.clockwise ? TurningDirection.Clockwise : TurningDirection.CounterClockwise;
+    }
+
+    private Corner ParseCorner(string value, Corner fallback)
+    {
+        if (string.IsNullOrEmpty(value)) return fallback;
+        string v = value.Trim().ToLowerInvariant();
+        switch (v)
+        {
+            case "bottom-left":
+            case "bottom_left":
+            case "bl": return Corner.BottomLeft;
+            case "bottom-right":
+            case "bottom_right":
+            case "br": return Corner.BottomRight;
+            case "top-right":
+            case "top_right":
+            case "tr": return Corner.TopRight;
+            case "top-left":
+            case "top_left":
+            case "tl": return Corner.TopLeft;
+            default: return fallback;
         }
     }
 
