@@ -2,43 +2,17 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
-using System.Linq;
-using System.Text;
+// (removed) using System.Text; - not needed in this file
 
 public class PathVerifier : MonoBehaviour
 {
     #region Fields
-
-    [Header("Referências de Entrada")]
-    [Tooltip("O Tilemap que representa a entrada J.")]
-    [SerializeField] private Tilemap j_InputTilemap;
-    [Tooltip("A coordenada Y no mundo onde a linha de entrada J será verificada.")]
-    [SerializeField] private float j_InputCheckY = 8.5f;
-
-    [Tooltip("O Tilemap que representa a entrada K.")]
-    [SerializeField] private Tilemap k_InputTilemap;
-    [Tooltip("A coordenada Y no mundo onde a linha de entrada K será verificada.")]
-    [SerializeField] private float k_InputCheckY = 5.5f;
-
-    [Header("High Signal Tiles (J/K)")]
-    [Tooltip("Tile used for steady HIGH (1).")]
-    [SerializeField] private TileBase highSignal_Standard;
-    [Tooltip("Tile used for the '1' side of a rising edge.")]
-    [SerializeField] private TileBase highSignal_Rising;
-    [Tooltip("Tile used for the '1' side of a falling edge.")]
-    [SerializeField] private TileBase highSignal_Falling;
-    [Tooltip("Tile used for an isolated short HIGH pulse (rising then falling).")]
-    [SerializeField] private TileBase highSignal_RisingFalling;
 
     [Header("Configuração da Saída")]
     [Tooltip("A posição Y para o nível lógico BAIXO (0) da saída.")]
     [SerializeField] private float lowY = -2.5f;
     [Tooltip("A posição Y para o nível lógico ALTO (1) da saída.")]
     [SerializeField] private float highY = 1.25f;
-    // A verificação agora sempre inicia em X = 0
-
-    // ClockStepX agora é centralizado no LevelManager.
 
     [Header("Gabarito das Quinas (Gerado Automaticamente)")]
     public List<Vector3> correctCorners;
@@ -65,17 +39,26 @@ public class PathVerifier : MonoBehaviour
 
     #region Unity Methods
 
+    /// <summary>
+    /// Called when the script instance is being loaded. Triggers generation of the reference path (gabarito).
+    /// </summary>
     private void Awake()
     {
         GenerateCorrectPath();
     }
 
+    /// <summary>
+    /// Unity Start: hides success/failure UI elements initially.
+    /// </summary>
     private void Start()
     {
         if (successUI != null) successUI.SetActive(false);
         if (failureUI != null) failureUI.SetActive(false);
     }
 
+    /// <summary>
+    /// Draws gizmos in the editor to visualize the generated reference corners and connecting segments.
+    /// </summary>
     private void OnDrawGizmos()
     {
         if (correctCorners == null || correctCorners.Count < 2) return;
@@ -95,6 +78,9 @@ public class PathVerifier : MonoBehaviour
 
     #region Public Methods
 
+    /// <summary>
+    /// Finalizes the player's drawn path up to the level end X and runs the verification routine.
+    /// </summary>
     public void FinalizeAndCheckPath()
     {
         if (signalPath != null)
@@ -131,6 +117,9 @@ public class PathVerifier : MonoBehaviour
 
     #region Path Verification Core
 
+    /// <summary>
+    /// Internal: evaluates the player's finalized path, draws feedback and toggles success/failure UI.
+    /// </summary>
     private void CheckPlayerPath()
     {
         if (signalPath == null || signalPath.PathPoints.Count < 2)
@@ -144,7 +133,6 @@ public class PathVerifier : MonoBehaviour
 
         DrawFeedbackLines(signalPath.PathPoints);
 
-        // A checagem de sucesso geral ainda se baseia em o jogador ter passado por todas as quinas.
         List<bool> cornerChecks = EvaluateCorrectCorners(signalPath.PathPoints);
         bool isPathCorrectOverall = !cornerChecks.Contains(false);
 
@@ -174,21 +162,17 @@ public class PathVerifier : MonoBehaviour
         if (linePrefab == null || feedbackLinesParent == null) return;
         foreach (Transform child in feedbackLinesParent) Destroy(child.gameObject);
 
-        // Itera sobre cada pequeno segmento que o jogador desenhou.
         for (int i = 0; i < playerPath.Count - 1; i++)
         {
             Vector3 p_start = playerPath[i];
             Vector3 p_end = playerPath[i + 1];
 
-            // Verifica se o ponto de início do segmento está na trajetória correta.
             Vector3 closestToStart = FindClosestPointOnFullPath(p_start, correctCorners);
             bool startIsOnPath = Vector3.Distance(p_start, closestToStart) <= cornerTolerance;
 
-            // Verifica se o ponto de fim do segmento está na trajetória correta.
             Vector3 closestToEnd = FindClosestPointOnFullPath(p_end, correctCorners);
             bool endIsOnPath = Vector3.Distance(p_end, closestToEnd) <= cornerTolerance;
 
-            // O segmento só é verde se AMBOS os pontos estiverem na trajetória.
             bool isSegmentCorrect = startIsOnPath && endIsOnPath;
 
             Color segmentColor = isSegmentCorrect ? successColor : failureColor;
@@ -205,7 +189,9 @@ public class PathVerifier : MonoBehaviour
 
     #region Helper Functions
 
-    // Ativa o objeto alvo e garante que seu pai (container comum) também esteja ativo.
+    /// <summary>
+    /// Activates the given GameObject and ensures its parent container is active.
+    /// </summary>
     private void ActivateWithParent(GameObject target)
     {
         if (target == null) return;
@@ -240,6 +226,9 @@ public class PathVerifier : MonoBehaviour
         return checks;
     }
 
+    /// <summary>
+    /// Finds the closest point on the polyline defined by 'path' to the given target point.
+    /// </summary>
     private Vector3 FindClosestPointOnFullPath(Vector3 targetPoint, List<Vector3> path)
     {
         if (path.Count == 0) return Vector3.zero;
@@ -261,6 +250,9 @@ public class PathVerifier : MonoBehaviour
         return bestPoint;
     }
 
+    /// <summary>
+    /// Returns the closest point on the line segment [lineStart, lineEnd] to the specified point.
+    /// </summary>
     private Vector3 FindClosestPointOnLineSegment(Vector3 point, Vector3 lineStart, Vector3 lineEnd)
     {
         Vector3 lineDirection = lineEnd - lineStart;
@@ -273,89 +265,97 @@ public class PathVerifier : MonoBehaviour
         return lineStart + lineDirection * t;
     }
 
-    private List<Vector3> ExtractCorners(List<Vector3> allPoints)
-    {
-        if (allPoints == null || allPoints.Count < 2) return new List<Vector3>();
-        var corners = new List<Vector3> { allPoints[0] };
-        for (int i = 1; i < allPoints.Count - 1; i++)
-        {
-            Vector3 pDir = (allPoints[i] - allPoints[i - 1]).normalized;
-            Vector3 nDir = (allPoints[i + 1] - allPoints[i]).normalized;
-            if (Mathf.Abs(Vector3.Dot(pDir, nDir)) < 0.1f) { corners.Add(allPoints[i]); }
-        }
-        corners.Add(allPoints[allPoints.Count - 1]);
-        return corners;
-    }
+    /// <summary>
+    /// Removes intermediate colinear points from a dense polyline and returns only the corner points.
+    /// </summary>
+    // ExtractCorners removed — unused helper
 
     #endregion
 
 
     #region Gabarito Generation
 
+    /// <summary>
+    /// Generate the reference path (correctCorners) using the LevelJsonLoader.
+    /// This method assumes a LevelJsonLoader exists in the scene. If it's missing, an error is logged.
+    /// </summary>
     private void GenerateCorrectPath()
     {
-        bool anyHighAssigned = highSignal_Standard != null || highSignal_Rising != null || highSignal_Falling != null || highSignal_RisingFalling != null;
-        if (j_InputTilemap == null || k_InputTilemap == null || !anyHighAssigned)
+        var loader = FindObjectOfType<LevelJsonLoader>();
+        if (loader == null)
+        {
+            Debug.LogError("PathVerifier requires a LevelJsonLoader in the scene.");
+            correctCorners = new List<Vector3>();
+            return;
+        }
+
+        var events = loader.ComputeOutputEventsFromParsedSignals();
+        if (events == null || events.Count == 0)
         {
             correctCorners = new List<Vector3>();
             return;
         }
-        correctCorners = new List<Vector3>();
-        bool outputState = false;
-        float step = (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
-            ? LevelManager.Instance.clockStepX
-            : 5f; // fallback não-serializado
-        if (step <= 0f) step = 0.0001f;
-        for (float x = 0f; x <= LevelManager.Instance.levelEndX; x += step)
+
+        BuildCorrectCornersFromSignalEvents(events, 0f, false);
+    }
+
+    /// <summary>
+    /// Build the correctCorners list from an array of output samples (one per clock tick).
+    /// The initial state is assumed LOW at x=0; the first sample corresponds to x = step.
+    /// </summary>
+    public struct SignalEvent
+    {
+        // X position (world or tile units) where this sample/event occurs
+        public float x;
+        public bool value;
+
+        public SignalEvent(float x, bool value)
         {
-            float previousY = outputState ? highY : lowY;
-            correctCorners.Add(new Vector3(x, previousY, 0));
-            if (x >= LevelManager.Instance.levelEndX) break;
-            bool j_input = IsSignalHigh(j_InputTilemap, x, j_InputCheckY);
-            bool k_input = IsSignalHigh(k_InputTilemap, x, k_InputCheckY);
-            if (j_input && !k_input) outputState = true;
-            else if (!j_input && k_input) outputState = false;
-            else if (j_input && k_input) outputState = !outputState;
-            else if (!j_input && !k_input) continue;
-            float currentY = outputState ? highY : lowY;
-            if (!Mathf.Approximately(currentY, previousY)) { correctCorners.Add(new Vector3(x, currentY, 0)); }
+            this.x = x;
+            this.value = value;
         }
+    }
+
+    /// <summary>
+    /// Build the correctCorners list from an ordered list of signal events. Each event defines the
+    /// sampled output level at position X. This is generic and can represent clock-aligned samples
+    /// or asynchronous inputs (preset/clear) — the loader should prepare the event list.
+    /// The initial state is assumed LOW at x=initialX unless initialState is set to true.
+    /// </summary>
+    public void BuildCorrectCornersFromSignalEvents(List<SignalEvent> events, float initialX = 0f, bool initialState = false)
+    {
+        if (events == null || events.Count == 0)
+        {
+            correctCorners = new List<Vector3>();
+            return;
+        }
+
+        events.Sort((a, b) => a.x.CompareTo(b.x));
+
+        correctCorners = new List<Vector3>();
+        bool qState = initialState;
+        correctCorners.Add(new Vector3(initialX, qState ? highY : lowY, 0f));
+
+        foreach (var ev in events)
+        {
+            float x = ev.x;
+            float previousY = qState ? highY : lowY;
+            correctCorners.Add(new Vector3(x, previousY, 0f));
+
+            if (ev.value != qState)
+            {
+                float currentY = ev.value ? highY : lowY;
+                correctCorners.Add(new Vector3(x, currentY, 0f));
+                qState = ev.value;
+            }
+        }
+
         for (int i = correctCorners.Count - 1; i > 0; i--)
         {
             if (Vector3.Distance(correctCorners[i], correctCorners[i - 1]) < 0.01f) { correctCorners.RemoveAt(i); }
             if (i == 0 || i >= correctCorners.Count - 1) continue;
             if (correctCorners[i - 1].y == correctCorners[i].y && correctCorners[i + 1].y == correctCorners[i].y) { correctCorners.RemoveAt(i); }
         }
-    }
-
-    private bool IsSignalHigh(Tilemap tilemap, float x, float checkY)
-    {
-        if (tilemap == null) return false;
-        Vector3 worldCheckPos = new Vector3(x + 0.1f, checkY, 0);
-        Vector3Int cellPos = tilemap.WorldToCell(worldCheckPos);
-        TileBase tile = tilemap.GetTile(cellPos);
-        if (tile == null) return false;
-        if (tile == highSignal_Standard) return true;
-        if (tile == highSignal_Rising) return true;
-        if (tile == highSignal_Falling) return true;
-        if (tile == highSignal_RisingFalling) return true;
-        return false;
-    }
-
-    #endregion
-
-    #region Debug Functions
-
-    private void PrintVectorListToDebug(string header, List<Vector3> list)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine($"<color=yellow>{header}</color>");
-        if (list.Count == 0) sb.AppendLine(" (lista vazia)");
-        else
-        {
-            for (int i = 0; i < list.Count; i++) sb.AppendLine($"  [{i}]: {list[i]}");
-        }
-        Debug.Log(sb.ToString());
     }
 
     #endregion

@@ -77,6 +77,73 @@ public class LevelJsonLoader : MonoBehaviour
         public List<ObstacleData> obstacles;
     }
 
+    // Exposed parsed signals so other systems (like PathVerifier) can compute the expected outputs
+    public bool[] ParsedJSignal { get; private set; }
+    public bool[] ParsedKSignal { get; private set; }
+
+    /// <summary>
+    /// Compute the sequence of JK outputs sampled on the clock. This uses the parsed J/K arrays
+    /// and samples them at indices (clockStep-1), (2*clockStep-1), ... until one of the arrays ends.
+    /// The JK behavior follows: J=1,K=0 => Q=1; J=0,K=1 => Q=0; J=1,K=1 => toggle; J=0,K=0 => hold.
+    /// Returns null if inputs are invalid.
+    /// </summary>
+    public bool[] ComputeOutputSamplesFromParsedSignals()
+    {
+        return BuildOutputSequenceFromSignals(this.ParsedJSignal, this.ParsedKSignal,
+            (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
+                ? Mathf.Max(1, Mathf.RoundToInt(LevelManager.Instance.clockStepX))
+                : 1);
+    }
+
+    /// <summary>
+    /// Static helper: build an output sequence from raw J/K boolean arrays sampled every clockStep items.
+    /// </summary>
+    public static bool[] BuildOutputSequenceFromSignals(bool[] jSignal, bool[] kSignal, int clockStep)
+    {
+        if (jSignal == null || kSignal == null || clockStep <= 0) return null;
+        int maxIndex = Math.Min(jSignal.Length, kSignal.Length);
+        if (maxIndex == 0) return null;
+
+        var outputs = new List<bool>();
+        bool qState = false; // initial output assumed LOW
+
+        for (int idx = clockStep - 1; idx < maxIndex; idx += clockStep)
+        {
+            bool j = jSignal[idx];
+            bool k = kSignal[idx];
+            if (j && !k) qState = true;
+            else if (!j && k) qState = false;
+            else if (j && k) qState = !qState;
+            // j==0 && k==0 => hold (qState unchanged)
+            outputs.Add(qState);
+        }
+
+        return outputs.Count > 0 ? outputs.ToArray() : null;
+    }
+
+    /// <summary>
+    /// Builds an ordered list of PathVerifier.SignalEvent from the clock-aligned output samples.
+    /// Each sample i maps to X = (i+1) * step (step is taken from LevelManager.clockStepX when available).
+    /// Returns null if there are no samples.
+    /// </summary>
+    public List<PathVerifier.SignalEvent> ComputeOutputEventsFromParsedSignals()
+    {
+        var samples = ComputeOutputSamplesFromParsedSignals();
+        if (samples == null || samples.Length == 0) return null;
+
+        float step = (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
+            ? LevelManager.Instance.clockStepX
+            : 1f;
+
+        var events = new List<PathVerifier.SignalEvent>(samples.Length);
+        for (int i = 0; i < samples.Length; i++)
+        {
+            float x = (i + 1) * step;
+            events.Add(new PathVerifier.SignalEvent(x, samples[i]));
+        }
+        return events;
+    }
+
     [Serializable]
     private class ObstacleData
     {
@@ -110,6 +177,9 @@ public class LevelJsonLoader : MonoBehaviour
 
         var jSignal = ParseInputString(data.jSignal);
         var kSignal = ParseInputString(data.kSignal);
+        // store parsed signals for external consumers (e.g. PathVerifier)
+        this.ParsedJSignal = jSignal;
+        this.ParsedKSignal = kSignal;
         var floorBand = ParseInputString(data.floor);
         var ceilingBand = ParseInputString(data.ceiling);
 
