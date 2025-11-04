@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -89,10 +90,12 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     public bool[] ComputeOutputSamplesFromParsedSignals()
     {
-        return BuildOutputSequenceFromSignals(this.ParsedJSignal, this.ParsedKSignal,
+        var samples = BuildOutputSequenceFromSignals(this.ParsedJSignal, this.ParsedKSignal,
             (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
                 ? Mathf.Max(1, Mathf.RoundToInt(LevelManager.Instance.clockStepX))
                 : 1);
+        Debug.Log($"LevelJsonLoader: ComputeOutputSamplesFromParsedSignals -> samples length={(samples == null ? 0 : samples.Length)} value={BoolArrayToString(samples)}");
+        return samples;
     }
 
     /// <summary>
@@ -107,7 +110,8 @@ public class LevelJsonLoader : MonoBehaviour
         var outputs = new List<bool>();
         bool qState = false; // initial output assumed LOW
 
-        for (int idx = clockStep - 1; idx < maxIndex; idx += clockStep)
+        // start at index 0 so the first J/K value is considered
+        for (int idx = 0; idx < maxIndex; idx += clockStep)
         {
             bool j = jSignal[idx];
             bool k = kSignal[idx];
@@ -118,7 +122,9 @@ public class LevelJsonLoader : MonoBehaviour
             outputs.Add(qState);
         }
 
-        return outputs.Count > 0 ? outputs.ToArray() : null;
+        var outArr = outputs.Count > 0 ? outputs.ToArray() : null;
+        Debug.Log($"LevelJsonLoader: BuildOutputSequenceFromSignals(clockStep={clockStep}, jLen={(jSignal == null ? 0 : jSignal.Length)}, kLen={(kSignal == null ? 0 : kSignal.Length)}) -> outputs len={(outArr == null ? 0 : outArr.Length)} value={BoolArrayToString(outArr)}");
+        return outArr;
     }
 
     /// <summary>
@@ -141,7 +147,32 @@ public class LevelJsonLoader : MonoBehaviour
             float x = (i + 1) * step;
             events.Add(new PathVerifier.SignalEvent(x, samples[i]));
         }
+        Debug.Log($"LevelJsonLoader: ComputeOutputEventsFromParsedSignals -> {EventsToString(events)}");
         return events;
+    }
+
+    // debug helpers
+    private static string BoolArrayToString(bool[] arr)
+    {
+        if (arr == null) return "null";
+        var sb = new StringBuilder(arr.Length);
+        for (int i = 0; i < arr.Length; i++) sb.Append(arr[i] ? '1' : '0');
+        return sb.ToString();
+    }
+
+    private static string EventsToString(List<PathVerifier.SignalEvent> events)
+    {
+        if (events == null) return "null";
+        var sb = new StringBuilder();
+        sb.Append("events[");
+        for (int i = 0; i < events.Count; i++)
+        {
+            var e = events[i];
+            sb.AppendFormat("(x={0:0.##},v={1})", e.x, e.value ? 1 : 0);
+            if (i < events.Count - 1) sb.Append(",");
+        }
+        sb.Append("]");
+        return sb.ToString();
     }
 
     [Serializable]
