@@ -1,32 +1,35 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+/// <summary>
+/// Moves the GameObject along a rectangular perimeter.
+/// The rectangle is defined by <see cref="horizontalDistance"/> and <see cref="verticalDistance"/>.
+/// The object starts at one corner (<see cref="startCorner"/>) and follows the perimeter in the
+/// selected turning direction.
+/// </summary>
 public class MaceController : MonoBehaviour
 {
     public enum Direction { Up, Right, Down, Left }
     public enum Corner { BottomLeft, BottomRight, TopRight, TopLeft }
     public enum TurningDirection { Clockwise, CounterClockwise }
 
-    [Header("Movimento Retangular")]
-    [Tooltip("Velocidade de movimento (unidades/segundo)")]
+    [Header("Rectangular Movement")]
+    [Tooltip("Movement speed (world units per second).")]
     public float speed = 2.0f;
 
-    [Tooltip("Distância horizontal total (pode ser 0)")]
+    [Tooltip("Total horizontal distance of the perimeter (world units). May be zero.")]
     public float horizontalDistance = 5.0f;
 
-    [Tooltip("Distância vertical total (pode ser 0)")]
+    [Tooltip("Total vertical distance of the perimeter (world units). May be zero.")]
     public float verticalDistance = 3.0f;
 
-    [Tooltip("Canto onde o personagem começa (a posição do objeto deve estar nesse ponto)")]
+    [Tooltip("Corner where the object starts. The object's transform should be placed at that corner.")]
     public Corner startCorner = Corner.BottomLeft;
 
-    [Tooltip("Sentido do trajeto ao redor do retângulo")]
+    [Tooltip("Direction of traversal around the rectangle.")]
     public TurningDirection turning = TurningDirection.Clockwise;
 
-
-    [Tooltip("Tolerância para considerar que atingiu a quina")]
+    [Tooltip("Tolerance used to detect arrival at a corner (in world units).")]
     public float cornerEpsilon = 0.001f;
 
     private Vector3 startPos;
@@ -35,45 +38,39 @@ public class MaceController : MonoBehaviour
     private Direction[] dirCycle;
     private int dirIndex;
 
-    private void Awake()
-    {
-        TryApplyConfig();
-    }
-
     void Start()
     {
-        // Reaplica configuração vinda do JSON após a instância ter recebido ObstacleConfigData
-        TryApplyConfig();
-        startPos = transform.position; // startPos é um CANTO do retângulo
-        // Define a sequência de direções conforme o sentido e o canto inicial
+        // Initialize state from current transform position. If ApplyObstacleData was called
+        // before Start, startPos will already have been set accordingly.
+        startPos = transform.position;
+
         Direction startDir = GetStartDirection(startCorner, turning);
         dirCycle = BuildCycle(startDir, turning);
         dirIndex = 0;
         currentDirection = dirCycle[dirIndex];
 
-        // Define a geometria do retângulo a partir do canto em que o personagem está
         float dx = Mathf.Max(0f, horizontalDistance);
         float dy = Mathf.Max(0f, verticalDistance);
 
-        // Determina o bottom-left (bl) a partir do canto inicial
+        // Compute bottom-left from the chosen corner and dimensions
         Vector3 bl = CornerToBottomLeft(startPos, dx, dy, startCorner);
         minX = bl.x; minY = bl.y; maxX = bl.x + dx; maxY = bl.y + dy;
 
-        // Começa exatamente no canto (linha do perímetro)
+        // Ensure transform is placed exactly at the configured start corner
         transform.position = startPos;
     }
 
     void Update()
     {
-        if (horizontalDistance <= 0f && verticalDistance <= 0f || speed <= 0f)
+        // Nothing to do if there is no path or speed is zero
+        if ((horizontalDistance <= 0f && verticalDistance <= 0f) || speed <= 0f)
             return;
 
-        // Mover ao longo do eixo atual em direção à próxima quina
         Vector3 target = GetCurrentTarget();
         Vector3 pos = transform.position;
-
         float step = speed * Time.deltaTime;
-        // Move apenas no eixo relevante
+
+        // Move along the active axis toward the current target corner
         switch (currentDirection)
         {
             case Direction.Up:
@@ -88,8 +85,7 @@ public class MaceController : MonoBehaviour
 
         transform.position = pos;
 
-        // Ao atingir a quina (ou se a aresta tiver tamanho 0), troca para o próximo eixo
-        // Faz até 4 trocas no mesmo frame para cobrir casos com distâncias zero
+        // Handle corner transitions; allow up to 4 immediate transitions to cover degenerate edges
         int safety = 0;
         while (safety++ < 4)
         {
@@ -103,43 +99,25 @@ public class MaceController : MonoBehaviour
         }
     }
 
-    private void TryApplyConfig()
-    {
-        var cfg = GetComponent<ObstacleConfigData>();
-        if (cfg == null) return;
-
-        // Always apply values from config; zero is a valid value and should not be ignored
-        speed = cfg.speedUnitsPerSec != 0f || cfg.speedTilesPerSec == 0f ? cfg.speedUnitsPerSec : cfg.speedTilesPerSec;
-        horizontalDistance = cfg.horizontalUnits != 0f || cfg.horizontalTiles == 0 ? cfg.horizontalUnits : cfg.horizontalTiles;
-        verticalDistance = cfg.verticalUnits != 0f || cfg.verticalTiles == 0 ? cfg.verticalUnits : cfg.verticalTiles;
-
-        startCorner = ParseCorner(cfg.starterCorner, startCorner);
-        turning = cfg.clockwise ? TurningDirection.Clockwise : TurningDirection.CounterClockwise;
-    }
-
     /// <summary>
-    /// Apply obstacle parameters directly from LevelJsonLoader (called immediately after Instantiate).
-    /// startTileX/Y are provided in tile units; this method converts and assigns controller fields
-    /// and positions the object at the correct start corner before Start runs.
+    /// Configure the obstacle using values computed by the loader.
+    /// startTileX/Y are in tile units; this method converts them to world position using the provided tilemap.
+    /// This method is intended to be called immediately after Instantiate so the controller is ready when Start runs.
     /// </summary>
     public void ApplyObstacleData(int startTileX, int startTileY, float speedUnits, float horizUnits, float vertUnits, string starterCornerStr, bool clockwiseFlag, int globalStartX, int floorYRow, bool yRelativeToFloor, Tilemap floorTilemap)
     {
-        // set movement values (units)
         speed = speedUnits;
         horizontalDistance = horizUnits;
         verticalDistance = vertUnits;
 
-        // parse corner and turning
         startCorner = ParseCorner(starterCornerStr, startCorner);
         turning = clockwiseFlag ? TurningDirection.Clockwise : TurningDirection.CounterClockwise;
 
-        // compute initial world position from tile coordinates
         int cellX = globalStartX + startTileX;
         int cellY = yRelativeToFloor ? (floorYRow + startTileY) : startTileY;
         var cell = new Vector3Int(cellX, cellY, 0);
         Vector3 worldPos = (floorTilemap != null) ? floorTilemap.GetCellCenterWorld(cell) : new Vector3(cellX, cellY, 0f);
 
-        // place object; Start will recompute geometry based on this startPos
         transform.position = worldPos;
         startPos = worldPos;
     }
@@ -201,7 +179,6 @@ public class MaceController : MonoBehaviour
     {
         if (dirCycle == null || dirCycle.Length == 0)
         {
-            // Fallback reconstrói com base no canto e sentido atuais
             Direction startDir = GetStartDirection(startCorner, turning);
             dirCycle = BuildCycle(startDir, turning);
         }
@@ -211,12 +188,10 @@ public class MaceController : MonoBehaviour
 
     private Direction[] BuildCycle(Direction startDir, TurningDirection sense)
     {
-        // Sequências base
         Direction[] baseCW = new[] { Direction.Up, Direction.Right, Direction.Down, Direction.Left };
         Direction[] baseCCW = new[] { Direction.Up, Direction.Left, Direction.Down, Direction.Right };
         var baseSeq = (sense == TurningDirection.Clockwise) ? baseCW : baseCCW;
 
-        // Rotaciona para começar em startDir
         int idx = 0;
         for (int i = 0; i < baseSeq.Length; i++) { if (baseSeq[i] == startDir) { idx = i; break; } }
         Direction[] result = new Direction[4];
@@ -226,8 +201,6 @@ public class MaceController : MonoBehaviour
 
     private Direction GetStartDirection(Corner corner, TurningDirection sense)
     {
-        // Define a primeira aresta a partir do canto e do sentido escolhido
-        // Mapeamentos assumindo Y para cima e X para a direita
         if (sense == TurningDirection.Clockwise)
         {
             switch (corner)
@@ -263,8 +236,6 @@ public class MaceController : MonoBehaviour
         }
     }
 
-    // startPos representa um canto inferior (BL ou BR); convertemos BR para BL via (x - dx)
-
     #region Gizmos
     [Header("Gizmos")]
     public bool drawPathGizmos = true;
@@ -275,7 +246,6 @@ public class MaceController : MonoBehaviour
     {
         if (!drawPathGizmos) return;
 
-        // Calcula o bottom-left conforme a semântica de canto inicial (start pos é um dos 4 cantos)
         Vector3 editorStart = Application.isPlaying ? startPos : transform.position;
         float dx = Mathf.Max(0f, horizontalDistance);
         float dy = Mathf.Max(0f, verticalDistance);
@@ -285,20 +255,16 @@ public class MaceController : MonoBehaviour
 
         if (dx <= 0f && dy <= 0f)
         {
-            // Apenas um ponto
             Gizmos.DrawSphere(editorStart, gizmoCornerRadius);
             return;
         }
 
-        // Calcula cantos do retângulo (pode degenerar para linha se um dos eixos for 0)
-        Vector3 tl = new Vector3(bl.x, bl.y + dy, bl.z); // top-left
-        Vector3 tr = new Vector3(bl.x + dx, bl.y + dy, bl.z); // top-right
-        Vector3 br = new Vector3(bl.x + dx, bl.y, bl.z); // bottom-right
+        Vector3 tl = new Vector3(bl.x, bl.y + dy, bl.z);
+        Vector3 tr = new Vector3(bl.x + dx, bl.y + dy, bl.z);
+        Vector3 br = new Vector3(bl.x + dx, bl.y, bl.z);
 
-        // Desenha formas conforme as distâncias
         if (dx > 0f && dy > 0f)
         {
-            // Retângulo completo
             Gizmos.DrawLine(bl, tl);
             Gizmos.DrawLine(tl, tr);
             Gizmos.DrawLine(tr, br);
@@ -311,24 +277,21 @@ public class MaceController : MonoBehaviour
         }
         else if (dx == 0f && dy > 0f)
         {
-            // Linha vertical
-            Vector3 bottom = bl; // x = anchor.x, y = anchor.y - dy
-            Vector3 top = tl;    // x = anchor.x, y = anchor.y + dy
+            Vector3 bottom = bl;
+            Vector3 top = tl;
             Gizmos.DrawLine(bottom, top);
             Gizmos.DrawSphere(bottom, gizmoCornerRadius);
             Gizmos.DrawSphere(top, gizmoCornerRadius);
         }
         else if (dx > 0f && dy == 0f)
         {
-            // Linha horizontal
-            Vector3 left = tl;  // x = anchor.x - dx, y = anchor.y
-            Vector3 right = tr; // x = anchor.x + dx, y = anchor.y
+            Vector3 left = tl;
+            Vector3 right = tr;
             Gizmos.DrawLine(left, right);
             Gizmos.DrawSphere(left, gizmoCornerRadius);
             Gizmos.DrawSphere(right, gizmoCornerRadius);
         }
 
-        // Opcional: seta da direção atual (apenas em Play)
         if (Application.isPlaying)
         {
             Vector3 dir = Vector3.zero;

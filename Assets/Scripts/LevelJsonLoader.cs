@@ -57,10 +57,10 @@ public class LevelJsonLoader : MonoBehaviour
         public string levelName;
         public int levelTiles;
         public int clockTiles;
-        public string jSignalTiles;
-        public string kSignalTiles;
-        public string floorTiles;
-        public string ceilingTiles;
+        public string jSignal;
+        public string kSignal;
+        public string floor;
+        public string ceiling;
         public List<ObstacleData> obstacles;
     }
 
@@ -68,8 +68,8 @@ public class LevelJsonLoader : MonoBehaviour
     private class ObstacleData
     {
         public string type;
-        public int startTileX;
-        public int startTileY;
+        public int startX;
+        public int startY;
         public float speed;
         public int horizontalDistance;
         public int verticalDistance;
@@ -95,10 +95,10 @@ public class LevelJsonLoader : MonoBehaviour
 
         ApplyLevelConfig(data);
 
-        var jSignal = ParseInputString(data.jSignalTiles);
-        var kSignal = ParseInputString(data.kSignalTiles);
-        var floorBand = ParseInputString(data.floorTiles);
-        var ceilingBand = ParseInputString(data.ceilingTiles);
+        var jSignal = ParseInputString(data.jSignal);
+        var kSignal = ParseInputString(data.kSignal);
+        var floorBand = ParseInputString(data.floor);
+        var ceilingBand = ParseInputString(data.ceiling);
 
         ClearAllTilemaps();
         GenerateDiagram(jInputTilemap, jSignal, j_YRow);
@@ -310,8 +310,8 @@ public class LevelJsonLoader : MonoBehaviour
                 continue;
             }
 
-            int cellX = startX + o.startTileX;
-            int cellY = obstacleYRelativeToFloor ? (floorYRow + o.startTileY) : o.startTileY;
+            int cellX = startX + o.startX;
+            int cellY = obstacleYRelativeToFloor ? (floorYRow + o.startY) : o.startY;
             var cell = new Vector3Int(cellX, cellY, 0);
             var worldPos = floorTilemap.GetCellCenterWorld(cell);
 
@@ -350,20 +350,8 @@ public class LevelJsonLoader : MonoBehaviour
             float speedUnits = o.speed * Mathf.Abs(cellSize.x);
             float horizUnits = o.horizontalDistance * Mathf.Abs(cellSize.x);
             float vertUnits = o.verticalDistance * Mathf.Abs(cellSize.y);
-            mace.ApplyObstacleData(o.startTileX, o.startTileY, speedUnits, horizUnits, vertUnits, o.starterCorner, o.clockwise, startX, floorYRow, obstacleYRelativeToFloor, floorTilemap);
+            mace.ApplyObstacleData(o.startX, o.startY, speedUnits, horizUnits, vertUnits, o.starterCorner, o.clockwise, startX, floorYRow, obstacleYRelativeToFloor, floorTilemap);
             return;
         }
-
-        // Fallback: attach ObstacleConfigData for other obstacle types
-        var cfg = go.AddComponent<ObstacleConfigData>();
-        var cs = floorTilemap != null && floorTilemap.layoutGrid != null ? floorTilemap.layoutGrid.cellSize : Vector3.one;
-        cfg.speedTilesPerSec = o.speed;
-        cfg.horizontalTiles = o.horizontalDistance;
-        cfg.verticalTiles = o.verticalDistance;
-        cfg.speedUnitsPerSec = o.speed * Mathf.Abs(cs.x);
-        cfg.horizontalUnits = o.horizontalDistance * Mathf.Abs(cs.x);
-        cfg.verticalUnits = o.verticalDistance * Mathf.Abs(cs.y);
-        cfg.starterCorner = o.starterCorner;
-        cfg.clockwise = o.clockwise;
     }
 }
