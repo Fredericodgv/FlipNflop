@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class MaceController : MonoBehaviour
 {
@@ -114,6 +115,33 @@ public class MaceController : MonoBehaviour
 
         startCorner = ParseCorner(cfg.starterCorner, startCorner);
         turning = cfg.clockwise ? TurningDirection.Clockwise : TurningDirection.CounterClockwise;
+    }
+
+    /// <summary>
+    /// Apply obstacle parameters directly from LevelJsonLoader (called immediately after Instantiate).
+    /// startTileX/Y are provided in tile units; this method converts and assigns controller fields
+    /// and positions the object at the correct start corner before Start runs.
+    /// </summary>
+    public void ApplyObstacleData(int startTileX, int startTileY, float speedUnits, float horizUnits, float vertUnits, string starterCornerStr, bool clockwiseFlag, int globalStartX, int floorYRow, bool yRelativeToFloor, Tilemap floorTilemap)
+    {
+        // set movement values (units)
+        speed = speedUnits;
+        horizontalDistance = horizUnits;
+        verticalDistance = vertUnits;
+
+        // parse corner and turning
+        startCorner = ParseCorner(starterCornerStr, startCorner);
+        turning = clockwiseFlag ? TurningDirection.Clockwise : TurningDirection.CounterClockwise;
+
+        // compute initial world position from tile coordinates
+        int cellX = globalStartX + startTileX;
+        int cellY = yRelativeToFloor ? (floorYRow + startTileY) : startTileY;
+        var cell = new Vector3Int(cellX, cellY, 0);
+        Vector3 worldPos = (floorTilemap != null) ? floorTilemap.GetCellCenterWorld(cell) : new Vector3(cellX, cellY, 0f);
+
+        // place object; Start will recompute geometry based on this startPos
+        transform.position = worldPos;
+        startPos = worldPos;
     }
 
     private Corner ParseCorner(string value, Corner fallback)

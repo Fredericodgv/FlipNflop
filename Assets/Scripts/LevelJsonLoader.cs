@@ -339,19 +339,30 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     private void AttachObstacleConfig(GameObject go, ObstacleData o)
     {
-        var cfg = go.AddComponent<ObstacleConfigData>();
-        var cellSize = floorTilemap != null && floorTilemap.layoutGrid != null
-            ? floorTilemap.layoutGrid.cellSize
-            : Vector3.one;
+        // Prefer to configure known obstacle controllers directly (avoid adding extra components)
+        var mace = go.GetComponent<MaceController>();
+        if (mace != null)
+        {
+            // compute cell size for unit conversion
+            var cellSize = floorTilemap != null && floorTilemap.layoutGrid != null
+                ? floorTilemap.layoutGrid.cellSize
+                : Vector3.one;
+            float speedUnits = o.speed * Mathf.Abs(cellSize.x);
+            float horizUnits = o.horizontalDistance * Mathf.Abs(cellSize.x);
+            float vertUnits = o.verticalDistance * Mathf.Abs(cellSize.y);
+            mace.ApplyObstacleData(o.startTileX, o.startTileY, speedUnits, horizUnits, vertUnits, o.starterCorner, o.clockwise, startX, floorYRow, obstacleYRelativeToFloor, floorTilemap);
+            return;
+        }
 
+        // Fallback: attach ObstacleConfigData for other obstacle types
+        var cfg = go.AddComponent<ObstacleConfigData>();
+        var cs = floorTilemap != null && floorTilemap.layoutGrid != null ? floorTilemap.layoutGrid.cellSize : Vector3.one;
         cfg.speedTilesPerSec = o.speed;
         cfg.horizontalTiles = o.horizontalDistance;
         cfg.verticalTiles = o.verticalDistance;
-
-        cfg.speedUnitsPerSec = o.speed * Mathf.Abs(cellSize.x);
-        cfg.horizontalUnits = o.horizontalDistance * Mathf.Abs(cellSize.x);
-        cfg.verticalUnits = o.verticalDistance * Mathf.Abs(cellSize.y);
-
+        cfg.speedUnitsPerSec = o.speed * Mathf.Abs(cs.x);
+        cfg.horizontalUnits = o.horizontalDistance * Mathf.Abs(cs.x);
+        cfg.verticalUnits = o.verticalDistance * Mathf.Abs(cs.y);
         cfg.starterCorner = o.starterCorner;
         cfg.clockwise = o.clockwise;
     }
