@@ -21,8 +21,15 @@ public class PathVerifier : MonoBehaviour
     [Tooltip("A coordenada Y no mundo onde a linha de entrada K será verificada.")]
     [SerializeField] private float k_InputCheckY = 5.5f;
 
-    [Tooltip("O asset de Tile que representa um sinal em nível ALTO (1).")]
-    [SerializeField] private TileBase highSignalTile;
+    [Header("High Signal Tiles (J/K)")]
+    [Tooltip("Tile used for steady HIGH (1).")]
+    [SerializeField] private TileBase highSignal_Standard;
+    [Tooltip("Tile used for the '1' side of a rising edge.")]
+    [SerializeField] private TileBase highSignal_Rising;
+    [Tooltip("Tile used for the '1' side of a falling edge.")]
+    [SerializeField] private TileBase highSignal_Falling;
+    [Tooltip("Tile used for an isolated short HIGH pulse (rising then falling).")]
+    [SerializeField] private TileBase highSignal_RisingFalling;
 
     [Header("Configuração da Saída")]
     [Tooltip("A posição Y para o nível lógico BAIXO (0) da saída.")]
@@ -287,7 +294,12 @@ public class PathVerifier : MonoBehaviour
 
     private void GenerateCorrectPath()
     {
-        if (j_InputTilemap == null || k_InputTilemap == null || highSignalTile == null) { correctCorners = new List<Vector3>(); return; }
+        bool anyHighAssigned = highSignal_Standard != null || highSignal_Rising != null || highSignal_Falling != null || highSignal_RisingFalling != null;
+        if (j_InputTilemap == null || k_InputTilemap == null || !anyHighAssigned)
+        {
+            correctCorners = new List<Vector3>();
+            return;
+        }
         correctCorners = new List<Vector3>();
         bool outputState = false;
         float step = (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
@@ -322,7 +334,12 @@ public class PathVerifier : MonoBehaviour
         Vector3 worldCheckPos = new Vector3(x + 0.1f, checkY, 0);
         Vector3Int cellPos = tilemap.WorldToCell(worldCheckPos);
         TileBase tile = tilemap.GetTile(cellPos);
-        return tile == highSignalTile;
+        if (tile == null) return false;
+        if (tile == highSignal_Standard) return true;
+        if (tile == highSignal_Rising) return true;
+        if (tile == highSignal_Falling) return true;
+        if (tile == highSignal_RisingFalling) return true;
+        return false;
     }
 
     #endregion

@@ -18,14 +18,27 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField] private Tilemap ceilingTilemap;
 
     [Header("Level JSON")]
-    [Tooltip(".json contendo jSignalTiles, kSignalTiles, floorTiles, ceilingTiles, levelTiles e clockTiles")]
+    [Tooltip("JSON containing jSignal, kSignal, floor, ceiling, levelTiles and clockTiles")]
     [SerializeField] private TextAsset levelFile;
 
     [Header("Tiles - Diagrams")]
-    [SerializeField] private TileBase tile_0_Normal;
+    [Tooltip("Tile used for steady (flat) signal 1")]
+    [SerializeField] private TileBase tile_1_Standard;
+    [Tooltip("Tile used for the '1' side of a rising edge (first 1 after a 0->1 transition)")]
     [SerializeField] private TileBase tile_1_Rising;
-    [SerializeField] private TileBase tile_2_Falling;
-    [SerializeField] private TileBase tile_3_High;
+    [Tooltip("Tile used for the '1' side of a falling edge (last 1 before a 1->0 transition)")]
+    [SerializeField] private TileBase tile_1_Falling;
+    [Tooltip("Tile used when a single '1' is both rising and falling (0->1->0 short pulse)")]
+    [SerializeField] private TileBase tile_1_RisingFalling;
+
+    [Tooltip("Tile used for steady (flat) signal 0")]
+    [SerializeField] private TileBase tile_0_Standard;
+    [Tooltip("Tile used for the '0' side of a rising edge (last 0 before a 0->1 transition)")]
+    [SerializeField] private TileBase tile_0_Rising;
+    [Tooltip("Tile used for the '0' side of a falling edge (first 0 after a 1->0 transition)")]
+    [SerializeField] private TileBase tile_0_Falling;
+    [Tooltip("Tile used when a single '0' is both falling and rising (1->0->1 short dip)")]
+    [SerializeField] private TileBase tile_0_FallingRising;
 
     [Header("Tiles - Terrain")]
     [SerializeField] private TileBase floorTile;
@@ -121,7 +134,7 @@ public class LevelJsonLoader : MonoBehaviour
     {
         if (jsonAsset == null || string.IsNullOrWhiteSpace(jsonAsset.text))
         {
-            Debug.LogError("LevelJsonLoader: JSON asset vazio ou ausente.");
+            Debug.LogError("LevelJsonLoader: JSON asset is empty or missing.");
             return null;
         }
         try
@@ -130,7 +143,7 @@ public class LevelJsonLoader : MonoBehaviour
         }
         catch (Exception ex)
         {
-            Debug.LogError($"LevelJsonLoader: Erro ao ler JSON: {ex.Message}");
+            Debug.LogError($"LevelJsonLoader: Error reading JSON: {ex.Message}");
             return null;
         }
     }
@@ -157,21 +170,62 @@ public class LevelJsonLoader : MonoBehaviour
         if (targetMap == null || signal == null) return;
         for (int i = 0; i < signal.Length; i++)
         {
-            TileBase tileToPlace;
+            TileBase tileToPlace = null;
             bool current = signal[i];
+            bool prev = (i > 0) ? signal[i - 1] : current;
+            bool next = (i < signal.Length - 1) ? signal[i + 1] : current;
+
             if (current)
             {
-                tileToPlace = tile_3_High;
+                // Current is 1
+                if (!prev && next)
+                {
+                    // 0 -> 1 (rising), this is the first 1
+                    tileToPlace = tile_1_Rising;
+                }
+                else if (prev && !next)
+                {
+                    // 1 -> 0 (falling), this is the last 1
+                    tileToPlace = tile_1_Falling;
+                }
+                else if (!prev && !next)
+                {
+                    // isolated single 1 (0->1->0)
+                    tileToPlace = tile_1_RisingFalling;
+                }
+                else
+                {
+                    // steady 1
+                    tileToPlace = tile_1_Standard;
+                }
             }
             else
             {
-                bool afterHigh = (i > 0 && signal[i - 1]);
-                bool beforeHigh = (i < signal.Length - 1 && signal[i + 1]);
-                if (beforeHigh) tileToPlace = tile_1_Rising;
-                else if (afterHigh) tileToPlace = tile_2_Falling;
-                else tileToPlace = tile_0_Normal;
+                // Current is 0
+                if (prev && !next)
+                {
+                    // 1 -> 0 (falling), first 0 after transition
+                    tileToPlace = tile_0_Falling;
+                }
+                else if (!prev && next)
+                {
+                    // 0 -> 1 (rising), last 0 before transition
+                    tileToPlace = tile_0_Rising;
+                }
+                else if (prev && next)
+                {
+                    // isolated single 0 (1->0->1)
+                    tileToPlace = tile_0_FallingRising;
+                }
+                else
+                {
+                    // steady 0
+                    tileToPlace = tile_0_Standard;
+                }
             }
-            targetMap.SetTile(new Vector3Int(startX + i, yRow, 0), tileToPlace);
+
+            if (tileToPlace != null)
+                targetMap.SetTile(new Vector3Int(startX + i, yRow, 0), tileToPlace);
         }
     }
 
@@ -254,22 +308,23 @@ public class LevelJsonLoader : MonoBehaviour
     {
         if (jInputTilemap == null || kInputTilemap == null || floorTilemap == null || ceilingTilemap == null)
         {
-            Debug.LogError("LevelJsonLoader: Tilemaps ausentes.");
+            Debug.LogError("LevelJsonLoader: One or more Tilemap references are missing.");
             return false;
         }
-        if (tile_0_Normal == null || tile_1_Rising == null || tile_2_Falling == null || tile_3_High == null)
+        if (tile_1_Standard == null || tile_1_Rising == null || tile_1_Falling == null || tile_1_RisingFalling == null
+            || tile_0_Standard == null || tile_0_Rising == null || tile_0_Falling == null || tile_0_FallingRising == null)
         {
-            Debug.LogError("LevelJsonLoader: Tiles de diagrama ausentes.");
+            Debug.LogError("LevelJsonLoader: One or more diagram tiles are not assigned.");
             return false;
         }
         if (floorTile == null || ceilingTile == null)
         {
-            Debug.LogError("LevelJsonLoader: Tiles de terreno ausentes.");
+            Debug.LogError("LevelJsonLoader: Floor or ceiling tile is not assigned.");
             return false;
         }
         if (levelFile == null)
         {
-            Debug.LogError("LevelJsonLoader: JSON de nível não definido.");
+            Debug.LogError("LevelJsonLoader: Level JSON asset is not set.");
             return false;
         }
         return true;
@@ -306,7 +361,7 @@ public class LevelJsonLoader : MonoBehaviour
             var prefab = ResolveObstaclePrefab(o.type);
             if (prefab == null)
             {
-                Debug.LogWarning($"LevelJsonLoader: Nenhum prefab mapeado para obstacle type='{o.type}'.");
+                Debug.LogWarning($"LevelJsonLoader: No prefab mapped for obstacle type='{o.type}'.");
                 continue;
             }
 
