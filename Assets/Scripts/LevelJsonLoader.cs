@@ -15,8 +15,7 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField] private Tilemap kInputTilemap;
 
     [Header("Tilemaps - Terrain")]
-    [SerializeField] private Tilemap floorTilemap;
-    [SerializeField] private Tilemap ceilingTilemap;
+    [SerializeField] private Tilemap terrainTilemap;
 
     [Header("Level JSON")]
     [Tooltip("JSON containing jSignal, kSignal, floor, ceiling, levelTiles and clockTiles")]
@@ -78,7 +77,6 @@ public class LevelJsonLoader : MonoBehaviour
         public List<ObstacleData> obstacles;
     }
 
-    // Exposed parsed signals so other systems (like PathVerifier) can compute the expected outputs
     public bool[] ParsedJSignal { get; private set; }
     public bool[] ParsedKSignal { get; private set; }
 
@@ -110,7 +108,6 @@ public class LevelJsonLoader : MonoBehaviour
         var outputs = new List<bool>();
         bool qState = false; // initial output assumed LOW
 
-        // start at index 0 so the first J/K value is considered
         for (int idx = 0; idx < maxIndex; idx += clockStep)
         {
             bool j = jSignal[idx];
@@ -118,7 +115,6 @@ public class LevelJsonLoader : MonoBehaviour
             if (j && !k) qState = true;
             else if (!j && k) qState = false;
             else if (j && k) qState = !qState;
-            // j==0 && k==0 => hold (qState unchanged)
             outputs.Add(qState);
         }
 
@@ -144,14 +140,13 @@ public class LevelJsonLoader : MonoBehaviour
         var events = new List<PathVerifier.SignalEvent>(samples.Length);
         for (int i = 0; i < samples.Length; i++)
         {
-            float x = (i + 1) * step;
+            float x = i * step;
             events.Add(new PathVerifier.SignalEvent(x, samples[i]));
         }
         Debug.Log($"LevelJsonLoader: ComputeOutputEventsFromParsedSignals -> {EventsToString(events)}");
         return events;
     }
 
-    // debug helpers
     private static string BoolArrayToString(bool[] arr)
     {
         if (arr == null) return "null";
@@ -211,14 +206,16 @@ public class LevelJsonLoader : MonoBehaviour
         // store parsed signals for external consumers (e.g. PathVerifier)
         this.ParsedJSignal = jSignal;
         this.ParsedKSignal = kSignal;
+        Debug.Log($"LevelJsonLoader: raw jSignal string='{data.jSignal}' parsed({(jSignal == null ? 0 : jSignal.Length)}): {BoolArrayToString(jSignal)}");
+        Debug.Log($"LevelJsonLoader: raw kSignal string='{data.kSignal}' parsed({(kSignal == null ? 0 : kSignal.Length)}): {BoolArrayToString(kSignal)}");
         var floorBand = ParseInputString(data.floor);
         var ceilingBand = ParseInputString(data.ceiling);
 
         ClearAllTilemaps();
         GenerateDiagram(jInputTilemap, jSignal, j_YRow);
         GenerateDiagram(kInputTilemap, kSignal, k_YRow);
-        GenerateBand(floorTilemap, floorBand, floorYRow, floorTile, false);
-        GenerateBand(ceilingTilemap, ceilingBand, ceilingYRow, ceilingTile, flipCeilingY);
+        GenerateBand(terrainTilemap, floorBand, floorYRow, floorTile, false);
+        GenerateBand(terrainTilemap, ceilingBand, ceilingYRow, ceilingTile, flipCeilingY);
 
         CompleteStaticScenery();
 
@@ -354,7 +351,7 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     private void CompleteStaticScenery()
     {
-        if (floorTilemap != null && wallTile != null)
+        if (terrainTilemap != null && wallTile != null)
         {
             int yMin = Mathf.Min(floorYRow, ceilingYRow);
             int yMax = Mathf.Max(floorYRow, ceilingYRow);
@@ -363,26 +360,26 @@ public class LevelJsonLoader : MonoBehaviour
                 int xWall = startX - 2;
                 for (int y = yMin; y <= yMax; y++)
                 {
-                    floorTilemap.SetTile(new Vector3Int(xWall, y, 0), wallTile);
+                    terrainTilemap.SetTile(new Vector3Int(xWall, y, 0), wallTile);
                 }
             }
         }
 
-        if (floorTilemap != null && floorTile != null)
+        if (terrainTilemap != null && floorTile != null)
         {
             int xFloor = startX - 1;
-            floorTilemap.SetTile(new Vector3Int(xFloor, floorYRow, 0), floorTile);
+            terrainTilemap.SetTile(new Vector3Int(xFloor, floorYRow, 0), floorTile);
         }
 
-        if (ceilingTilemap != null && ceilingTile != null)
+        if (terrainTilemap != null && ceilingTile != null)
         {
             int xCeil = startX - 1;
             var pos = new Vector3Int(xCeil, ceilingYRow, 0);
-            ceilingTilemap.SetTile(pos, ceilingTile);
+            terrainTilemap.SetTile(pos, ceilingTile);
             if (flipCeilingY)
             {
-                ceilingTilemap.SetTileFlags(pos, TileFlags.None);
-                ceilingTilemap.SetTransformMatrix(pos, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
+                terrainTilemap.SetTileFlags(pos, TileFlags.None);
+                terrainTilemap.SetTransformMatrix(pos, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
             }
         }
     }
@@ -407,7 +404,7 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     private bool ValidateReferences()
     {
-        if (jInputTilemap == null || kInputTilemap == null || floorTilemap == null || ceilingTilemap == null)
+        if (jInputTilemap == null || kInputTilemap == null || terrainTilemap == null)
         {
             Debug.LogError("LevelJsonLoader: One or more Tilemap references are missing.");
             return false;
@@ -438,8 +435,7 @@ public class LevelJsonLoader : MonoBehaviour
     {
         jInputTilemap.ClearAllTiles();
         kInputTilemap.ClearAllTiles();
-        floorTilemap.ClearAllTiles();
-        ceilingTilemap.ClearAllTiles();
+        terrainTilemap.ClearAllTiles();
     }
 
     /// <summary>
@@ -469,7 +465,7 @@ public class LevelJsonLoader : MonoBehaviour
             int cellX = startX + o.startX;
             int cellY = obstacleYRelativeToFloor ? (floorYRow + o.startY) : o.startY;
             var cell = new Vector3Int(cellX, cellY, 0);
-            var worldPos = floorTilemap.GetCellCenterWorld(cell);
+            var worldPos = terrainTilemap.GetCellCenterWorld(cell);
 
             var go = Instantiate(prefab, worldPos, Quaternion.identity, obstaclesParent);
             AttachObstacleConfig(go, o);
@@ -495,18 +491,18 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     private void AttachObstacleConfig(GameObject go, ObstacleData o)
     {
-        // Prefer to configure known obstacle controllers directly (avoid adding extra components)
+
         var mace = go.GetComponent<MaceController>();
         if (mace != null)
         {
-            // compute cell size for unit conversion
-            var cellSize = floorTilemap != null && floorTilemap.layoutGrid != null
-                ? floorTilemap.layoutGrid.cellSize
+
+            var cellSize = terrainTilemap != null && terrainTilemap.layoutGrid != null
+                ? terrainTilemap.layoutGrid.cellSize
                 : Vector3.one;
             float speedUnits = o.speed * Mathf.Abs(cellSize.x);
             float horizUnits = o.horizontalDistance * Mathf.Abs(cellSize.x);
             float vertUnits = o.verticalDistance * Mathf.Abs(cellSize.y);
-            mace.ApplyObstacleData(o.startX, o.startY, speedUnits, horizUnits, vertUnits, o.starterCorner, o.clockwise, startX, floorYRow, obstacleYRelativeToFloor, floorTilemap);
+            mace.ApplyObstacleData(o.startX, o.startY, speedUnits, horizUnits, vertUnits, o.starterCorner, o.clockwise, startX, floorYRow, obstacleYRelativeToFloor, terrainTilemap);
             return;
         }
     }

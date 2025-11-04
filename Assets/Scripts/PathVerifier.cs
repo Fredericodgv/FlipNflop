@@ -281,7 +281,7 @@ public class PathVerifier : MonoBehaviour
     /// </summary>
     private void GenerateCorrectPath()
     {
-        var loader = FindObjectOfType<LevelJsonLoader>();
+        var loader = UnityEngine.Object.FindFirstObjectByType<LevelJsonLoader>();
         if (loader == null)
         {
             Debug.LogError("PathVerifier requires a LevelJsonLoader in the scene.");
