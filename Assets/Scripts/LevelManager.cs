@@ -10,7 +10,7 @@ public class LevelManager : MonoBehaviour
     [Tooltip("A posição X onde a fase termina.")]
     public float levelEndX = 25f; // Valor padrão unificado
     [Tooltip("Passo do clock em X (distância entre linhas de clock / amostragem).")]
-    public float clockStepX = 5f; // Centralizado aqui para uso global
+    public float clockStepX = 6f; // Centralizado aqui para uso global
 
     [Header("Navegação")]
     [SerializeField] private string nextLevel;

@@ -20,23 +20,8 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField] private TextAsset levelFile;
 
     [Header("Tiles - Diagrams")]
-    [Tooltip("Tile used for steady (flat) signal 1")]
-    [SerializeField] private TileBase tile111;
-    [Tooltip("Tile used for the '1' side of a rising edge (first 1 after a 0->1 transition)")]
-    [SerializeField] private TileBase tile011;
-    [Tooltip("Tile used for the '1' side of a falling edge (last 1 before a 1->0 transition)")]
-    [SerializeField] private TileBase tile110;
-    [Tooltip("Tile used when a single '1' is both rising and falling (0->1->0 short pulse)")]
-    [SerializeField] private TileBase tile010;
-
-    [Tooltip("Tile used for steady (flat) signal 0")]
-    [SerializeField] private TileBase tile000;
-    [Tooltip("Tile used for the '0' side of a rising edge (last 0 before a 0->1 transition)")]
-    [SerializeField] private TileBase tile001;
-    [Tooltip("Tile used for the '0' side of a falling edge (first 0 after a 1->0 transition)")]
-    [SerializeField] private TileBase tile100;
-    [Tooltip("Tile used when a single '0' is both falling and rising (1->0->1 short dip)")]
-    [SerializeField] private TileBase tile101;
+    [Tooltip("Tiles for 3-bit neighborhood patterns (prev,curr,next) as binary index: 0=000,1=001,2=010,3=011,4=100,5=101,6=110,7=111")]
+    [SerializeField] private TileBase[] diagramTiles = new TileBase[8];
 
 
     [Header("Tiles - Terrain")]
@@ -228,27 +213,20 @@ public class LevelJsonLoader : MonoBehaviour
             clockStep += 1; // simple coercion to next even
             Debug.LogWarning($"LevelJsonLoader: clockTiles was odd; coerced to even value {clockStep}.");
         }
-        int levelLength = data.levelTiles > 0
-            ? data.levelTiles
-            : Mathf.Max(
-                jSignal != null ? jSignal.Length : 0,
-                Mathf.Max(
-                    kSignal != null ? kSignal.Length : 0,
-                    Mathf.Max(
-                        floorBand != null ? floorBand.Length : 0,
-                        ceilingBand != null ? ceilingBand.Length : 0)));
+        int levelLength = data.clockTiles * data.clockCicles;
 
         if (levelLength > 0)
         {
             var clockPattern = BuildClockPattern(levelLength, clockStep, false);
-            DrawPattern(clockTilemap, clockPattern, clock_YRow, startX, invertLeftExtension: true);
+            DrawPattern(clockTilemap, clockPattern, clock_YRow, startX);
         }
         else
         {
             Debug.LogError("LevelJsonLoader: Cannot build clock signal because determined level length is 0.");
         }
-        GenerateBand(terrainTilemap, floorBand, floorYRow, floorTile, false);
-        GenerateBand(terrainTilemap, ceilingBand, ceilingYRow, ceilingTile, flipCeilingY);
+        // Extend floor and ceiling by +3 tiles beyond the last '1' defined in JSON
+        GenerateBand(terrainTilemap, floorBand, floorYRow, floorTile, false, 3);
+        GenerateBand(terrainTilemap, ceilingBand, ceilingYRow, ceilingTile, flipCeilingY, 3);
 
         CompleteStaticScenery();
 
@@ -261,10 +239,9 @@ public class LevelJsonLoader : MonoBehaviour
 
 
     /// <summary>
-    /// Builds the new clock pattern:
+    /// Builds the clock pattern (even step only):
     /// Even step S: period = S tiles: first S/2 zeros, then S/2 ones (startHigh chooses which half first).
-    /// Odd step S=2k+1: period = [k stable value][mid tile (code 2)][k opposite value]. startHigh decides if starts high or low.
-    /// Returns int[] of length totalLength with values: 0=low, 1=high, 2=mid-transition tile.
+    /// Returns int[] of length totalLength with values: 0=low, 1=high.
     /// </summary>
     #endregion
 
@@ -274,67 +251,47 @@ public class LevelJsonLoader : MonoBehaviour
         if (totalLength <= 0 || step <= 0) return null;
         // Enforce even step locally too
         if (step % 2 != 0) step += 1;
-        var arr = new int[totalLength];
+        var arr = new int[totalLength + step];
         int half = step / 2;
         var period = new int[step];
         int firstVal = startHigh ? 1 : 0;
         int secondVal = startHigh ? 0 : 1;
         for (int i = 0; i < half; i++) period[i] = firstVal;
         for (int i = half; i < step; i++) period[i] = secondVal;
-        for (int i = 0; i < totalLength; i++) arr[i] = period[i % step];
+        for (int i = 0; i < totalLength + step; i++)
+            arr[i] = period[i % step];
         return arr;
     }
 
     /// <summary>
     /// Generalized pattern renderer for both inputs and clock.
-    /// pattern codes: 0 = low, 1 = high, 2 = mid-transition (only used for clock when supportsMid=true).
-    /// If invertLeftExtension=true, the tile at (startX-1) uses the inverse of the first stable value.
-    /// Otherwise, it repeats the first stable value (flat). This matches input diagrams behavior.
+    /// pattern codes: 0 = low, 1 = high.
     /// </summary>
-    private void DrawPattern(Tilemap map, int[] pattern, int yRow, int startX, bool invertLeftExtension)
+    private void DrawPattern(Tilemap map, int[] pattern, int yRow, int startX)
     {
         if (map == null || pattern == null || pattern.Length == 0) return;
 
-        int firstStable = -1;
-        for (int s = 0; s < pattern.Length; s++)
-        {
-            if (pattern[s] == 0 || pattern[s] == 1) { firstStable = pattern[s]; break; }
-        }
-        if (firstStable < 0) firstStable = 0;
-
-        int leftVal = invertLeftExtension ? (firstStable == 1 ? 0 : 1) : firstStable;
-        var leftTile = leftVal == 1 ? tile111 : tile000;
-        if (leftTile != null)
-            map.SetTile(new Vector3Int(startX - 1, yRow, 0), leftTile);
-
         for (int i = 0; i < pattern.Length; i++)
         {
-            int code = pattern[i];
-            // Proper neighbor sampling (no wrap): edges reuse self so 010 / 101 in interior are detected
-            int prev = (i > 0) ? pattern[i - 1] : pattern[i];
-            int next = (i < pattern.Length - 1) ? pattern[i + 1] : pattern[i];
+            int curr = pattern[i];
+            int prev = (i > 0) ? pattern[i - 1] : curr;
+            int next = (i < pattern.Length - 1) ? pattern[i + 1] : curr;
 
-            TileBase tile = null;
-            if (code == 1)
-            {
-                // Isolated '1' pattern 0 1 0 (010)
-                if (prev == 0 && next == 0) tile = tile010;            // rising & falling
-                else if (prev == 0 && next == 1) tile = tile011;        // rising first 1
-                else if (prev == 1 && next == 0) tile = tile110;        // falling last 1
-                else tile = tile111;                                    // steady 1
-            }
-            else // code == 0
-            {
-                // Isolated '0' pattern 1 0 1 (101)
-                if (prev == 1 && next == 1) tile = tile101; // falling & rising
-                else if (prev == 1 && next == 0) tile = tile100;   // first 0 after 1->0
-                else if (prev == 0 && next == 1) tile = tile001;    // last 0 before 0->1
-                else tile = tile000;                              // steady 0
-            }
+            int prevBit = prev != 0 ? 1 : 0;
+            int currBit = curr != 0 ? 1 : 0;
+            int nextBit = next != 0 ? 1 : 0;
+            int idx = (prevBit << 2) | (currBit << 1) | nextBit;
 
+            TileBase tile = SafeTile(idx);
             if (tile != null)
                 map.SetTile(new Vector3Int(startX + i, yRow, 0), tile);
         }
+    }
+
+    private TileBase SafeTile(int idx)
+    {
+        if (diagramTiles == null || diagramTiles.Length <= idx || idx < 0) return null;
+        return diagramTiles[idx];
     }
 
     /// <summary>
@@ -368,9 +325,8 @@ public class LevelJsonLoader : MonoBehaviour
     {
         if (LevelManager.Instance != null)
         {
-            // Clock mandatory: default to 1 if invalid
             LevelManager.Instance.clockStepX = data.clockTiles > 0 ? data.clockTiles : 1;
-            if (data.levelTiles > 0) LevelManager.Instance.levelEndX = data.levelTiles;
+            LevelManager.Instance.levelEndX = data.clockCicles * data.clockTiles;
         }
     }
 
@@ -392,13 +348,13 @@ public class LevelJsonLoader : MonoBehaviour
         if (targetMap == null || signal == null) return;
         var pattern = new int[signal.Length];
         for (int i = 0; i < signal.Length; i++) pattern[i] = signal[i] ? 1 : 0;
-        DrawPattern(targetMap, pattern, yRow, baseX, invertLeftExtension: false);
+        DrawPattern(targetMap, pattern, yRow, baseX);
     }
 
     /// <summary>
     /// Renders a 0/1 band onto a tilemap at the given Y row.
     /// </summary>
-    private void GenerateBand(Tilemap targetMap, bool[] band, int yRow, TileBase tile, bool flipY = false)
+    private void GenerateBand(Tilemap targetMap, bool[] band, int yRow, TileBase tile, bool flipY = false, int extendRight = 0)
     {
         if (targetMap == null || band == null || tile == null) return;
         for (int i = 0; i < band.Length; i++)
@@ -410,6 +366,29 @@ public class LevelJsonLoader : MonoBehaviour
             {
                 targetMap.SetTileFlags(pos, TileFlags.None);
                 targetMap.SetTransformMatrix(pos, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
+            }
+        }
+
+        // Extend the band by painting extra tiles to the right of the last '1'
+        if (extendRight > 0)
+        {
+            int lastIdx = -1;
+            for (int i = band.Length - 1; i >= 0; i--)
+            {
+                if (band[i]) { lastIdx = i; break; }
+            }
+            if (lastIdx >= 0)
+            {
+                for (int off = 1; off <= extendRight; off++)
+                {
+                    var posExt = new Vector3Int(startX + lastIdx + off, yRow, 0);
+                    targetMap.SetTile(posExt, tile);
+                    if (flipY)
+                    {
+                        targetMap.SetTileFlags(posExt, TileFlags.None);
+                        targetMap.SetTransformMatrix(posExt, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
+                    }
+                }
             }
         }
     }
@@ -480,11 +459,19 @@ public class LevelJsonLoader : MonoBehaviour
             Debug.LogError("LevelJsonLoader: One or more required Tilemap references are missing (input/terrain/clock).");
             return false;
         }
-        if (tile111 == null || tile011 == null || tile110 == null || tile010 == null
-            || tile000 == null || tile001 == null || tile100 == null || tile101 == null)
+        // Validate diagram tiles array
+        if (diagramTiles == null || diagramTiles.Length < 8)
         {
-            Debug.LogError("LevelJsonLoader: One or more diagram tiles are not assigned.");
+            Debug.LogError("LevelJsonLoader: diagramTiles must have 8 entries (indices 0..7 for 000..111).");
             return false;
+        }
+        for (int i = 0; i < 8; i++)
+        {
+            if (diagramTiles[i] == null)
+            {
+                Debug.LogError($"LevelJsonLoader: diagramTiles[{i}] is not assigned. Expected mapping 0=000,1=001,2=010,3=011,4=100,5=101,6=110,7=111.");
+                return false;
+            }
         }
         if (floorTile == null || ceilingTile == null)
         {
@@ -580,7 +567,7 @@ public class LevelJsonLoader : MonoBehaviour
     private class LevelData
     {
         public string levelName;
-        public int levelTiles;
+        public int clockCicles;
         public int clockTiles;
         public string jSignal;
         public string kSignal;

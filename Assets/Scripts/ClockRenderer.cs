@@ -65,8 +65,12 @@ public class ClockRenderer : MonoBehaviour
         // Gera novas linhas ao redor da câmera
         float cameraX = cameraTransform.position.x;
         float step = GetStep();
-        // Âncora fixa em 0: linhas alinhadas ao X=0 do mundo
-        float startX = Mathf.Floor(cameraX / step) * step - (linesPerChunk / 2f * step);
+        // Inicia no primeiro múltiplo positivo de step (>= step) mais à esquerda da janela
+        float halfSpan = (linesPerChunk / 2f) * step;
+        float leftEdge = cameraX - halfSpan;
+        int startMultiple = Mathf.FloorToInt(leftEdge / step);
+        if (startMultiple < 1) startMultiple = 1; // pula x=0 de forma natural (sem filtros por linha)
+        float startX = startMultiple * step;
 
         for (int i = 0; i < linesPerChunk; i++)
         {
@@ -99,11 +103,10 @@ public class ClockRenderer : MonoBehaviour
         float step = GetStep(lm);
         if (step <= 0f) return;
 
-        // Âncora fixa em 0 para gizmos
-        float minX = Mathf.Min(0f, levelEndX);
-        float maxX = Mathf.Max(0f, levelEndX);
-        float firstX = Mathf.Ceil(minX / step) * step;
-        int count = Mathf.FloorToInt((maxX - firstX) / step) + 1;
+        // Começa no primeiro múltiplo positivo (X = step)
+        float firstX = step;
+        if (levelEndX <= firstX) return;
+        int count = Mathf.FloorToInt((levelEndX - firstX) / step) + 1;
         if (count < 0) return;
 
         Gizmos.color = fullLevelGizmoColor;
