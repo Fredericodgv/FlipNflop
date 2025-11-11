@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -10,6 +9,7 @@ using UnityEngine.Tilemaps;
 /// </summary>
 public class LevelJsonLoader : MonoBehaviour
 {
+    #region Fields
     [Header("Tilemaps")]
     [SerializeField] private Tilemap inputTilemap;
     [SerializeField] private Tilemap terrainTilemap;
@@ -21,22 +21,23 @@ public class LevelJsonLoader : MonoBehaviour
 
     [Header("Tiles - Diagrams")]
     [Tooltip("Tile used for steady (flat) signal 1")]
-    [SerializeField] private TileBase tile_1_Standard;
+    [SerializeField] private TileBase tile111;
     [Tooltip("Tile used for the '1' side of a rising edge (first 1 after a 0->1 transition)")]
-    [SerializeField] private TileBase tile_1_Rising;
+    [SerializeField] private TileBase tile011;
     [Tooltip("Tile used for the '1' side of a falling edge (last 1 before a 1->0 transition)")]
-    [SerializeField] private TileBase tile_1_Falling;
+    [SerializeField] private TileBase tile110;
     [Tooltip("Tile used when a single '1' is both rising and falling (0->1->0 short pulse)")]
-    [SerializeField] private TileBase tile_1_RisingFalling;
+    [SerializeField] private TileBase tile010;
 
     [Tooltip("Tile used for steady (flat) signal 0")]
-    [SerializeField] private TileBase tile_0_Standard;
+    [SerializeField] private TileBase tile000;
     [Tooltip("Tile used for the '0' side of a rising edge (last 0 before a 0->1 transition)")]
-    [SerializeField] private TileBase tile_0_Rising;
+    [SerializeField] private TileBase tile001;
     [Tooltip("Tile used for the '0' side of a falling edge (first 0 after a 1->0 transition)")]
-    [SerializeField] private TileBase tile_0_Falling;
+    [SerializeField] private TileBase tile100;
     [Tooltip("Tile used when a single '0' is both falling and rising (1->0->1 short dip)")]
-    [SerializeField] private TileBase tile_0_FallingRising;
+    [SerializeField] private TileBase tile101;
+
 
     [Header("Tiles - Terrain")]
     [SerializeField] private TileBase floorTile;
@@ -48,9 +49,9 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField] private int startX = 0;
     [SerializeField] private int j_YRow = 8;
     [SerializeField] private int k_YRow = 5;
-    [SerializeField] private int preset_YRow = 10; // optional row for preset diagram
-    [SerializeField] private int clear_YRow = 2;   // optional row for clear diagram
-    [SerializeField] private int clock_YRow = 14;  // row for clock diagram
+    [SerializeField] private int preset_YRow = 10;
+    [SerializeField] private int clear_YRow = 2;
+    [SerializeField] private int clock_YRow = 14;
     [SerializeField] private int floorYRow = 0;
     [SerializeField] private int ceilingYRow = 12;
 
@@ -62,91 +63,57 @@ public class LevelJsonLoader : MonoBehaviour
     [Tooltip("Map JSON obstacle 'type' to prefab to spawn")]
     [SerializeField] private List<ObstaclePrefabEntry> obstaclePrefabs = new List<ObstaclePrefabEntry>();
 
-    /// <summary>
-    /// JSON data model for level configuration.
-    /// </summary>
-    [Serializable]
-    private class LevelData
-    {
-        public string levelName;
-        public int levelTiles;
-        public int clockTiles;
-        public string jSignal;
-        public string kSignal;
-        // Optional asynchronous inputs: when present, override the output at that instant
-        // presetSignal -> forces Q=1; clearSignal -> forces Q=0. If absent, ignored.
-        public string presetSignal;
-        public string clearSignal;
-        public string floor;
-        public string ceiling;
-        public List<ObstacleData> obstacles;
-    }
+    #endregion
+
+    #region Parsed Signals
 
     public bool[] ParsedJSignal { get; private set; }
     public bool[] ParsedKSignal { get; private set; }
     public bool[] ParsedPresetSignal { get; private set; }
     public bool[] ParsedClearSignal { get; private set; }
 
+    #endregion
+
     /// <summary>
-    /// Compute the sequence of JK outputs sampled on the clock. This uses the parsed J/K arrays
-    /// and samples them at indices (clockStep-1), (2*clockStep-1), ... until one of the arrays ends.
+    /// Compute the sequence of JK outputs sampled on the clock.
+    /// Sampling rule:
+    /// - Clock edges occur at exact multiples of step: X = step, 2*step, 3*step, ...
+    /// - The inputs J/K are sampled at the tile just BEFORE the edge: index = X - 1
+    ///   i.e., indices: step-1, 2*step-1, 3*step-1, ...
     /// The JK behavior follows: J=1,K=0 => Q=1; J=0,K=1 => Q=0; J=1,K=1 => toggle; J=0,K=0 => hold.
     /// Returns null if inputs are invalid.
     /// </summary>
+    #region Output Computation
     public bool[] ComputeOutputSamplesFromParsedSignals()
     {
+        GetClockSamplingParameters(out int step, out int startOffset);
+        // Sample at indices just before each edge: step-1, 2*step-1, ...
+        int sampleStartOffset = Mathf.Max(0, startOffset - 1);
         var samples = BuildOutputSequenceFromSignalsWithAsync(this.ParsedJSignal, this.ParsedKSignal,
             this.ParsedPresetSignal, this.ParsedClearSignal,
-            (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
-                ? Mathf.Max(1, Mathf.RoundToInt(LevelManager.Instance.clockStepX))
-                : 1);
-        Debug.Log($"LevelJsonLoader: ComputeOutputSamplesFromParsedSignals -> samples length={(samples == null ? 0 : samples.Length)} value={BoolArrayToString(samples)}");
+            step, sampleStartOffset);
         return samples;
     }
 
-    /// <summary>
-    /// Static helper: build an output sequence from raw J/K boolean arrays sampled every clockStep items.
-    /// </summary>
-    public static bool[] BuildOutputSequenceFromSignals(bool[] jSignal, bool[] kSignal, int clockStep)
-    {
-        if (jSignal == null || kSignal == null || clockStep <= 0) return null;
-        int maxIndex = Math.Min(jSignal.Length, kSignal.Length);
-        if (maxIndex == 0) return null;
 
-        var outputs = new List<bool>();
-        bool qState = false; // initial output assumed LOW
-
-        for (int idx = 0; idx < maxIndex; idx += clockStep)
-        {
-            bool j = jSignal[idx];
-            bool k = kSignal[idx];
-            if (j && !k) qState = true;
-            else if (!j && k) qState = false;
-            else if (j && k) qState = !qState;
-            outputs.Add(qState);
-        }
-
-        var outArr = outputs.Count > 0 ? outputs.ToArray() : null;
-        Debug.Log($"LevelJsonLoader: BuildOutputSequenceFromSignals(clockStep={clockStep}, jLen={(jSignal == null ? 0 : jSignal.Length)}, kLen={(kSignal == null ? 0 : kSignal.Length)}) -> outputs len={(outArr == null ? 0 : outArr.Length)} value={BoolArrayToString(outArr)}");
-        return outArr;
-    }
 
     /// <summary>
     /// Static helper: build an output sequence from raw J/K boolean arrays sampled every clockStep items,
     /// honoring optional asynchronous Preset (force 1) and Clear (force 0). If both are true at the same
-    /// sampled index, Clear wins and a warning is logged.
+    /// sampled index, Clear wins and a warning is logged. Sampling starts at startOffset and continues with step size clockStep.
     /// </summary>
     public static bool[] BuildOutputSequenceFromSignalsWithAsync(bool[] jSignal, bool[] kSignal,
-        bool[] presetSignal, bool[] clearSignal, int clockStep)
+        bool[] presetSignal, bool[] clearSignal, int clockStep, int startOffset = 0)
     {
         if (jSignal == null || kSignal == null || clockStep <= 0) return null;
         int maxIndex = Math.Min(jSignal.Length, kSignal.Length);
         if (maxIndex == 0) return null;
 
         var outputs = new List<bool>();
-        bool qState = false; 
+        bool qState = false;
 
-        for (int idx = 0; idx < maxIndex; idx += clockStep)
+        int startIdx = Mathf.Clamp(startOffset, 0, Math.Max(0, maxIndex - 1));
+        for (int idx = startIdx; idx < maxIndex; idx += clockStep)
         {
             bool hasPreset = (presetSignal != null && idx < presetSignal.Length) ? presetSignal[idx] : false;
             bool hasClear = (clearSignal != null && idx < clearSignal.Length) ? clearSignal[idx] : false;
@@ -171,83 +138,55 @@ public class LevelJsonLoader : MonoBehaviour
                 if (j && !k) qState = true;
                 else if (!j && k) qState = false;
                 else if (j && k) qState = !qState;
-                // else hold
             }
 
             outputs.Add(qState);
         }
 
         var outArr = outputs.Count > 0 ? outputs.ToArray() : null;
-        Debug.Log($"LevelJsonLoader: BuildOutputSequenceFromSignalsWithAsync(clockStep={clockStep}, jLen={(jSignal == null ? 0 : jSignal.Length)}, kLen={(kSignal == null ? 0 : kSignal.Length)}, presetLen={(presetSignal == null ? 0 : presetSignal.Length)}, clearLen={(clearSignal == null ? 0 : clearSignal.Length)}) -> outputs len={(outArr == null ? 0 : outArr.Length)} value={BoolArrayToString(outArr)}");
         return outArr;
     }
 
     /// <summary>
     /// Builds an ordered list of PathVerifier.SignalEvent from the clock-aligned output samples.
-    /// Each sample i maps to X = (i+1) * step (step is taken from LevelManager.clockStepX when available).
+    /// Event X positions occur at exact multiples of the clock step: X_n = (n+1) * step.
+    /// Note: Input sampling uses the tile just before the edge (index = X_n - 1), handled separately in ComputeOutputSamplesFromParsedSignals.
     /// Returns null if there are no samples.
     /// </summary>
     public List<PathVerifier.SignalEvent> ComputeOutputEventsFromParsedSignals()
     {
+        GetClockSamplingParameters(out int step, out int startOffset);
         var samples = ComputeOutputSamplesFromParsedSignals();
         if (samples == null || samples.Length == 0) return null;
-
-        float step = (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
-            ? LevelManager.Instance.clockStepX
-            : 1f;
 
         var events = new List<PathVerifier.SignalEvent>(samples.Length);
         for (int i = 0; i < samples.Length; i++)
         {
-            float x = i * step;
+            // Event happens at the edge X = (i+1) * step
+            int edgeX = (i + 1) * step;
+            float x = edgeX; // 1 tile == 1 world unit along X (assumption)
             events.Add(new PathVerifier.SignalEvent(x, samples[i]));
         }
-        Debug.Log($"LevelJsonLoader: ComputeOutputEventsFromParsedSignals -> {EventsToString(events)}");
         return events;
     }
 
-    private static string BoolArrayToString(bool[] arr)
+    /// <summary>
+    /// Determines clock sampling parameters (step in tiles and startOffset) based on LevelManager.clockStepX.
+    /// startOffset rule (edge positions): first edge at X=step (i.e., startOffset = step).
+    /// Input sampling uses X - 1; event X uses exact multiples.
+    /// </summary>
+    private void GetClockSamplingParameters(out int step, out int startOffset)
     {
-        if (arr == null) return "null";
-        var sb = new StringBuilder(arr.Length);
-        for (int i = 0; i < arr.Length; i++) sb.Append(arr[i] ? '1' : '0');
-        return sb.ToString();
+        float stepF = (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
+            ? LevelManager.Instance.clockStepX
+            : 1f;
+        step = Mathf.Max(1, Mathf.RoundToInt(stepF));
+        startOffset = step;
     }
 
-    private static string EventsToString(List<PathVerifier.SignalEvent> events)
-    {
-        if (events == null) return "null";
-        var sb = new StringBuilder();
-        sb.Append("events[");
-        for (int i = 0; i < events.Count; i++)
-        {
-            var e = events[i];
-            sb.AppendFormat("(x={0:0.##},v={1})", e.x, e.value ? 1 : 0);
-            if (i < events.Count - 1) sb.Append(",");
-        }
-        sb.Append("]");
-        return sb.ToString();
-    }
+    #endregion
 
-    [Serializable]
-    private class ObstacleData
-    {
-        public string type;
-        public int startX;
-        public int startY;
-        public float speed;
-        public int horizontalDistance;
-        public int verticalDistance;
-        public string starterCorner;
-        public bool clockwise;
-    }
-
-    [Serializable]
-    private class ObstaclePrefabEntry
-    {
-        public string type;
-        public GameObject prefab;
-    }
+    #region Lifecycle
 
     /// <summary>
     /// Initializes tilemaps from the provided JSON and updates LevelManager settings.
@@ -264,17 +203,11 @@ public class LevelJsonLoader : MonoBehaviour
         var kSignal = ParseInputString(data.kSignal);
         var presetSignal = ParseInputString(data.presetSignal);
         var clearSignal = ParseInputString(data.clearSignal);
-        // store parsed signals for external consumers (e.g. PathVerifier)
         this.ParsedJSignal = jSignal;
         this.ParsedKSignal = kSignal;
         this.ParsedPresetSignal = presetSignal;
         this.ParsedClearSignal = clearSignal;
-        Debug.Log($"LevelJsonLoader: raw jSignal string='{data.jSignal}' parsed({(jSignal == null ? 0 : jSignal.Length)}): {BoolArrayToString(jSignal)}");
-        Debug.Log($"LevelJsonLoader: raw kSignal string='{data.kSignal}' parsed({(kSignal == null ? 0 : kSignal.Length)}): {BoolArrayToString(kSignal)}");
-        if (data.presetSignal != null)
-            Debug.Log($"LevelJsonLoader: raw presetSignal string='{data.presetSignal}' parsed({(presetSignal == null ? 0 : presetSignal.Length)}): {BoolArrayToString(presetSignal)}");
-        if (data.clearSignal != null)
-            Debug.Log($"LevelJsonLoader: raw clearSignal string='{data.clearSignal}' parsed({(clearSignal == null ? 0 : clearSignal.Length)}): {BoolArrayToString(clearSignal)}");
+
         var floorBand = ParseInputString(data.floor);
         var ceilingBand = ParseInputString(data.ceiling);
 
@@ -286,9 +219,15 @@ public class LevelJsonLoader : MonoBehaviour
         if (clearSignal != null)
             GenerateDiagram(inputTilemap, clearSignal, clear_YRow);
 
-        int clockStep = data.clockTiles > 0 ? data.clockTiles : 1;
+        int clockStep = data.clockTiles > 0 ? data.clockTiles : 2;
         if (data.clockTiles <= 0)
-            Debug.LogWarning($"LevelJsonLoader: clockTiles <= 0 in JSON; defaulting clock step to 1.");
+            Debug.LogWarning($"LevelJsonLoader: clockTiles <= 0 in JSON; defaulting clock step to 2 (even).");
+        // Enforce even clock step
+        if (clockStep % 2 != 0)
+        {
+            clockStep += 1; // simple coercion to next even
+            Debug.LogWarning($"LevelJsonLoader: clockTiles was odd; coerced to even value {clockStep}.");
+        }
         int levelLength = data.levelTiles > 0
             ? data.levelTiles
             : Mathf.Max(
@@ -301,12 +240,8 @@ public class LevelJsonLoader : MonoBehaviour
 
         if (levelLength > 0)
         {
-            int halfStep = Mathf.Max(1, clockStep / 2);
-            // Start clock half-period earlier so a full cycle appears before x=startX
-            // We extend the generated length by halfStep to preserve the right boundary
-            var clock = BuildClockSignal(levelLength + halfStep, halfStep, false);
-            Debug.Log($"LevelJsonLoader: built clock signal (len={clock.Length}, halfStep={halfStep}, clockTiles={clockStep}): {BoolArrayToString(clock)}");
-            GenerateDiagram(clockTilemap, clock, clock_YRow, startX - halfStep);
+            var clockPattern = BuildClockPattern(levelLength, clockStep, false);
+            DrawPattern(clockTilemap, clockPattern, clock_YRow, startX, invertLeftExtension: true);
         }
         else
         {
@@ -323,32 +258,91 @@ public class LevelJsonLoader : MonoBehaviour
         }
     }
 
+
+
     /// <summary>
-    /// Builds a clock boolean array of totalLength, toggling every 'step' tiles. Starts LOW unless startHigh=true.
-    /// Example (step=5, startHigh=false): 00000 11111 00000 11111 ...
+    /// Builds the new clock pattern:
+    /// Even step S: period = S tiles: first S/2 zeros, then S/2 ones (startHigh chooses which half first).
+    /// Odd step S=2k+1: period = [k stable value][mid tile (code 2)][k opposite value]. startHigh decides if starts high or low.
+    /// Returns int[] of length totalLength with values: 0=low, 1=high, 2=mid-transition tile.
     /// </summary>
-    public static bool[] BuildClockSignal(int totalLength, int step, bool startHigh = false)
+    #endregion
+
+    #region Clock Pattern
+    public static int[] BuildClockPattern(int totalLength, int step, bool startHigh = false)
     {
         if (totalLength <= 0 || step <= 0) return null;
-        var arr = new bool[totalLength];
-        bool state = startHigh;
-        int count = 0;
-        for (int i = 0; i < totalLength; i++)
-        {
-            arr[i] = state;
-            count++;
-            if (count >= step)
-            {
-                state = !state;
-                count = 0;
-            }
-        }
+        // Enforce even step locally too
+        if (step % 2 != 0) step += 1;
+        var arr = new int[totalLength];
+        int half = step / 2;
+        var period = new int[step];
+        int firstVal = startHigh ? 1 : 0;
+        int secondVal = startHigh ? 0 : 1;
+        for (int i = 0; i < half; i++) period[i] = firstVal;
+        for (int i = half; i < step; i++) period[i] = secondVal;
+        for (int i = 0; i < totalLength; i++) arr[i] = period[i % step];
         return arr;
+    }
+
+    /// <summary>
+    /// Generalized pattern renderer for both inputs and clock.
+    /// pattern codes: 0 = low, 1 = high, 2 = mid-transition (only used for clock when supportsMid=true).
+    /// If invertLeftExtension=true, the tile at (startX-1) uses the inverse of the first stable value.
+    /// Otherwise, it repeats the first stable value (flat). This matches input diagrams behavior.
+    /// </summary>
+    private void DrawPattern(Tilemap map, int[] pattern, int yRow, int startX, bool invertLeftExtension)
+    {
+        if (map == null || pattern == null || pattern.Length == 0) return;
+
+        int firstStable = -1;
+        for (int s = 0; s < pattern.Length; s++)
+        {
+            if (pattern[s] == 0 || pattern[s] == 1) { firstStable = pattern[s]; break; }
+        }
+        if (firstStable < 0) firstStable = 0;
+
+        int leftVal = invertLeftExtension ? (firstStable == 1 ? 0 : 1) : firstStable;
+        var leftTile = leftVal == 1 ? tile111 : tile000;
+        if (leftTile != null)
+            map.SetTile(new Vector3Int(startX - 1, yRow, 0), leftTile);
+
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            int code = pattern[i];
+            // Proper neighbor sampling (no wrap): edges reuse self so 010 / 101 in interior are detected
+            int prev = (i > 0) ? pattern[i - 1] : pattern[i];
+            int next = (i < pattern.Length - 1) ? pattern[i + 1] : pattern[i];
+
+            TileBase tile = null;
+            if (code == 1)
+            {
+                // Isolated '1' pattern 0 1 0 (010)
+                if (prev == 0 && next == 0) tile = tile010;            // rising & falling
+                else if (prev == 0 && next == 1) tile = tile011;        // rising first 1
+                else if (prev == 1 && next == 0) tile = tile110;        // falling last 1
+                else tile = tile111;                                    // steady 1
+            }
+            else // code == 0
+            {
+                // Isolated '0' pattern 1 0 1 (101)
+                if (prev == 1 && next == 1) tile = tile101; // falling & rising
+                else if (prev == 1 && next == 0) tile = tile100;   // first 0 after 1->0
+                else if (prev == 0 && next == 1) tile = tile001;    // last 0 before 0->1
+                else tile = tile000;                              // steady 0
+            }
+
+            if (tile != null)
+                map.SetTile(new Vector3Int(startX + i, yRow, 0), tile);
+        }
     }
 
     /// <summary>
     /// Loads and parses the JSON asset into a LevelData instance.
     /// </summary>
+    #endregion
+
+    #region JSON & Config
     private LevelData LoadLevelData(TextAsset jsonAsset)
     {
         if (jsonAsset == null || string.IsNullOrWhiteSpace(jsonAsset.text))
@@ -385,6 +379,9 @@ public class LevelJsonLoader : MonoBehaviour
     /// <summary>
     /// Renders a signal diagram onto a tilemap using rising/falling/flat tiles.
     /// </summary>
+    #endregion
+
+    #region Diagram Rendering
     private void GenerateDiagram(Tilemap targetMap, bool[] signal, int yRow)
     {
         GenerateDiagram(targetMap, signal, yRow, startX);
@@ -393,45 +390,9 @@ public class LevelJsonLoader : MonoBehaviour
     private void GenerateDiagram(Tilemap targetMap, bool[] signal, int yRow, int baseX)
     {
         if (targetMap == null || signal == null) return;
-        // Extend one cell to the left replicating only the signal value (flat), not the transition style
-        if (signal.Length > 0)
-        {
-            TileBase leftTile = signal[0] ? tile_1_Standard : tile_0_Standard;
-            if (leftTile != null)
-                targetMap.SetTile(new Vector3Int(baseX - 1, yRow, 0), leftTile);
-        }
-
-        for (int i = 0; i < signal.Length; i++)
-        {
-            TileBase tileToPlace = ResolveTileForIndex(signal, i);
-            if (tileToPlace != null)
-                targetMap.SetTile(new Vector3Int(baseX + i, yRow, 0), tileToPlace);
-        }
-    }
-
-    /// <summary>
-    /// Determines which tile should be placed at a given index considering transitions.
-    /// </summary>
-    private TileBase ResolveTileForIndex(bool[] signal, int i)
-    {
-        bool current = signal[i];
-        bool prev = (i > 0) ? signal[i - 1] : current;
-        bool next = (i < signal.Length - 1) ? signal[i + 1] : current;
-
-        if (current)
-        {
-            if (!prev && next) return tile_1_Rising;          // 0 -> 1 first 1
-            if (prev && !next) return tile_1_Falling;         // 1 -> 0 last 1
-            if (!prev && !next) return tile_1_RisingFalling;  // isolated 1
-            return tile_1_Standard;                           // steady 1
-        }
-        else
-        {
-            if (prev && !next) return tile_0_Falling;         // 1 -> 0 first 0
-            if (!prev && next) return tile_0_Rising;          // 0 -> 1 last 0
-            if (prev && next) return tile_0_FallingRising;    // isolated 0
-            return tile_0_Standard;                           // steady 0
-        }
+        var pattern = new int[signal.Length];
+        for (int i = 0; i < signal.Length; i++) pattern[i] = signal[i] ? 1 : 0;
+        DrawPattern(targetMap, pattern, yRow, baseX, invertLeftExtension: false);
     }
 
     /// <summary>
@@ -494,6 +455,9 @@ public class LevelJsonLoader : MonoBehaviour
     /// <summary>
     /// Parses a 0/1 string into a boolean array.
     /// </summary>
+    #endregion
+
+    #region Parsing & Validation
     private bool[] ParseInputString(string data)
     {
         if (string.IsNullOrEmpty(data)) return null;
@@ -516,8 +480,8 @@ public class LevelJsonLoader : MonoBehaviour
             Debug.LogError("LevelJsonLoader: One or more required Tilemap references are missing (input/terrain/clock).");
             return false;
         }
-        if (tile_1_Standard == null || tile_1_Rising == null || tile_1_Falling == null || tile_1_RisingFalling == null
-            || tile_0_Standard == null || tile_0_Rising == null || tile_0_Falling == null || tile_0_FallingRising == null)
+        if (tile111 == null || tile011 == null || tile110 == null || tile010 == null
+            || tile000 == null || tile001 == null || tile100 == null || tile101 == null)
         {
             Debug.LogError("LevelJsonLoader: One or more diagram tiles are not assigned.");
             return false;
@@ -545,19 +509,14 @@ public class LevelJsonLoader : MonoBehaviour
         terrainTilemap.ClearAllTiles();
     }
 
-    /// <summary>
-    /// Returns the first non-empty string between two options.
-    /// </summary>
-    private string FirstNonEmpty(string a, string b)
-    {
-        if (!string.IsNullOrEmpty(a)) return a;
-        if (!string.IsNullOrEmpty(b)) return b;
-        return null;
-    }
+
 
     /// <summary>
     /// Spawns obstacle prefabs based on JSON data at cell-aligned positions.
     /// </summary>
+    #endregion
+
+    #region Obstacles
     private void SpawnObstacles(List<ObstacleData> obstacles)
     {
         foreach (var o in obstacles)
@@ -613,4 +572,43 @@ public class LevelJsonLoader : MonoBehaviour
             return;
         }
     }
+
+    #endregion
+
+    #region Data Classes
+    [Serializable]
+    private class LevelData
+    {
+        public string levelName;
+        public int levelTiles;
+        public int clockTiles;
+        public string jSignal;
+        public string kSignal;
+        public string presetSignal;
+        public string clearSignal;
+        public string floor;
+        public string ceiling;
+        public List<ObstacleData> obstacles;
+    }
+
+    [Serializable]
+    private class ObstacleData
+    {
+        public string type;
+        public int startX;
+        public int startY;
+        public float speed;
+        public int horizontalDistance;
+        public int verticalDistance;
+        public string starterCorner;
+        public bool clockwise;
+    }
+
+    [Serializable]
+    private class ObstaclePrefabEntry
+    {
+        public string type;
+        public GameObject prefab;
+    }
+    #endregion
 }
