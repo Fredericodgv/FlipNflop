@@ -204,26 +204,12 @@ public class LevelJsonLoader : MonoBehaviour
         if (clearSignal != null)
             GenerateDiagram(inputTilemap, clearSignal, clear_YRow);
 
-        int clockStep = data.clockTiles > 0 ? data.clockTiles : 2;
-        if (data.clockTiles <= 0)
-            Debug.LogWarning($"LevelJsonLoader: clockTiles <= 0 in JSON; defaulting clock step to 2 (even).");
-        // Enforce even clock step
-        if (clockStep % 2 != 0)
-        {
-            clockStep += 1; // simple coercion to next even
-            Debug.LogWarning($"LevelJsonLoader: clockTiles was odd; coerced to even value {clockStep}.");
-        }
-        int levelLength = data.clockTiles * data.clockCicles;
+        // Use values already defined in ApplyLevelConfig (no redundant checks here)
+        int clockStep = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.clockStepX : data.clockTiles);
+        int levelLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : (data.clockTiles * data.clockCicles));
 
-        if (levelLength > 0)
-        {
-            var clockPattern = BuildClockPattern(levelLength, clockStep, false);
-            DrawPattern(clockTilemap, clockPattern, clock_YRow, startX);
-        }
-        else
-        {
-            Debug.LogError("LevelJsonLoader: Cannot build clock signal because determined level length is 0.");
-        }
+        var clockPattern = BuildClockPattern(levelLength, clockStep, false);
+        DrawPattern(clockTilemap, clockPattern, clock_YRow, startX);
         // Extend floor and ceiling by +3 tiles beyond the last '1' defined in JSON
         GenerateBand(terrainTilemap, floorBand, floorYRow, floorTile, false, 3);
         GenerateBand(terrainTilemap, ceilingBand, ceilingYRow, ceilingTile, flipCeilingY, 3);
@@ -239,8 +225,9 @@ public class LevelJsonLoader : MonoBehaviour
 
 
     /// <summary>
-    /// Builds the clock pattern (even step only):
-    /// Even step S: period = S tiles: first S/2 zeros, then S/2 ones (startHigh chooses which half first).
+    /// Builds the clock pattern:
+    /// Step S: period = S tiles. First floor(S/2) zeros, then remaining tiles ones (or inverted if startHigh).
+    /// For odd S this creates a slightly asymmetric duty cycle (ex: S=5 -> 2 zeros, 3 ones).
     /// Returns int[] of length totalLength with values: 0=low, 1=high.
     /// </summary>
     #endregion
@@ -249,15 +236,13 @@ public class LevelJsonLoader : MonoBehaviour
     public static int[] BuildClockPattern(int totalLength, int step, bool startHigh = false)
     {
         if (totalLength <= 0 || step <= 0) return null;
-        // Enforce even step locally too
-        if (step % 2 != 0) step += 1;
         var arr = new int[totalLength + step];
-        int half = step / 2;
+        int half = step / 2; // floor division for odd steps
         var period = new int[step];
         int firstVal = startHigh ? 1 : 0;
         int secondVal = startHigh ? 0 : 1;
         for (int i = 0; i < half; i++) period[i] = firstVal;
-        for (int i = half; i < step; i++) period[i] = secondVal;
+        for (int i = half; i < step; i++) period[i] = secondVal; // odd steps: extra tile in second half
         for (int i = 0; i < totalLength + step; i++)
             arr[i] = period[i % step];
         return arr;
@@ -319,14 +304,15 @@ public class LevelJsonLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// Applies levelTiles and clockTiles to LevelManager (as levelEndX and clockStepX) if available.
+    /// Applies clock configuration to LevelManager: step (tiles, no parity coercion) and total length (cycles * step).
     /// </summary>
     private void ApplyLevelConfig(LevelData data)
     {
         if (LevelManager.Instance != null)
         {
-            LevelManager.Instance.clockStepX = data.clockTiles > 0 ? data.clockTiles : 1;
-            LevelManager.Instance.levelEndX = data.clockCicles * data.clockTiles;
+            int step = data.clockTiles;
+            LevelManager.Instance.clockStepX = step;
+            LevelManager.Instance.levelEndX = data.clockCicles * step;
         }
     }
 

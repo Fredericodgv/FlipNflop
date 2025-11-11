@@ -254,7 +254,7 @@ public class PlayerController : MonoBehaviour
             PlayerDeath();
         }
 
-        if (transform.position.x > LevelManager.Instance.levelEndX)
+        if (transform.position.x > LevelManager.Instance.levelEndX + 1)
         {
             if (pathVerifier != null)
             {
