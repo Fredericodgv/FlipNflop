@@ -1,0 +1,41 @@
+{
+    "levelName": "third_level",
+    "levelTiles": 30,
+    "clockTiles": 5,
+    "jSignal": "1111111000000000111111100000000",
+    "kSignal": "1100000011111000000111000001111",
+    "floor": "0001110011111111111111110001111",
+    "ceiling": "1111111111110001111111111111111",
+    "obstacles": [
+        {
+            "type": "mace",
+            "startX": 8,
+            "startY": 1,
+            "speed": 0,
+            "horizontalDistance": 0,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 15,
+            "startY": 3,
+            "speed": 0,
+            "horizontalDistance": 0,
+            "verticalDistance": 0,
+            "starterCorner": "top-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 23,
+            "startY": 1,
+            "speed": 0,
+            "horizontalDistance": 0,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        }
+    ]
+}

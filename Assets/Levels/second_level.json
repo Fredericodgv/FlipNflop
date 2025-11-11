@@ -1,0 +1,9 @@
+{
+    "levelName": "second_level",
+    "levelTiles": 20,
+    "clockTiles": 5,
+    "jSignal": "111000000000111111111",
+    "kSignal": "111000001111000001111",
+    "floor": "110000011111111100011",
+    "ceiling": "111001111110001111111"
+}

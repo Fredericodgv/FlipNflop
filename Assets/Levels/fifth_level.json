@@ -1,0 +1,51 @@
+{
+    "levelName": "fifth_level",
+    "levelTiles": 40,
+    "clockTiles": 5,
+    "jSignal": "11111110000001110010011011010001101110100",
+    "kSignal": "11001110100110110110000111001110010011000",
+    "floor": "11111110001111110000011111111110001111111",
+    "ceiling": "11111111110001111100100011001111111110000",
+    "obstacles": [
+        {
+            "type": "mace",
+            "startX": 3,
+            "startY": 1,
+            "speed": 2,
+            "horizontalDistance": 4,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 19,
+            "startY": 1,
+            "speed": 2,
+            "horizontalDistance": 8,
+            "verticalDistance": 2,
+            "starterCorner": "bottom-right",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 28,
+            "startY": 3,
+            "speed": 3,
+            "horizontalDistance": 9,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 38,
+            "startY": 3,
+            "speed": 3,
+            "horizontalDistance": 0,
+            "verticalDistance": 2,
+            "starterCorner": "top-left",
+            "clockwise": true
+        }
+    ]
+}
