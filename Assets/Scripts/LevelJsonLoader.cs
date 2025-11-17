@@ -320,22 +320,37 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     public List<PathVerifier.SignalEvent> ComputeOutputEventsFromParsedSignals()
     {
-        // Build a per-tile timeline first, then derive events at transitions (including async)
-        var timeline = OutputTimeline ?? ComputeOutputTimelineFromParsedSignals();
+        // Ensure we have both timeline and ops tokens
+        if (OutputTimeline == null || outputOpsPerTile == null || OutputTimeline.Length != outputOpsPerTile.Length)
+        {
+            OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+        }
+        var timeline = OutputTimeline;
         if (timeline == null || timeline.Length == 0) return null;
 
+        GetClockSamplingParameters(out int step, out int _);
         var events = new List<PathVerifier.SignalEvent>();
         bool prev = timeline[0];
+        // Initial high state event (use async offset if caused by async and not at clock edge)
         if (prev)
         {
-            events.Add(new PathVerifier.SignalEvent(0f, prev));
+            string op0 = outputOpsPerTile[0];
+            bool isClockEdge0 = (step > 0 && 0 > 0 && (0 % step) == 0); // false
+            bool asyncOnly0 = op0 != null && op0.Contains("_async") && !op0.Contains("+") && !isClockEdge0;
+            float x0 = 0f + (asyncOnly0 ? 0.5f : 0f);
+            events.Add(new PathVerifier.SignalEvent(x0, prev));
         }
+
         for (int i = 1; i < timeline.Length; i++)
         {
             bool cur = timeline[i];
             if (cur != prev)
             {
-                events.Add(new PathVerifier.SignalEvent(i, cur));
+                string op = (i < outputOpsPerTile.Length) ? outputOpsPerTile[i] : null;
+                bool isClockEdge = (step > 0 && (i % step) == 0);
+                bool asyncOnly = op != null && op.Contains("_async") && !op.Contains("+") && !isClockEdge;
+                float xPos = i + (asyncOnly ? 0.5f : 0f);
+                events.Add(new PathVerifier.SignalEvent(xPos, cur));
                 prev = cur;
             }
         }
