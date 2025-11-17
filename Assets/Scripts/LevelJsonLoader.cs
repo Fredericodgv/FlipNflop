@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -48,6 +49,14 @@ public class LevelJsonLoader : MonoBehaviour
     [Tooltip("Map JSON obstacle 'type' to prefab to spawn")]
     [SerializeField] private List<ObstaclePrefabEntry> obstaclePrefabs = new List<ObstaclePrefabEntry>();
 
+    [Header("Debug")]
+    [Tooltip("If true, logs the computed output vector (0/1) used by PathVerifier.")]
+    [SerializeField] private bool debugLogOutputVector = false;
+    [Tooltip("String view of the computed output vector (0/1). Read-only, for inspector visualization.")]
+    [SerializeField]
+    [TextArea]
+    private string debugOutputVector;
+
     #endregion
 
     #region Parsed Signals
@@ -56,6 +65,11 @@ public class LevelJsonLoader : MonoBehaviour
     public bool[] ParsedKSignal { get; private set; }
     public bool[] ParsedPresetSignal { get; private set; }
     public bool[] ParsedClearSignal { get; private set; }
+    // Per-tile output timeline (async preset/clear immediate; JK at clock edges)
+    public bool[] OutputTimeline { get; private set; }
+    // Per-tile operation description (e.g., keep, preset_async, clear_async, set_sync, reset_sync, switch_sync, combined)
+    [SerializeField]
+    private string[] outputOpsPerTile;
 
     #endregion
 
@@ -78,6 +92,156 @@ public class LevelJsonLoader : MonoBehaviour
             this.ParsedPresetSignal, this.ParsedClearSignal,
             step, sampleStartOffset);
         return samples;
+    }
+
+    /// <summary>
+    /// Computes a per-tile output timeline applying asynchronous preset/clear immediately at their tile indices,
+    /// and JK logic starting on the tile AFTER each clock edge, using J/K sampled from the tile just before the edge (index = edgeX - 1).
+    /// Example: for edge at X = m*step, JK is applied at tile index i = m*step, sampling J/K at i-1.
+    /// </summary>
+    public bool[] ComputeOutputTimelineFromParsedSignals()
+    {
+        int totalLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : 0f);
+        if (totalLength <= 0)
+        {
+            totalLength = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
+            if (totalLength <= 0) return null;
+        }
+
+        GetClockSamplingParameters(out int step, out int _);
+        var timeline = new bool[totalLength];
+        bool q = false;
+        for (int i = 0; i < totalLength; i++)
+        {
+            bool hasPreset = GetAt(ParsedPresetSignal, i);
+            bool hasClear = GetAt(ParsedClearSignal, i);
+            if (hasPreset && hasClear)
+            {
+                q = false; // Clear priority
+            }
+            else if (hasClear)
+            {
+                q = false;
+            }
+            else if (hasPreset)
+            {
+                q = true;
+            }
+
+            // Apply JK at the first tile AFTER the clock edge.
+            // Edge at X = m*step is the boundary between tiles (i-1,i) where i = m*step.
+            if (step > 0 && i > 0 && (i % step) == 0)
+            {
+                bool j = GetAt(ParsedJSignal, i - 1);
+                bool k = GetAt(ParsedKSignal, i - 1);
+                if (j && !k) q = true;
+                else if (!j && k) q = false;
+                else if (j && k) q = !q;
+            }
+
+            timeline[i] = q;
+        }
+        return timeline;
+    }
+
+    /// <summary>
+    /// Computes per-tile timeline plus an operation label per tile describing what affected Q at that tile.
+    /// Operation tokens:
+    ///  - keep : no change
+    ///  - preset_async / clear_async : async signals present and applied (value may or may not change)
+    ///  - preset_async_noop / clear_async_noop : async present but value already same
+    ///  - set_sync / reset_sync / switch_sync : JK logic at clock edge caused change
+    ///  - hold_sync : JK evaluated (edge) but no change
+    ///  - combined: async changed then JK changed again same tile -> token 'preset_async+switch_sync' etc.
+    /// Priority order: apply async first (clear overrides preset), then JK at clock edge.
+    /// </summary>
+    public bool[] ComputeOutputTimelineWithOps(out string[] ops)
+    {
+        ops = null;
+        int totalLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : 0f);
+        if (totalLength <= 0)
+        {
+            totalLength = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
+            if (totalLength <= 0) return null;
+        }
+
+        GetClockSamplingParameters(out int step, out int _);
+        var timeline = new bool[totalLength];
+        var opArr = new string[totalLength];
+        bool q = false;
+        for (int i = 0; i < totalLength; i++)
+        {
+            bool prevQ = q;
+            bool hasPreset = GetAt(ParsedPresetSignal, i);
+            bool hasClear = GetAt(ParsedClearSignal, i);
+            string asyncToken = null;
+            if (hasPreset && hasClear)
+            {
+                // Clear priority
+                bool changed = q != false;
+                q = false;
+                asyncToken = changed ? "clear_async" : "clear_async_noop";
+            }
+            else if (hasClear)
+            {
+                bool changed = q != false;
+                q = false;
+                asyncToken = changed ? "clear_async" : "clear_async_noop";
+            }
+            else if (hasPreset)
+            {
+                bool changed = q != true;
+                q = true;
+                asyncToken = changed ? "preset_async" : "preset_async_noop";
+            }
+
+            bool afterAsyncQ = q;
+            bool syncApplied = false;
+            string syncToken = null;
+            // Apply JK at the first tile AFTER the edge; sample J/K from previous tile.
+            if (step > 0 && i > 0 && (i % step) == 0)
+            {
+                bool j = GetAt(ParsedJSignal, i - 1);
+                bool k = GetAt(ParsedKSignal, i - 1);
+                bool beforeSyncQ = q;
+                if (j && !k) { q = true; syncApplied = true; syncToken = beforeSyncQ != q ? "set_sync" : "hold_sync"; }
+                else if (!j && k) { q = false; syncApplied = true; syncToken = beforeSyncQ != q ? "reset_sync" : "hold_sync"; }
+                else if (j && k) { q = !q; syncApplied = true; syncToken = "switch_sync"; }
+                else { syncApplied = true; syncToken = "hold_sync"; }
+            }
+
+            timeline[i] = q;
+
+            string finalToken;
+            if (asyncToken == null && !syncApplied)
+            {
+                finalToken = prevQ == q ? "keep" : (q ? "set_initial" : "reset_initial");
+            }
+            else if (asyncToken != null && !syncApplied)
+            {
+                finalToken = asyncToken;
+            }
+            else if (asyncToken == null && syncApplied)
+            {
+                finalToken = syncToken;
+            }
+            else // both async and sync same tile
+            {
+                if (afterAsyncQ != q)
+                {
+                    // JK changed again after async
+                    finalToken = asyncToken + "+" + syncToken;
+                }
+                else
+                {
+                    // JK evaluated but didn't further change
+                    finalToken = asyncToken + "+" + syncToken;
+                }
+            }
+            opArr[i] = finalToken;
+        }
+        ops = opArr;
+        return timeline;
     }
 
 
@@ -132,6 +296,22 @@ public class LevelJsonLoader : MonoBehaviour
         return outArr;
     }
 
+    private static bool GetAt(bool[] arr, int idx)
+    {
+        return arr != null && idx >= 0 && idx < arr.Length && arr[idx];
+    }
+
+    private static int MaxLen(params bool[][] arrays)
+    {
+        int max = 0;
+        if (arrays == null) return 0;
+        for (int i = 0; i < arrays.Length; i++)
+        {
+            if (arrays[i] != null && arrays[i].Length > max) max = arrays[i].Length;
+        }
+        return max;
+    }
+
     /// <summary>
     /// Builds an ordered list of PathVerifier.SignalEvent from the clock-aligned output samples.
     /// Event X positions occur at exact multiples of the clock step: X_n = (n+1) * step.
@@ -140,17 +320,24 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     public List<PathVerifier.SignalEvent> ComputeOutputEventsFromParsedSignals()
     {
-        GetClockSamplingParameters(out int step, out int startOffset);
-        var samples = ComputeOutputSamplesFromParsedSignals();
-        if (samples == null || samples.Length == 0) return null;
+        // Build a per-tile timeline first, then derive events at transitions (including async)
+        var timeline = OutputTimeline ?? ComputeOutputTimelineFromParsedSignals();
+        if (timeline == null || timeline.Length == 0) return null;
 
-        var events = new List<PathVerifier.SignalEvent>(samples.Length);
-        for (int i = 0; i < samples.Length; i++)
+        var events = new List<PathVerifier.SignalEvent>();
+        bool prev = timeline[0];
+        if (prev)
         {
-            // Event happens at the edge X = (i+1) * step
-            int edgeX = (i + 1) * step;
-            float x = edgeX; // 1 tile == 1 world unit along X (assumption)
-            events.Add(new PathVerifier.SignalEvent(x, samples[i]));
+            events.Add(new PathVerifier.SignalEvent(0f, prev));
+        }
+        for (int i = 1; i < timeline.Length; i++)
+        {
+            bool cur = timeline[i];
+            if (cur != prev)
+            {
+                events.Add(new PathVerifier.SignalEvent(i, cur));
+                prev = cur;
+            }
         }
         return events;
     }
@@ -178,9 +365,11 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     private void Awake()
     {
-        if (!ValidateReferences()) return;
         var data = LoadLevelData(levelFile);
-        if (data == null) return;
+
+#if UNITY_EDITOR
+            if (!ValidateAll(data)) return;
+#endif
 
         ApplyLevelConfig(data);
 
@@ -195,6 +384,14 @@ public class LevelJsonLoader : MonoBehaviour
 
         var floorBand = ParseInputString(data.floor);
         var ceilingBand = ParseInputString(data.ceiling);
+
+        // Compute and expose the per-tile output timeline (0/1) for PathVerifier/reference
+        this.OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+        UpdateDebugOutputVectorString();
+        if (debugLogOutputVector)
+        {
+            Debug.Log($"LevelJsonLoader: Output timeline ({(OutputTimeline != null ? OutputTimeline.Length : 0)}): {debugOutputVector}");
+        }
 
         ClearAllTilemaps();
         GenerateDiagram(inputTilemap, jSignal, j_YRow);
@@ -301,6 +498,91 @@ public class LevelJsonLoader : MonoBehaviour
             Debug.LogError($"LevelJsonLoader: Error reading JSON: {ex.Message}");
             return null;
         }
+    }
+
+    [ContextMenu("Log Output Vector (0/1)")]
+    private void LogOutputVectorContext()
+    {
+        if (OutputTimeline == null)
+        {
+            OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+            UpdateDebugOutputVectorString();
+        }
+        Debug.Log($"LevelJsonLoader: Output timeline ({(OutputTimeline != null ? OutputTimeline.Length : 0)}): {debugOutputVector}");
+    }
+
+    [ContextMenu("Log Output Ops")]
+    private void LogOutputOpsContext()
+    {
+        if (outputOpsPerTile == null || OutputTimeline == null)
+        {
+            OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+            UpdateDebugOutputVectorString();
+        }
+        var sb = new StringBuilder(outputOpsPerTile.Length * 6);
+        for (int i = 0; i < outputOpsPerTile.Length; i++)
+        {
+            sb.Append(outputOpsPerTile[i]);
+            if (i < outputOpsPerTile.Length - 1) sb.Append(' ');
+        }
+        Debug.Log($"LevelJsonLoader: Ops per tile ({outputOpsPerTile.Length}): {sb}");
+    }
+
+    private void UpdateDebugOutputVectorString()
+    {
+        if (OutputTimeline == null)
+        {
+            debugOutputVector = "(null)";
+            return;
+        }
+        var sb = new StringBuilder(OutputTimeline.Length);
+        for (int i = 0; i < OutputTimeline.Length; i++) sb.Append(OutputTimeline[i] ? '1' : '0');
+        debugOutputVector = sb.ToString();
+    }
+
+    /// <summary>
+    /// Single validation entry point: verifies required scene references and basic JSON presence.
+    /// Does not enforce value ranges or parity; assumes JSON is trusted for semantics.
+    /// </summary>
+    private bool ValidateAll(LevelData data)
+    {
+        // JSON must be parsed successfully
+        if (data == null)
+        {
+            Debug.LogError("LevelJsonLoader: LevelData is null (JSON parsing failed).");
+            return false;
+        }
+
+        // Required tilemaps
+        if (inputTilemap == null || terrainTilemap == null || clockTilemap == null)
+        {
+            Debug.LogError("LevelJsonLoader: One or more required Tilemap references are missing (input/terrain/clock).");
+            return false;
+        }
+
+        // Diagram tiles mapping (8 variants 000..111)
+        if (diagramTiles == null || diagramTiles.Length < 8)
+        {
+            Debug.LogError("LevelJsonLoader: diagramTiles must have 8 entries (indices 0..7 for 000..111).");
+            return false;
+        }
+        for (int i = 0; i < 8; i++)
+        {
+            if (diagramTiles[i] == null)
+            {
+                Debug.LogError($"LevelJsonLoader: diagramTiles[{i}] is not assigned. Expected mapping 0=000,1=001,2=010,3=011,4=100,5=101,6=110,7=111.");
+                return false;
+            }
+        }
+
+        // Terrain tiles
+        if (floorTile == null || ceilingTile == null)
+        {
+            Debug.LogError("LevelJsonLoader: Floor or ceiling tile is not assigned.");
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -438,39 +720,7 @@ public class LevelJsonLoader : MonoBehaviour
     /// <summary>
     /// Validates required references.
     /// </summary>
-    private bool ValidateReferences()
-    {
-        if (inputTilemap == null || terrainTilemap == null || clockTilemap == null)
-        {
-            Debug.LogError("LevelJsonLoader: One or more required Tilemap references are missing (input/terrain/clock).");
-            return false;
-        }
-        // Validate diagram tiles array
-        if (diagramTiles == null || diagramTiles.Length < 8)
-        {
-            Debug.LogError("LevelJsonLoader: diagramTiles must have 8 entries (indices 0..7 for 000..111).");
-            return false;
-        }
-        for (int i = 0; i < 8; i++)
-        {
-            if (diagramTiles[i] == null)
-            {
-                Debug.LogError($"LevelJsonLoader: diagramTiles[{i}] is not assigned. Expected mapping 0=000,1=001,2=010,3=011,4=100,5=101,6=110,7=111.");
-                return false;
-            }
-        }
-        if (floorTile == null || ceilingTile == null)
-        {
-            Debug.LogError("LevelJsonLoader: Floor or ceiling tile is not assigned.");
-            return false;
-        }
-        if (levelFile == null)
-        {
-            Debug.LogError("LevelJsonLoader: Level JSON asset is not set.");
-            return false;
-        }
-        return true;
-    }
+    // Legacy per-section validations were consolidated into ValidateAll(LevelData)
 
     /// <summary>
     /// Clears all configured tilemaps.

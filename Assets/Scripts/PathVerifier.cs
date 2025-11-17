@@ -350,6 +350,10 @@ public class PathVerifier : MonoBehaviour
             }
         }
 
+        // Ensure the final horizontal segment is represented up to the level end X
+        float endX = (LevelManager.Instance != null) ? LevelManager.Instance.levelEndX : (events[events.Count - 1].x);
+        correctCorners.Add(new Vector3(endX, qState ? highY : lowY, 0f));
+
         for (int i = correctCorners.Count - 1; i > 0; i--)
         {
             if (Vector3.Distance(correctCorners[i], correctCorners[i - 1]) < 0.01f) { correctCorners.RemoveAt(i); }
