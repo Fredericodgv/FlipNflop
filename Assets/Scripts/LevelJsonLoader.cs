@@ -101,12 +101,13 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     public bool[] ComputeOutputTimelineFromParsedSignals()
     {
-        int totalLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : 0f);
-        if (totalLength <= 0)
+        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
+        if (diagramLen <= 0)
         {
-            totalLength = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
-            if (totalLength <= 0) return null;
+            diagramLen = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
+            if (diagramLen <= 0) return null;
         }
+        int totalLength = diagramLen + 1; // inclui o tile imediatamente após a última borda de clock
 
         GetClockSamplingParameters(out int step, out int _);
         var timeline = new bool[totalLength];
@@ -158,12 +159,13 @@ public class LevelJsonLoader : MonoBehaviour
     public bool[] ComputeOutputTimelineWithOps(out string[] ops)
     {
         ops = null;
-        int totalLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : 0f);
-        if (totalLength <= 0)
+        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
+        if (diagramLen <= 0)
         {
-            totalLength = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
-            if (totalLength <= 0) return null;
+            diagramLen = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
+            if (diagramLen <= 0) return null;
         }
+        int totalLength = diagramLen + 1; // inclui o tile logo após a última borda de clock
 
         GetClockSamplingParameters(out int step, out int _);
         var timeline = new bool[totalLength];
@@ -609,7 +611,9 @@ public class LevelJsonLoader : MonoBehaviour
         {
             int step = data.clockTiles;
             LevelManager.Instance.clockStepX = step;
-            LevelManager.Instance.levelEndX = data.clockCicles * step;
+            LevelManager.Instance.diagramEndX = data.clockCicles * step;
+            LevelManager.Instance.phaseEndX = LevelManager.Instance.diagramEndX + LevelManager.Instance.phaseSlackTiles;
+            LevelManager.Instance.levelEndX = LevelManager.Instance.diagramEndX; // legado permanece no fim lógico
         }
     }
 
