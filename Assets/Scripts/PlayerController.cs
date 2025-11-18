@@ -85,10 +85,6 @@ public class PlayerController : MonoBehaviour
     private RigidbodyConstraints2D preDashConstraints;
     private float dashLockY;
 
-
-    // Debug fields removed after stabilization
-
-
     /// <summary>
     /// Initializes references to required components.
     /// </summary>
@@ -129,7 +125,6 @@ public class PlayerController : MonoBehaviour
         HandleDash();
     }
 
-    // Debug log method removed (kept locally during development)
 
     #region Input & State Checks
 

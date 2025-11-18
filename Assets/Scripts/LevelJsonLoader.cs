@@ -72,23 +72,6 @@ public class LevelJsonLoader : MonoBehaviour
 
     #endregion
 
-    // -------- Output Computation --------
-    #region Output: Samples
-    /// <summary>
-    /// Returns clock-sampled outputs (J/K taken from tile before each edge).
-    /// </summary>
-    public bool[] ComputeOutputSamplesFromParsedSignals()
-    {
-        GetClockSamplingParameters(out int step, out int startOffset);
-        // Sample at indices just before each edge: step-1, 2*step-1, ...
-        int sampleStartOffset = Mathf.Max(0, startOffset - 1);
-        var samples = BuildOutputSequenceFromSignalsWithAsync(this.ParsedJSignal, this.ParsedKSignal,
-            this.ParsedPresetSignal, this.ParsedClearSignal,
-            step, sampleStartOffset);
-        return samples;
-    }
-
-    #endregion
 
     #region Output: Timeline
     /// <summary>
@@ -256,66 +239,6 @@ public class LevelJsonLoader : MonoBehaviour
         }
         ops = opArr;
         return timeline;
-    }
-
-
-
-    /// <summary>
-    /// Static: build JK-sampled sequence with async override at sample index.
-    /// </summary>
-    public static bool[] BuildOutputSequenceFromSignalsWithAsync(bool[] jSignal, bool[] kSignal,
-        bool[] presetSignal, bool[] clearSignal, int clockStep, int startOffset = 0)
-    {
-        if (jSignal == null || kSignal == null || clockStep <= 0) return null;
-        int maxIndex = Math.Min(jSignal.Length, kSignal.Length);
-        if (maxIndex == 0) return null;
-
-        var outputs = new List<bool>();
-        bool qState = false;
-
-        int startIdx = Mathf.Clamp(startOffset, 0, Math.Max(0, maxIndex - 1));
-        for (int idx = startIdx; idx < maxIndex; idx += clockStep)
-        {
-            bool hasPreset = (presetSignal != null && idx < presetSignal.Length) ? presetSignal[idx] : false;
-            bool hasClear = (clearSignal != null && idx < clearSignal.Length) ? clearSignal[idx] : false;
-
-            if (hasPreset && hasClear)
-            {
-                Debug.LogWarning($"LevelJsonLoader: Preset and Clear are both 1 at index {idx}. Applying Clear priority (Q=0).");
-                qState = false;
-            }
-            else if (hasClear)
-            {
-                qState = false;
-            }
-            else if (hasPreset)
-            {
-                qState = true;
-            }
-            else
-            {
-                bool j = jSignal[idx];
-                bool k = kSignal[idx];
-                if (j && !k) qState = true;
-                else if (!j && k) qState = false;
-                else if (j && k) qState = !qState;
-            }
-
-            outputs.Add(qState);
-        }
-
-        var outArr = outputs.Count > 0 ? outputs.ToArray() : null;
-        return outArr;
-    }
-    private static int MaxLen(params bool[][] arrays)
-    {
-        int max = 0;
-        if (arrays == null) return 0;
-        for (int i = 0; i < arrays.Length; i++)
-        {
-            if (arrays[i] != null && arrays[i].Length > max) max = arrays[i].Length;
-        }
-        return max;
     }
 
     #endregion
@@ -695,18 +618,6 @@ public class LevelJsonLoader : MonoBehaviour
     #endregion
 
     #region Diagram Rendering
-    private void GenerateDiagram(Tilemap targetMap, bool[] signal, int yRow)
-    {
-        GenerateDiagram(targetMap, signal, yRow, startX);
-    }
-
-    private void GenerateDiagram(Tilemap targetMap, bool[] signal, int yRow, int baseX)
-    {
-        if (targetMap == null || signal == null) return;
-        var pattern = new int[signal.Length];
-        for (int i = 0; i < signal.Length; i++) pattern[i] = signal[i] ? 1 : 0;
-        DrawPattern(targetMap, pattern, yRow, baseX);
-    }
 
     private void GenerateDiagram(Tilemap targetMap, bool[] signal, int yRow, int baseX, Color color)
     {
@@ -897,7 +808,6 @@ public class LevelJsonLoader : MonoBehaviour
     {
         public string levelName;
         public int clockCicles;
-        public int clockTiles;
         public int asyncActive = 1;
         public string jSignal;
         public string kSignal;

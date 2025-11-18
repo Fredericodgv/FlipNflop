@@ -156,12 +156,6 @@ public class PathVerifier : MonoBehaviour
     }
 
     /// <summary>
-    /// Se o último X do caminho do jogador excede o último X das quinas corretas, adiciona uma quina extra
-    /// (mesmo nível lógico) para cobrir o deslocamento final.
-    /// </summary>
-    // Removido TryAppendTailCorner: fase estendida tratada na geração do gabarito.
-
-    /// <summary>
     /// Desenha o feedback iterando sobre cada pequeno segmento do caminho do jogador.
     /// </summary>
     private void DrawFeedbackLines(List<Vector3> playerPath)
@@ -271,11 +265,6 @@ public class PathVerifier : MonoBehaviour
 
         return lineStart + lineDirection * t;
     }
-
-    /// <summary>
-    /// Removes intermediate colinear points from a dense polyline and returns only the corner points.
-    /// </summary>
-    // ExtractCorners removed — unused helper
 
     #endregion
 
