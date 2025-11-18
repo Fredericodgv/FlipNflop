@@ -237,12 +237,12 @@ public class LevelJsonLoader : MonoBehaviour
             timeline[i] = q;
 
             // 3) Decide final token.
-            // When the edge applied and changed Q, always anchor at the edge and
-            // include async (even noop) as a combined token.
+            // Anchor at the edge when it changed Q; only combine if async changed too.
             string finalToken;
+            bool asyncIsNoop = (asyncToken != null && asyncToken.EndsWith("_noop"));
             if (syncApplied && syncToken != null && syncToken != "hold_sync")
             {
-                finalToken = (asyncToken != null) ? (syncToken + "_then_" + asyncToken) : syncToken;
+                finalToken = (!asyncIsNoop && asyncToken != null) ? (syncToken + "_then_" + asyncToken) : syncToken;
             }
             else if (asyncToken != null)
             {
