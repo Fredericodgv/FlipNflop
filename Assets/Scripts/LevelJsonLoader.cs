@@ -236,20 +236,17 @@ public class LevelJsonLoader : MonoBehaviour
 
             timeline[i] = q;
 
-            // 3) Decide final token. If both occurred in the same tile and sync actually changed Q,
-            //    expose as a combined token: "{sync}_then_{async}". Otherwise prefer async, then sync.
+            // 3) Decide final token.
+            // When the edge applied and changed Q, always anchor at the edge and
+            // include async (even noop) as a combined token.
             string finalToken;
-            if (asyncToken != null && syncApplied && syncToken != null && syncToken != "hold_sync")
+            if (syncApplied && syncToken != null && syncToken != "hold_sync")
             {
-                finalToken = syncToken + "_then_" + asyncToken; // e.g., switch_sync_then_clear_async
+                finalToken = (asyncToken != null) ? (syncToken + "_then_" + asyncToken) : syncToken;
             }
             else if (asyncToken != null)
             {
                 finalToken = asyncToken;
-            }
-            else if (syncApplied)
-            {
-                finalToken = syncToken;
             }
             else
             {
@@ -310,12 +307,6 @@ public class LevelJsonLoader : MonoBehaviour
         var outArr = outputs.Count > 0 ? outputs.ToArray() : null;
         return outArr;
     }
-
-    private static bool GetAt(bool[] arr, int idx)
-    {
-        return arr != null && idx >= 0 && idx < arr.Length && arr[idx];
-    }
-
     private static int MaxLen(params bool[][] arrays)
     {
         int max = 0;
@@ -349,16 +340,21 @@ public class LevelJsonLoader : MonoBehaviour
 
         bool q = false;        // state carried across tiles
         bool prev = q;         // last emitted baseline
-        bool asyncSincePrevEdge = false;
+        bool asyncSincePrevEdge = false; // set only when an async actually changed Q since last edge
 
         for (int i = 0; i < totalLength; i++)
         {
             bool isEdge = (step > 0 && i > 0 && (i % step) == 0);
+            bool hasPreset = GetAt(ParsedPresetSignal, i);
+            bool hasClear = GetAt(ParsedClearSignal, i);
+            bool hasAsyncCurrent = (hasPreset || hasClear);
 
             // 1) Synchronous edge effect at integer X=i
             if (isEdge)
             {
-                if (!asyncSincePrevEdge)
+                // Suppress edge ONLY if a prior async changed Q and there is no async this tile
+                bool suppressEdge = asyncSincePrevEdge && !hasAsyncCurrent;
+                if (!suppressEdge)
                 {
                     bool j = GetAt(ParsedJSignal, i - 1);
                     bool k = GetAt(ParsedKSignal, i - 1);
@@ -374,25 +370,25 @@ public class LevelJsonLoader : MonoBehaviour
                     }
                     q = qSync;
                 }
-                // reset cycle async tracker at the edge
+                // reset tracker; it may be re-set by async below if that async changes Q
                 asyncSincePrevEdge = false;
             }
 
             // 2) Asynchronous immediate effect at half tile X=i+0.5
-            bool hasPreset = GetAt(ParsedPresetSignal, i);
-            bool hasClear = GetAt(ParsedClearSignal, i);
             if (hasPreset || hasClear)
             {
                 bool qBefore = q;
                 // Clear priority if both
                 q = hasClear ? false : true;
-                if (q != qBefore)
+                bool asyncChanged = (q != qBefore);
+                if (asyncChanged)
                 {
                     float xPos = i + 0.5f;
                     events.Add(new PathVerifier.SignalEvent(xPos, q));
                     prev = q;
                 }
-                asyncSincePrevEdge = true; // counts for next edge suppression
+                // Only mark for next-edge suppression if the async actually changed Q
+                asyncSincePrevEdge = asyncChanged;
             }
         }
         return events;
@@ -411,6 +407,11 @@ public class LevelJsonLoader : MonoBehaviour
             : 1f;
         step = Mathf.Max(1, Mathf.RoundToInt(stepF));
         startOffset = step;
+    }
+
+    private static bool GetAt(bool[] arr, int idx)
+    {
+        return arr != null && idx >= 0 && idx < arr.Length && arr[idx];
     }
 
     private static bool[] InvertBits(bool[] arr)
