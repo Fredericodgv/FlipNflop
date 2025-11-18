@@ -1,0 +1,42 @@
+{
+    "levelName": "fourth_level",
+    "levelDescription": "implementa obstáculos mace móveis verticais para incentivar escolha prévia da saída",
+    "levelTiles": 48,
+    "clockTiles": 6,
+    "jSignal": "0110001110011111100110101110011",
+    "kSignal": "1101111000001100110111110011111",
+    "floor": "1111111110001111111111111111111",
+    "ceiling": "1111111111111111111111111100011",
+    "obstacles": [
+        {
+            "type": "mace",
+            "startX": 2,
+            "startY": 1,
+            "speed": 2,
+            "horizontalDistance": 6,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 17,
+            "startY": 1,
+            "speed": 2,
+            "horizontalDistance": 0,
+            "verticalDistance": 2,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 25,
+            "startY": 3,
+            "speed": 2,
+            "horizontalDistance": 5,
+            "verticalDistance": 0,
+            "starterCorner": "top-left",
+            "clockwise": true
+        }
+    ]
+}

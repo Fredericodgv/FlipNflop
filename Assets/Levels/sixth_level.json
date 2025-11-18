@@ -1,0 +1,52 @@
+{
+    "levelName": "sixth_level",
+    "levelDescription": "implementa obstáculos mace com movimentos e velocidades variadas",
+    "levelTiles": 54,
+    "clockTiles": 6,
+    "jSignal": "11111110000001110010011011010001101110100",
+    "kSignal": "11001110100110110110000111001110010011000",
+    "floor": "11111110001111110000011111111110001111111",
+    "ceiling": "11111111110001111100100011001111111110000",
+    "obstacles": [
+        {
+            "type": "mace",
+            "startX": 3,
+            "startY": 1,
+            "speed": 1,
+            "horizontalDistance": 5,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 18,
+            "startY": 1,
+            "speed": 2,
+            "horizontalDistance": 6,
+            "verticalDistance": 3,
+            "starterCorner": "bottom-right",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 28,
+            "startY": 3,
+            "speed": 3,
+            "horizontalDistance": 9,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 38,
+            "startY": 3,
+            "speed": 3,
+            "horizontalDistance": 0,
+            "verticalDistance": 3,
+            "starterCorner": "top-left",
+            "clockwise": true
+        }
+    ]
+}

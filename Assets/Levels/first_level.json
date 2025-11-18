@@ -1,0 +1,10 @@
+{
+    "levelName": "first_level",
+    "levelDescription": "level inicial, implementa mecânica básica mudança de gravidade",
+    "levelTiles": 42,
+    "clockTiles": 6,
+    "jSignal": "000000 000111 111000 000000 001111 111111 111111 000000",
+    "kSignal": "000000 000000 000011 111111 111111 100001 111111 111111",
+    "floor": "111111 111111 111111 111111 111111 111111 111111 111111",
+    "ceiling": "111111 111111 111111 111111 111111 111111 111111 111111"
+}

@@ -1,0 +1,52 @@
+{
+    "levelName": "third_level",
+    "levelDescription": "implementa obstáculos mace fixos que incentivam a mudança de gravidade",
+    "levelTiles": 48,
+    "clockTiles": 6,
+    "jSignal": "001111 100000 011100 011110 000000 000",
+    "kSignal": "000000 001111 000011 111100 000111 111",
+    "floor": "111111 111111 100001 111111 111100 000111 111111 111111 111111",
+    "ceiling": " 000001 111111 100001 111111 000111 111111 111111 111111 111111",
+    "obstacles": [
+        {
+            "type": "mace",
+            "startX": 8,
+            "startY": 1,
+            "speed": 0,
+            "horizontalDistance": 0,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 20,
+            "startY": 4,
+            "speed": 0,
+            "horizontalDistance": 0,
+            "verticalDistance": 0,
+            "starterCorner": "top-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 33,
+            "startY": 1,
+            "speed": 0,
+            "horizontalDistance": 0,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 39,
+            "startY": 3,
+            "speed": 0,
+            "horizontalDistance": 0,
+            "verticalDistance": 0,
+            "starterCorner": "top-left",
+            "clockwise": true
+        }
+    ]
+}
