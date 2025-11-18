@@ -85,7 +85,7 @@ public class PathVerifier : MonoBehaviour
     {
         if (signalPath != null)
         {
-            signalPath.FinalizePath(LevelManager.Instance.levelEndX);
+            signalPath.FinalizePath(LevelManager.Instance != null ? LevelManager.Instance.phaseEndX : (correctCorners != null && correctCorners.Count > 0 ? correctCorners[correctCorners.Count - 1].x : 0f));
         }
         else
         {
@@ -130,6 +130,7 @@ public class PathVerifier : MonoBehaviour
         }
 
         signalPath.GetComponent<LineRenderer>().enabled = false;
+        // Gabarito já inclui phaseEndX (diagramEndX + slack). Sem necessidade de ajuste dinâmico.
 
         DrawFeedbackLines(signalPath.PathPoints);
 
@@ -153,6 +154,12 @@ public class PathVerifier : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Se o último X do caminho do jogador excede o último X das quinas corretas, adiciona uma quina extra
+    /// (mesmo nível lógico) para cobrir o deslocamento final.
+    /// </summary>
+    // Removido TryAppendTailCorner: fase estendida tratada na geração do gabarito.
 
     /// <summary>
     /// Desenha o feedback iterando sobre cada pequeno segmento do caminho do jogador.
@@ -349,6 +356,10 @@ public class PathVerifier : MonoBehaviour
                 qState = ev.value;
             }
         }
+
+        // Ensure the final horizontal segment is represented up to the level end X
+        float endX = (LevelManager.Instance != null) ? LevelManager.Instance.phaseEndX : (events[events.Count - 1].x);
+        correctCorners.Add(new Vector3(endX, qState ? highY : lowY, 0f));
 
         for (int i = correctCorners.Count - 1; i > 0; i--)
         {

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 0b207def0d1956e4788febf99fc1523a
+guid: 258449300ee5d704cba104b5664a1e17
 TextureImporter:
   internalIDToNameTable:
   - first:
@@ -113,7 +113,95 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TimeDiagram 1_0
+      name: TimeDiagram_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c6a4e5aa6a19ed70800000000000000
+      internalID: 9072811969666655941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TimeDiagram_1
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f4b64d5dbb2121144a14dc28d9980a75
+      internalID: -1871344175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TimeDiagram_2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 39255915045d3f84f8b5cb86b33e12f1
+      internalID: -372247985
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TimeDiagram_3
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3932519cb58b1704f9187bb184c4a285
+      internalID: 759524111
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TimeDiagram_4
       rect:
         serializedVersion: 2
         x: 0
@@ -128,14 +216,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8561f1babeae8af44af930dd44db1332
-      internalID: -1020775602
+      spriteID: d70c1dbdd7632704a8c2ed0891422333
+      internalID: 1399414111
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TimeDiagram 1_1
+      name: TimeDiagram_5
       rect:
         serializedVersion: 2
         x: 32
@@ -150,14 +238,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: eeb5d6e0c8ab5fa46991f030535a5f00
-      internalID: 421135458
+      spriteID: a000c8e51574c394caff790fd27dd4f2
+      internalID: 507058034
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TimeDiagram 1_2
+      name: TimeDiagram_6
       rect:
         serializedVersion: 2
         x: 64
@@ -172,14 +260,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1725e1ab1fff8de44b90a1ae2340db90
-      internalID: -12378446
+      spriteID: 120b378d84a367844a913587a7ceb0a8
+      internalID: 2041312187
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TimeDiagram 1_3
+      name: TimeDiagram_7
       rect:
         serializedVersion: 2
         x: 96
@@ -194,14 +282,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f88660b50e5c7864baf099cccbe596c1
-      internalID: 1833801096
+      spriteID: dfe634eb243ff9b4fada6c1a6c9bfdb8
+      internalID: -372868746
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TimeDiagram 1_4
+      name: TimeDiagram_8
       rect:
         serializedVersion: 2
         x: 0
@@ -216,14 +304,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a0a1e459e218f1b49b292251184bb713
-      internalID: 91319593
+      spriteID: cb6bb38a6b1bb9d42956532435fa1c99
+      internalID: -867557453
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TimeDiagram 1_5
+      name: TimeDiagram_9
       rect:
         serializedVersion: 2
         x: 32
@@ -238,14 +326,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d7a9c7967b548094c83545744b676acc
-      internalID: 108373645
+      spriteID: 3e8526f9ae245c246b0df5f0918cbdc4
+      internalID: -774506838
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TimeDiagram 1_6
+      name: TimeDiagram_10
       rect:
         serializedVersion: 2
         x: 64
@@ -260,14 +348,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 42f149994431113479e686aede81d477
-      internalID: 968558749
+      spriteID: da9c63c1a1bb5094fb991691abdbca4d
+      internalID: 1402930898
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TimeDiagram 1_7
+      name: TimeDiagram_11
       rect:
         serializedVersion: 2
         x: 96
@@ -282,8 +370,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9b7f6bfc10fcae3468cb1a5aded09ace
-      internalID: 2041060426
+      spriteID: 41b33534b437f7444be7d030e81839de
+      internalID: 943042501
       vertices: []
       indices: 
       edges: []
@@ -292,7 +380,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: e0388c140afaf76418e9dbbd8821d665
+    spriteID: 49d3b37a59972ef42a2496ba37d55dfa
     internalID: 0
     vertices: []
     indices: 
@@ -302,18 +390,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceOnImport
-        value: True
+        value: False
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":true,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":32.0,"y":32.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      TimeDiagram 1_0: -1020775602
-      TimeDiagram 1_1: 421135458
-      TimeDiagram 1_2: -12378446
-      TimeDiagram 1_3: 1833801096
-      TimeDiagram 1_4: 91319593
-      TimeDiagram 1_5: 108373645
-      TimeDiagram 1_6: 968558749
-      TimeDiagram 1_7: 2041060426
+      TimeDiagram_0: 9072811969666655941
+      TimeDiagram_1: -1871344175
+      TimeDiagram_10: 1402930898
+      TimeDiagram_11: 943042501
+      TimeDiagram_2: -372247985
+      TimeDiagram_3: 759524111
+      TimeDiagram_4: 1399414111
+      TimeDiagram_5: 507058034
+      TimeDiagram_6: 2041312187
+      TimeDiagram_7: -372868746
+      TimeDiagram_8: -867557453
+      TimeDiagram_9: -774506838
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
