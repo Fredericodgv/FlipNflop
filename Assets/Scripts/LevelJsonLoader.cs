@@ -112,32 +112,44 @@ public class LevelJsonLoader : MonoBehaviour
         GetClockSamplingParameters(out int step, out int _);
         var timeline = new bool[totalLength];
         bool q = false;
+        bool asyncSincePrevEdge = false;
         for (int i = 0; i < totalLength; i++)
         {
             bool hasPreset = GetAt(ParsedPresetSignal, i);
             bool hasClear = GetAt(ParsedClearSignal, i);
+            bool isEdge = (step > 0 && i > 0 && (i % step) == 0);
+
+            // 1) Apply JK at the tile AFTER the edge, sampling J/K at i-1,
+            //    but only if no async happened strictly before this edge (tiles < i).
+            if (isEdge)
+            {
+                if (!asyncSincePrevEdge)
+                {
+                    bool j = GetAt(ParsedJSignal, i - 1);
+                    bool k = GetAt(ParsedKSignal, i - 1);
+                    if (j && !k) q = true;
+                    else if (!j && k) q = false;
+                    else if (j && k) q = !q;
+                }
+                // Reset at the edge to begin tracking async for the next cycle
+                asyncSincePrevEdge = false;
+            }
+
+            // 2) Apply asynchronous preset/clear immediately for this tile (after JK at the edge)
             if (hasPreset && hasClear)
             {
                 q = false; // Clear priority
+                asyncSincePrevEdge = true; // counts towards suppression of the NEXT edge
             }
             else if (hasClear)
             {
                 q = false;
+                asyncSincePrevEdge = true;
             }
             else if (hasPreset)
             {
                 q = true;
-            }
-
-            // Apply JK at the first tile AFTER the clock edge.
-            // Edge at X = m*step is the boundary between tiles (i-1,i) where i = m*step.
-            if (step > 0 && i > 0 && (i % step) == 0)
-            {
-                bool j = GetAt(ParsedJSignal, i - 1);
-                bool k = GetAt(ParsedKSignal, i - 1);
-                if (j && !k) q = true;
-                else if (!j && k) q = false;
-                else if (j && k) q = !q;
+                asyncSincePrevEdge = true;
             }
 
             timeline[i] = q;
@@ -171,74 +183,84 @@ public class LevelJsonLoader : MonoBehaviour
         var timeline = new bool[totalLength];
         var opArr = new string[totalLength];
         bool q = false;
+        bool asyncSincePrevEdge = false;
         for (int i = 0; i < totalLength; i++)
         {
             bool prevQ = q;
             bool hasPreset = GetAt(ParsedPresetSignal, i);
             bool hasClear = GetAt(ParsedClearSignal, i);
+            bool isEdge = (step > 0 && i > 0 && (i % step) == 0);
+
+            bool syncApplied = false;
+            string syncToken = null;
+
+            // 1) Apply JK at the edge (sampling J/K at i-1) only if no async happened strictly before this edge
+            if (isEdge)
+            {
+                if (!asyncSincePrevEdge)
+                {
+                    bool j = GetAt(ParsedJSignal, i - 1);
+                    bool k = GetAt(ParsedKSignal, i - 1);
+                    bool beforeSyncQ = q;
+                    if (j && !k) { q = true; syncApplied = true; syncToken = beforeSyncQ != q ? "set_sync" : "hold_sync"; }
+                    else if (!j && k) { q = false; syncApplied = true; syncToken = beforeSyncQ != q ? "reset_sync" : "hold_sync"; }
+                    else if (j && k) { q = !q; syncApplied = true; syncToken = "switch_sync"; }
+                    else { syncApplied = true; syncToken = "hold_sync"; }
+                }
+                else
+                {
+                    // JK ignorado devido a evento assíncrono ocorrido antes deste edge
+                    syncApplied = false;
+                    syncToken = "sync_ignored";
+                }
+                // Edge concluída: começa novo ciclo de contagem de async
+                asyncSincePrevEdge = false;
+            }
+
+            // 2) Apply async immediately for this tile, after edge processing
             string asyncToken = null;
             if (hasPreset && hasClear)
             {
-                // Clear priority
                 bool changed = q != false;
-                q = false;
+                q = false; // Clear priority
                 asyncToken = changed ? "clear_async" : "clear_async_noop";
+                asyncSincePrevEdge = true; // conta para o próximo edge
             }
             else if (hasClear)
             {
                 bool changed = q != false;
                 q = false;
                 asyncToken = changed ? "clear_async" : "clear_async_noop";
+                asyncSincePrevEdge = true;
             }
             else if (hasPreset)
             {
                 bool changed = q != true;
                 q = true;
                 asyncToken = changed ? "preset_async" : "preset_async_noop";
-            }
-
-            bool afterAsyncQ = q;
-            bool syncApplied = false;
-            string syncToken = null;
-            // Apply JK at the first tile AFTER the edge; sample J/K from previous tile.
-            if (step > 0 && i > 0 && (i % step) == 0)
-            {
-                bool j = GetAt(ParsedJSignal, i - 1);
-                bool k = GetAt(ParsedKSignal, i - 1);
-                bool beforeSyncQ = q;
-                if (j && !k) { q = true; syncApplied = true; syncToken = beforeSyncQ != q ? "set_sync" : "hold_sync"; }
-                else if (!j && k) { q = false; syncApplied = true; syncToken = beforeSyncQ != q ? "reset_sync" : "hold_sync"; }
-                else if (j && k) { q = !q; syncApplied = true; syncToken = "switch_sync"; }
-                else { syncApplied = true; syncToken = "hold_sync"; }
+                asyncSincePrevEdge = true;
             }
 
             timeline[i] = q;
 
+            // 3) Decide final token. If both occurred in the same tile and sync actually changed Q,
+            //    expose as a combined token: "{sync}_then_{async}". Otherwise prefer async, then sync.
             string finalToken;
-            if (asyncToken == null && !syncApplied)
+            if (asyncToken != null && syncApplied && syncToken != null && syncToken != "hold_sync")
             {
-                finalToken = prevQ == q ? "keep" : (q ? "set_initial" : "reset_initial");
+                finalToken = syncToken + "_then_" + asyncToken; // e.g., switch_sync_then_clear_async
             }
-            else if (asyncToken != null && !syncApplied)
+            else if (asyncToken != null)
             {
                 finalToken = asyncToken;
             }
-            else if (asyncToken == null && syncApplied)
+            else if (syncApplied)
             {
                 finalToken = syncToken;
             }
-            else // both async and sync same tile
+            else
             {
-                if (afterAsyncQ != q)
-                {
-                    // JK changed again after async
-                    finalToken = asyncToken + "+" + syncToken;
-                }
-                else
-                {
-                    // JK evaluated but didn't further change
-                    finalToken = asyncToken + "+" + syncToken;
-                }
+                finalToken = (prevQ == q) ? "keep" : (q ? "set_initial" : "reset_initial");
             }
             opArr[i] = finalToken;
         }
@@ -322,38 +344,64 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     public List<PathVerifier.SignalEvent> ComputeOutputEventsFromParsedSignals()
     {
-        // Ensure we have both timeline and ops tokens
-        if (OutputTimeline == null || outputOpsPerTile == null || OutputTimeline.Length != outputOpsPerTile.Length)
+        // Re-simulate per-tile with edge-then-async ordering to capture double transitions
+        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
+        if (diagramLen <= 0)
         {
-            OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+            diagramLen = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
+            if (diagramLen <= 0) return null;
         }
-        var timeline = OutputTimeline;
-        if (timeline == null || timeline.Length == 0) return null;
+        int totalLength = diagramLen + 1;
 
         GetClockSamplingParameters(out int step, out int _);
         var events = new List<PathVerifier.SignalEvent>();
-        bool prev = timeline[0];
-        // Initial high state event (use async offset if caused by async and not at clock edge)
-        if (prev)
-        {
-            string op0 = outputOpsPerTile[0];
-            bool isClockEdge0 = (step > 0 && 0 > 0 && (0 % step) == 0); // false
-            bool asyncOnly0 = op0 != null && op0.Contains("_async") && !op0.Contains("+") && !isClockEdge0;
-            float x0 = 0f + (asyncOnly0 ? 0.5f : 0f);
-            events.Add(new PathVerifier.SignalEvent(x0, prev));
-        }
 
-        for (int i = 1; i < timeline.Length; i++)
+        bool q = false;        // state carried across tiles
+        bool prev = q;         // last emitted baseline
+        bool asyncSincePrevEdge = false;
+
+        for (int i = 0; i < totalLength; i++)
         {
-            bool cur = timeline[i];
-            if (cur != prev)
+            bool isEdge = (step > 0 && i > 0 && (i % step) == 0);
+
+            // 1) Synchronous edge effect at integer X=i
+            if (isEdge)
             {
-                string op = (i < outputOpsPerTile.Length) ? outputOpsPerTile[i] : null;
-                bool isClockEdge = (step > 0 && (i % step) == 0);
-                bool asyncOnly = op != null && op.Contains("_async") && !op.Contains("+") && !isClockEdge;
-                float xPos = i + (asyncOnly ? 0.5f : 0f);
-                events.Add(new PathVerifier.SignalEvent(xPos, cur));
-                prev = cur;
+                if (!asyncSincePrevEdge)
+                {
+                    bool j = GetAt(ParsedJSignal, i - 1);
+                    bool k = GetAt(ParsedKSignal, i - 1);
+                    bool qSync = q;
+                    if (j && !k) qSync = true;
+                    else if (!j && k) qSync = false;
+                    else if (j && k) qSync = !qSync;
+
+                    if (qSync != prev)
+                    {
+                        events.Add(new PathVerifier.SignalEvent(i, qSync));
+                        prev = qSync;
+                    }
+                    q = qSync;
+                }
+                // reset cycle async tracker at the edge
+                asyncSincePrevEdge = false;
+            }
+
+            // 2) Asynchronous immediate effect at half tile X=i+0.5
+            bool hasPreset = GetAt(ParsedPresetSignal, i);
+            bool hasClear = GetAt(ParsedClearSignal, i);
+            if (hasPreset || hasClear)
+            {
+                bool qBefore = q;
+                // Clear priority if both
+                q = hasClear ? false : true;
+                if (q != qBefore)
+                {
+                    float xPos = i + 0.5f;
+                    events.Add(new PathVerifier.SignalEvent(xPos, q));
+                    prev = q;
+                }
+                asyncSincePrevEdge = true; // counts for next edge suppression
             }
         }
         return events;
