@@ -68,8 +68,7 @@ public class CameraController : MonoBehaviour
             Vector3 desiredPosition = new Vector3(target.position.x + offset.x, transform.position.y, transform.position.z);
             if (ignoreRightLimit)
             {
-                // Fase menor que a câmera: mantém preso no limite esquerdo
-                desiredPosition.x = minX;
+                desiredPosition.x = Mathf.Max(desiredPosition.x, minX);
             }
             else
             {
