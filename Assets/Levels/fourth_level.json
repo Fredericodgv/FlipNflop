@@ -1,7 +1,8 @@
 {
     "levelName": "fourth_level",
-    "levelTiles": 30,
-    "clockTiles": 5,
+    "levelDescription": "implementa obstáculos mace móveis verticais para incentivar escolha prévia da saída",
+    "levelTiles": 48,
+    "clockTiles": 6,
     "jSignal": "0110001110011111100110101110011",
     "kSignal": "1101111000001100110111110011111",
     "floor": "1111111110001111111111111111111",
