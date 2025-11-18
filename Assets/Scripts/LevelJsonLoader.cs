@@ -72,249 +72,28 @@ public class LevelJsonLoader : MonoBehaviour
 
     #endregion
 
-
-    #region Output: Timeline
+    #region Output Computation
     /// <summary>
-    /// Per-tile timeline: JK at edge tile, async immediately; async suppresses next edge only.
-    /// </summary>
-    public bool[] ComputeOutputTimelineFromParsedSignals()
-    {
-        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
-        if (diagramLen <= 0)
-        {
-            diagramLen = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
-            if (diagramLen <= 0) return null;
-        }
-        int totalLength = diagramLen + 1; // inclui o tile imediatamente após a última borda de clock
-
-        GetClockSamplingParameters(out int step, out int _);
-        var timeline = new bool[totalLength];
-        bool q = false;
-        bool asyncSincePrevEdge = false;
-        for (int i = 0; i < totalLength; i++)
-        {
-            bool hasPreset = GetAt(ParsedPresetSignal, i);
-            bool hasClear = GetAt(ParsedClearSignal, i);
-            bool isEdge = (step > 0 && i > 0 && (i % step) == 0);
-            bool hasAsyncCurrent = (hasPreset || hasClear);
-
-
-            // 1) Apply JK at the tile AFTER the edge, sampling J/K at i-1,
-            //    but only if no async happened strictly before this edge (tiles < i).
-            if (isEdge)
-            {
-                // Allow sync even if asyncSincePrevEdge was true IF an async also occurs now (to produce combined op)
-                bool suppressEdge = asyncSincePrevEdge && !hasAsyncCurrent;
-                if (!suppressEdge)
-                {
-                    bool j = GetAt(ParsedJSignal, i - 1);
-                    bool k = GetAt(ParsedKSignal, i - 1);
-                    if (j && !k) q = true;
-                    else if (!j && k) q = false;
-                    else if (j && k) q = !q;
-                }
-                // Reset at the edge to begin tracking async for the next cycle
-                asyncSincePrevEdge = false;
-            }
-
-            // 2) Apply asynchronous preset/clear immediately for this tile (after JK at the edge)
-            if (hasPreset && hasClear)
-            {
-                q = false; // Clear priority
-                asyncSincePrevEdge = true; // counts towards suppression of the NEXT edge
-            }
-            else if (hasClear)
-            {
-                q = false;
-                asyncSincePrevEdge = true;
-            }
-            else if (hasPreset)
-            {
-                q = true;
-                asyncSincePrevEdge = true;
-            }
-
-            timeline[i] = q;
-        }
-        return timeline;
-    }
-
-    /// <summary>
-    /// Timeline + op labels per tile (keep, set/reset/switch_sync, preset/clear_async, combined).
-    /// </summary>
-    public bool[] ComputeOutputTimelineWithOps(out string[] ops)
-    {
-        ops = null;
-        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
-        if (diagramLen <= 0)
-        {
-            diagramLen = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
-            if (diagramLen <= 0) return null;
-        }
-        int totalLength = diagramLen + 1; // inclui o tile logo após a última borda de clock
-
-        GetClockSamplingParameters(out int step, out int _);
-        var timeline = new bool[totalLength];
-        var opArr = new string[totalLength];
-        bool q = false;
-        bool asyncSincePrevEdge = false;
-        for (int i = 0; i < totalLength; i++)
-        {
-            bool prevQ = q;
-            bool hasPreset = GetAt(ParsedPresetSignal, i);
-            bool hasClear = GetAt(ParsedClearSignal, i);
-            bool isEdge = (step > 0 && i > 0 && (i % step) == 0);
-            bool hasAsyncCurrent = (hasPreset || hasClear);
-
-            bool syncApplied = false;
-            string syncToken = null;
-
-            // 1) Apply JK at the edge (sampling J/K at i-1) only if no async happened strictly before this edge
-            if (isEdge)
-            {
-                bool suppressEdge = asyncSincePrevEdge && !hasAsyncCurrent;
-                if (!suppressEdge)
-                {
-                    bool j = GetAt(ParsedJSignal, i - 1);
-                    bool k = GetAt(ParsedKSignal, i - 1);
-                    bool beforeSyncQ = q;
-                    if (j && !k) { q = true; syncApplied = true; syncToken = beforeSyncQ != q ? "set_sync" : "hold_sync"; }
-                    else if (!j && k) { q = false; syncApplied = true; syncToken = beforeSyncQ != q ? "reset_sync" : "hold_sync"; }
-                    else if (j && k) { q = !q; syncApplied = true; syncToken = "switch_sync"; }
-                    else { syncApplied = true; syncToken = "hold_sync"; }
-                }
-                else
-                {
-                    // JK ignorado devido a evento assíncrono ocorrido antes deste edge
-                    syncApplied = false;
-                    syncToken = "sync_ignored";
-                }
-                // Edge concluída: começa novo ciclo de contagem de async
-                asyncSincePrevEdge = false;
-            }
-
-            // 2) Apply async immediately for this tile, after edge processing
-            string asyncToken = null;
-            if (hasPreset && hasClear)
-            {
-                bool changed = q != false;
-                q = false; // Clear priority
-                asyncToken = changed ? "clear_async" : "clear_async_noop";
-                asyncSincePrevEdge = true; // conta para o próximo edge
-            }
-            else if (hasClear)
-            {
-                bool changed = q != false;
-                q = false;
-                asyncToken = changed ? "clear_async" : "clear_async_noop";
-                asyncSincePrevEdge = true;
-            }
-            else if (hasPreset)
-            {
-                bool changed = q != true;
-                q = true;
-                asyncToken = changed ? "preset_async" : "preset_async_noop";
-                asyncSincePrevEdge = true;
-            }
-
-            timeline[i] = q;
-
-            // 3) Decide final token.
-            // Anchor at the edge when it changed Q; only combine if async changed too.
-            string finalToken;
-            bool asyncIsNoop = (asyncToken != null && asyncToken.EndsWith("_noop"));
-            if (syncApplied && syncToken != null && syncToken != "hold_sync")
-            {
-                finalToken = (!asyncIsNoop && asyncToken != null) ? (syncToken + "_then_" + asyncToken) : syncToken;
-            }
-            else if (asyncToken != null)
-            {
-                finalToken = asyncToken;
-            }
-            else
-            {
-                finalToken = (prevQ == q) ? "keep" : (q ? "set_initial" : "reset_initial");
-            }
-            opArr[i] = finalToken;
-        }
-        ops = opArr;
-        return timeline;
-    }
-
-    #endregion
-
-    #region Output: Events
-    /// <summary>
-    /// Builds events from per-tile sim: sync at X=i, async at X=i+0.5.
+    /// Computes output events from parsed signals using FlipFlopSimulator.
     /// </summary>
     public List<PathVerifier.SignalEvent> ComputeOutputEventsFromParsedSignals()
     {
-        // Re-simulate per-tile with edge-then-async ordering to capture double transitions
-        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
-        if (diagramLen <= 0)
-        {
-            diagramLen = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
-            if (diagramLen <= 0) return null;
-        }
-        int totalLength = diagramLen + 1;
+        int diagramLen = GetDiagramLength();
+        if (diagramLen <= 0) return null;
 
         GetClockSamplingParameters(out int step, out int _);
-        var events = new List<PathVerifier.SignalEvent>();
+        var events = FlipFlopSimulator.ComputeJKEvents(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, step, diagramLen);
 
-        bool q = false;        // state carried across tiles
-        bool prev = q;         // last emitted baseline
-        bool asyncSincePrevEdge = false; // set only when an async actually changed Q since last edge
-
-        for (int i = 0; i < totalLength; i++)
+        // Convert FlipFlopSimulator.SignalEvent to PathVerifier.SignalEvent
+        var pathEvents = new List<PathVerifier.SignalEvent>();
+        if (events != null)
         {
-            bool isEdge = (step > 0 && i > 0 && (i % step) == 0);
-            bool hasPreset = GetAt(ParsedPresetSignal, i);
-            bool hasClear = GetAt(ParsedClearSignal, i);
-            bool hasAsyncCurrent = (hasPreset || hasClear);
-
-            // 1) Synchronous edge effect at integer X=i
-            if (isEdge)
+            foreach (var evt in events)
             {
-                // Suppress edge ONLY if a prior async changed Q and there is no async this tile
-                bool suppressEdge = asyncSincePrevEdge && !hasAsyncCurrent;
-                if (!suppressEdge)
-                {
-                    bool j = GetAt(ParsedJSignal, i - 1);
-                    bool k = GetAt(ParsedKSignal, i - 1);
-                    bool qSync = q;
-                    if (j && !k) qSync = true;
-                    else if (!j && k) qSync = false;
-                    else if (j && k) qSync = !qSync;
-
-                    if (qSync != prev)
-                    {
-                        events.Add(new PathVerifier.SignalEvent(i, qSync));
-                        prev = qSync;
-                    }
-                    q = qSync;
-                }
-                // reset tracker; it may be re-set by async below if that async changes Q
-                asyncSincePrevEdge = false;
-            }
-
-            // 2) Asynchronous immediate effect at half tile X=i+0.5
-            if (hasPreset || hasClear)
-            {
-                bool qBefore = q;
-                // Clear priority if both
-                q = hasClear ? false : true;
-                bool asyncChanged = (q != qBefore);
-                if (asyncChanged)
-                {
-                    float xPos = i + 0.5f;
-                    events.Add(new PathVerifier.SignalEvent(xPos, q));
-                    prev = q;
-                }
-                // Only mark for next-edge suppression if the async actually changed Q
-                asyncSincePrevEdge = asyncChanged;
+                pathEvents.Add(new PathVerifier.SignalEvent(evt.x, evt.value));
             }
         }
-        return events;
+        return pathEvents;
     }
 
     #endregion
@@ -332,17 +111,17 @@ public class LevelJsonLoader : MonoBehaviour
         startOffset = step;
     }
 
-    private static bool GetAt(bool[] arr, int idx)
+    /// <summary>
+    /// Gets diagram length from LevelManager or signal arrays.
+    /// </summary>
+    private int GetDiagramLength()
     {
-        return arr != null && idx >= 0 && idx < arr.Length && arr[idx];
-    }
-
-    private static bool[] InvertBits(bool[] arr)
-    {
-        if (arr == null) return null;
-        var res = new bool[arr.Length];
-        for (int i = 0; i < arr.Length; i++) res[i] = !arr[i];
-        return res;
+        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
+        if (diagramLen <= 0)
+        {
+            diagramLen = FlipFlopSimulator.MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
+        }
+        return diagramLen;
     }
 
     private static Color ParseColor(string hex, Color fallback)
@@ -392,8 +171,8 @@ public class LevelJsonLoader : MonoBehaviour
         int asyncActiveMode = (data != null ? data.asyncActive : 1);
         if (asyncActiveMode == 0)
         {
-            presetSignal = InvertBits(presetSignal);
-            clearSignal = InvertBits(clearSignal);
+            presetSignal = FlipFlopSimulator.InvertBits(presetSignal);
+            clearSignal = FlipFlopSimulator.InvertBits(clearSignal);
         }
         this.ParsedJSignal = jSignal;
         this.ParsedKSignal = kSignal;
@@ -404,7 +183,9 @@ public class LevelJsonLoader : MonoBehaviour
         var ceilingBand = ParseInputString(data.ceiling);
 
         // Compute and expose the per-tile output timeline (0/1) for PathVerifier/reference
-        this.OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+        GetClockSamplingParameters(out int clockStep, out int _);
+        int diagramLen = GetDiagramLength();
+        this.OutputTimeline = FlipFlopSimulator.ComputeJKTimelineWithOps(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile);
         UpdateDebugOutputVectorString();
         if (debugLogOutputVector)
         {
@@ -427,7 +208,6 @@ public class LevelJsonLoader : MonoBehaviour
             GenerateDiagram(inputTilemap, clearSignal, clear_YRow, startX, clearColor);
 
         // Use values already defined in ApplyLevelConfig (no redundant checks here)
-        int clockStep = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.clockStepX : 6);
         int levelLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : (6 * data.clockCicles));
 
         var clockPattern = BuildClockPattern(levelLength, clockStep, false);
@@ -523,7 +303,9 @@ public class LevelJsonLoader : MonoBehaviour
     {
         if (OutputTimeline == null)
         {
-            OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+            GetClockSamplingParameters(out int clockStep, out int _);
+            int diagramLen = GetDiagramLength();
+            OutputTimeline = FlipFlopSimulator.ComputeJKTimelineWithOps(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile);
             UpdateDebugOutputVectorString();
         }
         Debug.Log($"LevelJsonLoader: Output timeline ({(OutputTimeline != null ? OutputTimeline.Length : 0)}): {debugOutputVector}");
@@ -534,7 +316,9 @@ public class LevelJsonLoader : MonoBehaviour
     {
         if (outputOpsPerTile == null || OutputTimeline == null)
         {
-            OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+            GetClockSamplingParameters(out int clockStep, out int _);
+            int diagramLen = GetDiagramLength();
+            OutputTimeline = FlipFlopSimulator.ComputeJKTimelineWithOps(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile);
             UpdateDebugOutputVectorString();
         }
         var sb = new StringBuilder(outputOpsPerTile.Length * 6);

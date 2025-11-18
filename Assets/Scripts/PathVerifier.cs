@@ -35,6 +35,14 @@ public class PathVerifier : MonoBehaviour
     [Tooltip("O objeto pai que agrupará as linhas de feedback.")]
     [SerializeField] private Transform feedbackLinesParent;
 
+    [Header("Debug")]
+    [Tooltip("Se ativado, mostra logs detalhados sobre a validação do caminho.")]
+    [SerializeField] private bool enableDebugLogs = false;
+    [Tooltip("Se ativado, mostra gizmos para quinas não atingidas durante o jogo.")]
+    [SerializeField] private bool showMissedCornersInGame = false;
+
+    private List<Vector3> missedCorners = new List<Vector3>();
+
     #endregion
 
     #region Unity Methods
@@ -71,6 +79,17 @@ public class PathVerifier : MonoBehaviour
         if (correctCorners.Count > 0)
         {
             Gizmos.DrawSphere(correctCorners[correctCorners.Count - 1], 0.2f);
+        }
+
+        // Desenha quinas perdidas em vermelho durante o jogo
+        if (showMissedCornersInGame && Application.isPlaying && missedCorners != null && missedCorners.Count > 0)
+        {
+            Gizmos.color = Color.red;
+            foreach (var corner in missedCorners)
+            {
+                Gizmos.DrawWireSphere(corner, cornerTolerance);
+                Gizmos.DrawSphere(corner, 0.3f);
+            }
         }
     }
 
@@ -132,10 +151,25 @@ public class PathVerifier : MonoBehaviour
         signalPath.GetComponent<LineRenderer>().enabled = false;
         // Gabarito já inclui phaseEndX (diagramEndX + slack). Sem necessidade de ajuste dinâmico.
 
+        if (enableDebugLogs)
+        {
+            Debug.Log($"<color=cyan>[PathVerifier] Iniciando verificação do caminho</color>");
+            Debug.Log($"  Pontos do jogador: {signalPath.PathPoints.Count}");
+            Debug.Log($"  Quinas do gabarito: {correctCorners.Count}");
+            Debug.Log($"  Tolerância: {cornerTolerance}");
+        }
+
         DrawFeedbackLines(signalPath.PathPoints);
 
         List<bool> cornerChecks = EvaluateCorrectCorners(signalPath.PathPoints);
         bool isPathCorrectOverall = !cornerChecks.Contains(false);
+
+        if (enableDebugLogs)
+        {
+            int correctCount = cornerChecks.FindAll(x => x).Count;
+            int totalCount = cornerChecks.Count;
+            Debug.Log($"<color=yellow>[PathVerifier] Resultado: {correctCount}/{totalCount} quinas atingidas</color>");
+        }
 
         if (isPathCorrectOverall)
         {
@@ -163,18 +197,26 @@ public class PathVerifier : MonoBehaviour
         if (linePrefab == null || feedbackLinesParent == null) return;
         foreach (Transform child in feedbackLinesParent) Destroy(child.gameObject);
 
+        int correctSegments = 0;
+        int incorrectSegments = 0;
+
         for (int i = 0; i < playerPath.Count - 1; i++)
         {
             Vector3 p_start = playerPath[i];
             Vector3 p_end = playerPath[i + 1];
 
             Vector3 closestToStart = FindClosestPointOnFullPath(p_start, correctCorners);
-            bool startIsOnPath = Vector3.Distance(p_start, closestToStart) <= cornerTolerance;
+            float distStart = Vector3.Distance(p_start, closestToStart);
+            bool startIsOnPath = distStart <= cornerTolerance;
 
             Vector3 closestToEnd = FindClosestPointOnFullPath(p_end, correctCorners);
-            bool endIsOnPath = Vector3.Distance(p_end, closestToEnd) <= cornerTolerance;
+            float distEnd = Vector3.Distance(p_end, closestToEnd);
+            bool endIsOnPath = distEnd <= cornerTolerance;
 
             bool isSegmentCorrect = startIsOnPath && endIsOnPath;
+
+            if (isSegmentCorrect) correctSegments++;
+            else incorrectSegments++;
 
             Color segmentColor = isSegmentCorrect ? successColor : failureColor;
 
@@ -183,6 +225,11 @@ public class PathVerifier : MonoBehaviour
             lineSegment.SetPosition(1, p_end);
             lineSegment.startColor = segmentColor;
             lineSegment.endColor = segmentColor;
+        }
+
+        if (enableDebugLogs)
+        {
+            Debug.Log($"  Segmentos: <color=green>{correctSegments} corretos</color> | <color=red>{incorrectSegments} incorretos</color>");
         }
     }
 
@@ -210,19 +257,49 @@ public class PathVerifier : MonoBehaviour
     private List<bool> EvaluateCorrectCorners(List<Vector3> playerPath)
     {
         var checks = new List<bool>();
+        missedCorners.Clear();
+        int cornerIndex = 0;
+
         foreach (Vector3 correctCorner in correctCorners)
         {
             bool cornerWasHit = false;
+            float minDistance = float.MaxValue;
+            Vector3 closestPlayerPoint = Vector3.zero;
+
             for (int i = 0; i < playerPath.Count - 1; i++)
             {
                 Vector3 closestPoint = FindClosestPointOnLineSegment(correctCorner, playerPath[i], playerPath[i + 1]);
-                if (Vector3.Distance(closestPoint, correctCorner) <= cornerTolerance)
+                float distance = Vector3.Distance(closestPoint, correctCorner);
+
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closestPlayerPoint = closestPoint;
+                }
+
+                if (distance <= cornerTolerance)
                 {
                     cornerWasHit = true;
                     break;
                 }
             }
+
             checks.Add(cornerWasHit);
+
+            if (!cornerWasHit)
+            {
+                missedCorners.Add(correctCorner);
+                if (enableDebugLogs)
+                {
+                    Debug.LogWarning($"  <color=red>✗ Quina #{cornerIndex} PERDIDA:</color> Pos={correctCorner} | Distância mínima={minDistance:F2} | Ponto mais próximo={closestPlayerPoint}");
+                }
+            }
+            else if (enableDebugLogs)
+            {
+                Debug.Log($"  <color=green>✓ Quina #{cornerIndex} OK:</color> Pos={correctCorner} | Distância={minDistance:F2}");
+            }
+
+            cornerIndex++;
         }
         return checks;
     }
@@ -264,6 +341,39 @@ public class PathVerifier : MonoBehaviour
         t = Mathf.Clamp01(t);
 
         return lineStart + lineDirection * t;
+    }
+
+    #endregion
+
+    #region Debug Methods
+
+    [ContextMenu("Log Gabarito Info")]
+    private void LogGabaritoInfo()
+    {
+        if (correctCorners == null || correctCorners.Count == 0)
+        {
+            Debug.LogWarning("[PathVerifier] Gabarito vazio ou não gerado!");
+            return;
+        }
+
+        Debug.Log($"<color=cyan>===== GABARITO INFO =====</color>");
+        Debug.Log($"Total de quinas: {correctCorners.Count}");
+        Debug.Log($"Primeira quina: {correctCorners[0]}");
+        Debug.Log($"Última quina: {correctCorners[correctCorners.Count - 1]}");
+        Debug.Log($"Tolerância: {cornerTolerance}");
+
+        for (int i = 0; i < correctCorners.Count; i++)
+        {
+            string yLevel = Mathf.Approximately(correctCorners[i].y, lowY) ? "LOW" : "HIGH";
+            Debug.Log($"  Quina #{i}: X={correctCorners[i].x:F2} Y={correctCorners[i].y:F2} ({yLevel})");
+        }
+    }
+
+    [ContextMenu("Toggle Debug Logs")]
+    private void ToggleDebugLogs()
+    {
+        enableDebugLogs = !enableDebugLogs;
+        Debug.Log($"<color=yellow>[PathVerifier] Debug logs {(enableDebugLogs ? "ATIVADOS" : "DESATIVADOS")}</color>");
     }
 
     #endregion
