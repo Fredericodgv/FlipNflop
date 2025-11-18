@@ -227,15 +227,16 @@ public class LevelJsonLoader : MonoBehaviour
 
 
 
+    #endregion
+
+    #region Clock Pattern
+
     /// <summary>
     /// Builds the clock pattern:
     /// Step S: period = S tiles. First floor(S/2) zeros, then remaining tiles ones (or inverted if startHigh).
     /// For odd S this creates a slightly asymmetric duty cycle (ex: S=5 -> 2 zeros, 3 ones).
     /// Returns int[] of length totalLength with values: 0=low, 1=high.
     /// </summary>
-    #endregion
-
-    #region Clock Pattern
     public static int[] BuildClockPattern(int totalLength, int step, bool startHigh = false)
     {
         if (totalLength <= 0 || step <= 0) return null;
@@ -380,12 +381,18 @@ public class LevelJsonLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// Sets fixed clock (6) and derived lengths.
+    /// Sets fixed clock step (6) and derived lengths from level data.
     /// </summary>
     private void ApplyLevelConfig(LevelData data)
     {
         if (LevelManager.Instance != null)
         {
+            if (data.clockCicles <= 0)
+            {
+                Debug.LogWarning($"LevelJsonLoader: Invalid clockCicles={data.clockCicles}. Using default value of 10.");
+                data.clockCicles = 10;
+            }
+
             int step = 6;
             LevelManager.Instance.clockStepX = step;
             LevelManager.Instance.diagramEndX = data.clockCicles * step;
@@ -396,9 +403,25 @@ public class LevelJsonLoader : MonoBehaviour
 
 
 
+    #endregion
+
+    #region Helper Methods - Tile Rendering
+
     /// <summary>
-    /// Renders a signal diagram on a tilemap.
+    /// Sets a tile at the specified position with optional Y-axis flip.
     /// </summary>
+    private void SetTileWithFlip(Tilemap targetMap, Vector3Int position, TileBase tile, bool flipY)
+    {
+        if (targetMap == null || tile == null) return;
+
+        targetMap.SetTile(position, tile);
+        if (flipY)
+        {
+            targetMap.SetTileFlags(position, TileFlags.None);
+            targetMap.SetTransformMatrix(position, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
+        }
+    }
+
     #endregion
 
     #region Diagram Rendering
@@ -413,41 +436,39 @@ public class LevelJsonLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// Renders a 0/1 band at the given row.
+    /// Renders a 0/1 band at the given row with optional extension beyond the last '1'.
     /// </summary>
     private void GenerateBand(Tilemap targetMap, bool[] band, int yRow, TileBase tile, bool flipY = false, int extendRight = 0)
     {
         if (targetMap == null || band == null || tile == null) return;
+
+        // Render the band from the signal array
         for (int i = 0; i < band.Length; i++)
         {
             if (!band[i]) continue;
             var pos = new Vector3Int(startX + i, yRow, 0);
-            targetMap.SetTile(pos, tile);
-            if (flipY)
-            {
-                targetMap.SetTileFlags(pos, TileFlags.None);
-                targetMap.SetTransformMatrix(pos, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
-            }
+            SetTileWithFlip(targetMap, pos, tile, flipY);
         }
 
         // Extend band a few tiles after the last '1'
         if (extendRight > 0)
-
-
         {
             int lastIdx = -1;
-            for (int i = band.Length - 1; i >= 0; i--) { if (band[i]) { lastIdx = i; break; } }
+            for (int i = band.Length - 1; i >= 0; i--)
+            {
+                if (band[i])
+                {
+                    lastIdx = i;
+                    break;
+                }
+            }
+
             if (lastIdx >= 0)
             {
                 for (int off = 1; off <= extendRight; off++)
                 {
                     var posExt = new Vector3Int(startX + lastIdx + off, yRow, 0);
-                    targetMap.SetTile(posExt, tile);
-                    if (flipY)
-                    {
-                        targetMap.SetTileFlags(posExt, TileFlags.None);
-                        targetMap.SetTransformMatrix(posExt, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
-                    }
+                    SetTileWithFlip(targetMap, posExt, tile, flipY);
                 }
             }
         }
@@ -466,26 +487,23 @@ public class LevelJsonLoader : MonoBehaviour
             {
                 int xWall = startX - 2;
                 for (int y = yMin; y <= yMax; y++)
-                    terrainTilemap.SetTile(new Vector3Int(xWall, y, 0), wallTile);
+                {
+                    SetTileWithFlip(terrainTilemap, new Vector3Int(xWall, y, 0), wallTile, false);
+                }
             }
         }
 
         if (terrainTilemap != null && floorTile != null)
         {
             int xFloor = startX - 1;
-            terrainTilemap.SetTile(new Vector3Int(xFloor, floorYRow, 0), floorTile);
+            SetTileWithFlip(terrainTilemap, new Vector3Int(xFloor, floorYRow, 0), floorTile, false);
         }
 
         if (terrainTilemap != null && ceilingTile != null)
         {
             int xCeil = startX - 1;
             var pos = new Vector3Int(xCeil, ceilingYRow, 0);
-            terrainTilemap.SetTile(pos, ceilingTile);
-            if (flipCeilingY)
-            {
-                terrainTilemap.SetTileFlags(pos, TileFlags.None);
-                terrainTilemap.SetTransformMatrix(pos, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
-            }
+            SetTileWithFlip(terrainTilemap, pos, ceilingTile, flipCeilingY);
         }
     }
 

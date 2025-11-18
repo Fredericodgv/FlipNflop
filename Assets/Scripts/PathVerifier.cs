@@ -148,6 +148,7 @@ public class PathVerifier : MonoBehaviour
             return;
         }
 
+        missedCorners.Clear();
         signalPath.GetComponent<LineRenderer>().enabled = false;
         // Gabarito já inclui phaseEndX (diagramEndX + slack). Sem necessidade de ajuste dinâmico.
 
@@ -238,6 +239,41 @@ public class PathVerifier : MonoBehaviour
     #region Helper Functions
 
     /// <summary>
+    /// Evaluates if a single corner was hit by the player's path.
+    /// </summary>
+    /// <param name="corner">The corner position to evaluate</param>
+    /// <param name="playerPath">The player's complete path</param>
+    /// <param name="minDistance">Output: minimum distance found</param>
+    /// <param name="closestPoint">Output: closest point on player path</param>
+    /// <returns>True if corner was hit within tolerance</returns>
+    private bool EvaluateCornerHit(Vector3 corner, List<Vector3> playerPath, out float minDistance, out Vector3 closestPoint)
+    {
+        minDistance = float.MaxValue;
+        closestPoint = Vector3.zero;
+        bool wasHit = false;
+
+        for (int i = 0; i < playerPath.Count - 1; i++)
+        {
+            Vector3 closest = FindClosestPointOnLineSegment(corner, playerPath[i], playerPath[i + 1]);
+            float distance = Vector3.Distance(closest, corner);
+
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestPoint = closest;
+            }
+
+            if (distance <= cornerTolerance)
+            {
+                wasHit = true;
+                break;
+            }
+        }
+
+        return wasHit;
+    }
+
+    /// <summary>
     /// Activates the given GameObject and ensures its parent container is active.
     /// </summary>
     private void ActivateWithParent(GameObject target)
@@ -252,38 +288,16 @@ public class PathVerifier : MonoBehaviour
     }
 
     /// <summary>
-    /// Avalia se a linha completa do jogador passa perto de cada quina do gabarito. Usado para o resultado final (sucesso/falha).
+    /// Avalia se a linha completa do jogador passa perto de cada quina do gabarito.
     /// </summary>
     private List<bool> EvaluateCorrectCorners(List<Vector3> playerPath)
     {
         var checks = new List<bool>();
-        missedCorners.Clear();
         int cornerIndex = 0;
 
         foreach (Vector3 correctCorner in correctCorners)
         {
-            bool cornerWasHit = false;
-            float minDistance = float.MaxValue;
-            Vector3 closestPlayerPoint = Vector3.zero;
-
-            for (int i = 0; i < playerPath.Count - 1; i++)
-            {
-                Vector3 closestPoint = FindClosestPointOnLineSegment(correctCorner, playerPath[i], playerPath[i + 1]);
-                float distance = Vector3.Distance(closestPoint, correctCorner);
-
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    closestPlayerPoint = closestPoint;
-                }
-
-                if (distance <= cornerTolerance)
-                {
-                    cornerWasHit = true;
-                    break;
-                }
-            }
-
+            bool cornerWasHit = EvaluateCornerHit(correctCorner, playerPath, out float minDistance, out Vector3 closestPlayerPoint);
             checks.Add(cornerWasHit);
 
             if (!cornerWasHit)
