@@ -14,8 +14,9 @@ public static class FlipFlopSimulator
     /// Computes per-tile timeline for JK flip-flop with async preset/clear.
     /// JK evaluated at clock edges; async inputs take effect immediately and suppress next edge.
     /// </summary>
+    /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0</param>
     public static bool[] ComputeJKTimeline(bool[] jSignal, bool[] kSignal, bool[] presetSignal, bool[] clearSignal,
-        int clockStep, int diagramLength)
+        int clockStep, int diagramLength, bool asyncActiveHigh = true)
     {
         if (diagramLength <= 0) return null;
         int totalLength = diagramLength + 1;
@@ -26,8 +27,14 @@ public static class FlipFlopSimulator
 
         for (int i = 0; i < totalLength; i++)
         {
-            bool hasPreset = GetAt(presetSignal, i);
-            bool hasClear = GetAt(clearSignal, i);
+            bool presetValue = GetAt(presetSignal, i);
+            bool clearValue = GetAt(clearSignal, i);
+
+            // If asyncActiveHigh=true: active when signal=1
+            // If asyncActiveHigh=false: active when signal=0 (inverted)
+            bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
+            bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
+
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
             bool hasAsyncCurrent = (hasPreset || hasClear);
 
@@ -71,8 +78,9 @@ public static class FlipFlopSimulator
     /// <summary>
     /// Computes JK timeline with operation labels per tile (keep, set_sync, reset_sync, preset_async, etc).
     /// </summary>
+    /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0</param>
     public static bool[] ComputeJKTimelineWithOps(bool[] jSignal, bool[] kSignal, bool[] presetSignal, bool[] clearSignal,
-        int clockStep, int diagramLength, out string[] ops)
+        int clockStep, int diagramLength, out string[] ops, bool asyncActiveHigh = true)
     {
         ops = null;
         if (diagramLength <= 0) return null;
@@ -86,8 +94,14 @@ public static class FlipFlopSimulator
         for (int i = 0; i < totalLength; i++)
         {
             bool prevQ = q;
-            bool hasPreset = GetAt(presetSignal, i);
-            bool hasClear = GetAt(clearSignal, i);
+            bool presetValue = GetAt(presetSignal, i);
+            bool clearValue = GetAt(clearSignal, i);
+
+            // If asyncActiveHigh=true: active when signal=1
+            // If asyncActiveHigh=false: active when signal=0 (inverted)
+            bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
+            bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
+
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
             bool hasAsyncCurrent = (hasPreset || hasClear);
 
@@ -167,8 +181,9 @@ public static class FlipFlopSimulator
     /// Generates signal events from JK simulation: sync at X=i, async at X=i+0.5.
     /// Used for PathVerifier reference path generation.
     /// </summary>
+    /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0</param>
     public static List<SignalEvent> ComputeJKEvents(bool[] jSignal, bool[] kSignal, bool[] presetSignal, bool[] clearSignal,
-        int clockStep, int diagramLength)
+        int clockStep, int diagramLength, bool asyncActiveHigh = true)
     {
         if (diagramLength <= 0) return null;
         int totalLength = diagramLength + 1;
@@ -181,8 +196,14 @@ public static class FlipFlopSimulator
         for (int i = 0; i < totalLength; i++)
         {
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
-            bool hasPreset = GetAt(presetSignal, i);
-            bool hasClear = GetAt(clearSignal, i);
+            bool presetValue = GetAt(presetSignal, i);
+            bool clearValue = GetAt(clearSignal, i);
+
+            // If asyncActiveHigh=true: active when signal=1
+            // If asyncActiveHigh=false: active when signal=0 (inverted)
+            bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
+            bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
+
             bool hasAsyncCurrent = (hasPreset || hasClear);
 
             // 1) Synchronous edge effect at integer X=i
