@@ -25,7 +25,7 @@ public static class FlipFlopSimulator
         if (diagramLength <= 0) return null;
 
         int inputLength = diagramLength + 1;
-        int outputLength = inputLength * 2; // Double resolution: X.0 and X.5 for each tile
+        int outputLength = inputLength * 2; 
         var timeline = new bool[outputLength];
         var opArr = new string[outputLength];
         var eventList = new List<SignalEvent>();
@@ -35,12 +35,11 @@ public static class FlipFlopSimulator
 
         for (int i = 0; i < inputLength; i++)
         {
-            int syncIndex = i * 2;      // Even index: synchronous operations at X.0
-            int asyncIndex = i * 2 + 1; // Odd index: asynchronous operations at X.5
+            int syncIndex = i * 2;      
+            int asyncIndex = i * 2 + 1; 
 
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
 
-            // === SYNCHRONOUS PHASE (X.0) ===
             bool qBeforeSync = q;
             bool syncApplied = false;
             string syncToken = null;
@@ -81,7 +80,6 @@ public static class FlipFlopSimulator
                 ? syncToken
                 : (syncToken == "sync_ignored" ? syncToken : (qBeforeSync == q ? "keep" : (q ? "set_initial" : "reset_initial")));
 
-            // === ASYNCHRONOUS PHASE (X.5) ===
             bool qBeforeAsync = q;
             bool presetValue = GetAt(presetSignal, i);
             bool clearValue = GetAt(clearSignal, i);
@@ -93,7 +91,7 @@ public static class FlipFlopSimulator
 
             if (hasPreset || hasClear)
             {
-                q = hasClear ? false : true; // Clear priority
+                q = hasClear ? false : true; 
 
                 asyncToken = (q != qBeforeAsync)
                     ? (hasClear ? "clear_async" : "preset_async")
@@ -152,7 +150,6 @@ public static class FlipFlopSimulator
 
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
 
-            // === SYNCHRONOUS PHASE (X.0) ===
             bool qBeforeSync = q;
             string syncToken = null;
 
@@ -163,7 +160,6 @@ public static class FlipFlopSimulator
 
                 if (s && r)
                 {
-                    // Invalid state
                     if (invalidStateToZero) q = false;
                     syncToken = "invalid_sr";
                 }
@@ -191,8 +187,6 @@ public static class FlipFlopSimulator
             timeline[syncIndex] = q;
             opArr[syncIndex] = syncToken ?? (qBeforeSync == q ? "keep" : (q ? "set_initial" : "reset_initial"));
 
-            // === ASYNCHRONOUS PHASE (X.5) ===
-            // SR flip-flops typically don't have async preset/clear, so just maintain state
             timeline[asyncIndex] = q;
             opArr[asyncIndex] = "keep";
         }
@@ -235,7 +229,6 @@ public static class FlipFlopSimulator
 
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
 
-            // === SYNCHRONOUS PHASE (X.0) ===
             bool qBeforeSync = q;
             bool syncApplied = false;
             string syncToken = null;
@@ -269,7 +262,6 @@ public static class FlipFlopSimulator
                 ? syncToken
                 : (syncToken == "sync_ignored" ? syncToken : (qBeforeSync == q ? "keep" : (q ? "set_initial" : "reset_initial")));
 
-            // === ASYNCHRONOUS PHASE (X.5) ===
             bool qBeforeAsync = q;
             bool presetValue = GetAt(presetSignal, i);
             bool clearValue = GetAt(clearSignal, i);
@@ -341,7 +333,6 @@ public static class FlipFlopSimulator
 
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
 
-            // === SYNCHRONOUS PHASE (X.0) ===
             bool qBeforeSync = q;
             bool syncApplied = false;
             string syncToken = null;
@@ -375,7 +366,6 @@ public static class FlipFlopSimulator
                 ? syncToken
                 : (syncToken == "sync_ignored" ? syncToken : (qBeforeSync == q ? "keep" : (q ? "set_initial" : "reset_initial")));
 
-            // === ASYNCHRONOUS PHASE (X.5) ===
             bool qBeforeAsync = q;
             bool presetValue = GetAt(presetSignal, i);
             bool clearValue = GetAt(clearSignal, i);
