@@ -234,18 +234,28 @@ public class LevelJsonLoader : MonoBehaviour
         Color clearColor = ParseColor(data?.clearSignalColor, Color.white);
         Color clockColor = ParseColor(data?.clockSignalColor, Color.white);
 
-        tilemapRenderer.RenderDiagram(jSignal, j_YRow, jColor);
-        tilemapRenderer.RenderDiagram(kSignal, k_YRow, kColor);
+        // Calculate Y positions: J=12, Clock=4, others distributed between
+        bool hasAsync = (presetSignal != null || clearSignal != null);
+        int j_Y = 12;
+        int k_Y = hasAsync ? 8 : 8;
+        int preset_Y = 10;
+        int clear_Y = 6;
+        int clock_Y = 4;
+
+        tilemapRenderer.RenderDiagram(jSignal, j_Y, jColor);
+        tilemapRenderer.RenderDiagram(kSignal, k_Y, kColor);
         if (presetSignal != null)
-            tilemapRenderer.RenderDiagram(presetSignal, preset_YRow, presetColor);
+            tilemapRenderer.RenderDiagram(presetSignal, preset_Y, presetColor);
         if (clearSignal != null)
-            tilemapRenderer.RenderDiagram(clearSignal, clear_YRow, clearColor);
+            tilemapRenderer.RenderDiagram(clearSignal, clear_Y, clearColor);
 
         // Use values already defined in ApplyLevelConfig (no redundant checks here)
         int levelLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : (6 * data.clockCicles));
 
-        var clockPattern = BuildClockPattern(levelLength, clockStep, false);
-        tilemapRenderer.RenderClock(clockPattern, clock_YRow, clockColor);
+        // Parse active clock edge ("rising" or "falling")
+        bool isRisingEdge = data.activeClockEdge != null && data.activeClockEdge.ToLower() == "rising";
+        var clockPattern = BuildClockPattern(levelLength, clockStep, isRisingEdge);
+        tilemapRenderer.RenderClock(clockPattern, clock_Y, clockColor);
         // Extend floor and ceiling by +3 tiles beyond the last '1' defined in JSON
         tilemapRenderer.RenderTerrain(floorBand, ceilingBand, floorYRow, ceilingYRow, 3);
 
@@ -267,14 +277,20 @@ public class LevelJsonLoader : MonoBehaviour
     /// For odd S this creates a slightly asymmetric duty cycle (ex: S=5 -> 2 zeros, 3 ones).
     /// Returns int[] of length totalLength with values: 0=low, 1=high.
     /// </summary>
-    public static int[] BuildClockPattern(int totalLength, int step, bool startHigh = false)
+    /// <summary>
+    /// Builds clock signal pattern.
+    /// For falling edge (default): pattern is 000111 000111 (edge at transition from 1 to 0)
+    /// For rising edge: pattern is 111000 111000 (edge at transition from 0 to 1)
+    /// </summary>
+    public static int[] BuildClockPattern(int totalLength, int step, bool risingEdge = false)
     {
         if (totalLength <= 0 || step <= 0) return null;
         var arr = new int[totalLength + step];
         int half = step / 2;
         var period = new int[step];
-        int a = startHigh ? 1 : 0;
-        int b = startHigh ? 0 : 1;
+        // Rising edge: start HIGH (111000), falling edge: start LOW (000111)
+        int a = risingEdge ? 1 : 0;
+        int b = risingEdge ? 0 : 1;
         for (int i = 0; i < half; i++) period[i] = a;
         for (int i = half; i < step; i++) period[i] = b;
         for (int i = 0; i < totalLength + step; i++) arr[i] = period[i % step];
@@ -431,6 +447,7 @@ public class LevelJsonLoader : MonoBehaviour
         public string levelName;
         public int clockCicles;
         public int asyncActive = 1;
+        public string activeClockEdge = "falling"; // "rising" or "falling"
         public string jSignal;
         public string kSignal;
         public string presetSignal;
