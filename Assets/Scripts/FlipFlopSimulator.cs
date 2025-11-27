@@ -122,24 +122,39 @@ public static class FlipFlopSimulator
 
     #endregion
 
-    #region SR Flip-Flop Simulation (Future Extension)
+    #region SR Flip-Flop Simulation
 
     /// <summary>
-    /// Computes per-tile timeline for SR flip-flop.
+    /// Computes SR flip-flop timeline with doubled-resolution output.
+    /// Returns doubled-resolution output: each input tile produces 2 output positions (X.0 and X.5).
+    /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
     /// S=1 sets Q, R=1 resets Q, S=R=1 is typically invalid (can be configured).
     /// </summary>
     public static bool[] ComputeSRTimeline(bool[] sSignal, bool[] rSignal, int clockStep, int diagramLength,
-        bool invalidStateToZero = true)
+        out string[] ops, out List<SignalEvent> events, bool invalidStateToZero = true)
     {
+        ops = null;
+        events = null;
         if (diagramLength <= 0) return null;
-        int totalLength = diagramLength + 1;
 
-        var timeline = new bool[totalLength];
+        int inputLength = diagramLength + 1;
+        int outputLength = inputLength * 2;
+        var timeline = new bool[outputLength];
+        var opArr = new string[outputLength];
+        var eventList = new List<SignalEvent>();
+
         bool q = false;
 
-        for (int i = 0; i < totalLength; i++)
+        for (int i = 0; i < inputLength; i++)
         {
+            int syncIndex = i * 2;
+            int asyncIndex = i * 2 + 1;
+
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
+
+            // === SYNCHRONOUS PHASE (X.0) ===
+            bool qBeforeSync = q;
+            string syncToken = null;
 
             if (isEdge)
             {
@@ -148,77 +163,254 @@ public static class FlipFlopSimulator
 
                 if (s && r)
                 {
-                    // Invalid state: can set to 0, 1, or keep (configurable)
-                    q = invalidStateToZero ? false : q;
+                    // Invalid state
+                    if (invalidStateToZero) q = false;
+                    syncToken = "invalid_sr";
                 }
-                else if (s) q = true;
-                else if (r) q = false;
-                // else: no change (hold)
+                else if (s)
+                {
+                    q = true;
+                    syncToken = qBeforeSync != q ? "set_sync" : "hold_sync";
+                }
+                else if (r)
+                {
+                    q = false;
+                    syncToken = qBeforeSync != q ? "reset_sync" : "hold_sync";
+                }
+                else
+                {
+                    syncToken = "hold_sync";
+                }
+
+                if (q != qBeforeSync)
+                {
+                    eventList.Add(new SignalEvent(i, q));
+                }
             }
 
-            timeline[i] = q;
+            timeline[syncIndex] = q;
+            opArr[syncIndex] = syncToken ?? (qBeforeSync == q ? "keep" : (q ? "set_initial" : "reset_initial"));
+
+            // === ASYNCHRONOUS PHASE (X.5) ===
+            // SR flip-flops typically don't have async preset/clear, so just maintain state
+            timeline[asyncIndex] = q;
+            opArr[asyncIndex] = "keep";
         }
+
+        ops = opArr;
+        events = eventList;
         return timeline;
     }
 
     #endregion
 
-    #region D Flip-Flop Simulation (Future Extension)
+    #region D Flip-Flop Simulation
 
     /// <summary>
-    /// Computes per-tile timeline for D flip-flop.
+    /// Computes D flip-flop timeline with doubled-resolution output.
+    /// Returns doubled-resolution output: each input tile produces 2 output positions (X.0 and X.5).
+    /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
     /// Q follows D input at each clock edge.
     /// </summary>
-    public static bool[] ComputeDTimeline(bool[] dSignal, int clockStep, int diagramLength)
+    public static bool[] ComputeDTimeline(bool[] dSignal, bool[] presetSignal, bool[] clearSignal,
+        int clockStep, int diagramLength, out string[] ops, out List<SignalEvent> events, bool asyncActiveHigh = true)
     {
+        ops = null;
+        events = null;
         if (diagramLength <= 0) return null;
-        int totalLength = diagramLength + 1;
 
-        var timeline = new bool[totalLength];
+        int inputLength = diagramLength + 1;
+        int outputLength = inputLength * 2;
+        var timeline = new bool[outputLength];
+        var opArr = new string[outputLength];
+        var eventList = new List<SignalEvent>();
+
         bool q = false;
+        bool asyncSincePrevEdge = false;
 
-        for (int i = 0; i < totalLength; i++)
+        for (int i = 0; i < inputLength; i++)
         {
+            int syncIndex = i * 2;
+            int asyncIndex = i * 2 + 1;
+
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
+
+            // === SYNCHRONOUS PHASE (X.0) ===
+            bool qBeforeSync = q;
+            bool syncApplied = false;
+            string syncToken = null;
 
             if (isEdge)
             {
-                q = GetAt(dSignal, i - 1);
+                if (!asyncSincePrevEdge)
+                {
+                    bool d = GetAt(dSignal, i - 1);
+                    q = d;
+
+                    syncApplied = true;
+                    syncToken = qBeforeSync != q ? (d ? "set_sync" : "reset_sync") : "hold_sync";
+
+                    if (q != qBeforeSync)
+                    {
+                        eventList.Add(new SignalEvent(i, q));
+                    }
+                }
+                else
+                {
+                    syncApplied = false;
+                    syncToken = "sync_ignored";
+                }
+
+                asyncSincePrevEdge = false;
             }
 
-            timeline[i] = q;
+            timeline[syncIndex] = q;
+            opArr[syncIndex] = syncApplied && syncToken != null && syncToken != "hold_sync"
+                ? syncToken
+                : (syncToken == "sync_ignored" ? syncToken : (qBeforeSync == q ? "keep" : (q ? "set_initial" : "reset_initial")));
+
+            // === ASYNCHRONOUS PHASE (X.5) ===
+            bool qBeforeAsync = q;
+            bool presetValue = GetAt(presetSignal, i);
+            bool clearValue = GetAt(clearSignal, i);
+
+            bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
+            bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
+
+            string asyncToken;
+
+            if (hasPreset || hasClear)
+            {
+                q = hasClear ? false : true;
+
+                asyncToken = (q != qBeforeAsync)
+                    ? (hasClear ? "clear_async" : "preset_async")
+                    : (hasClear ? "clear_async_noop" : "preset_async_noop");
+
+                if (q != qBeforeAsync)
+                {
+                    eventList.Add(new SignalEvent(i + 0.5f, q));
+                }
+
+                asyncSincePrevEdge = true;
+            }
+            else
+            {
+                asyncToken = (qBeforeAsync == q) ? "keep" : (q ? "set_initial" : "reset_initial");
+            }
+
+            timeline[asyncIndex] = q;
+            opArr[asyncIndex] = asyncToken;
         }
+
+        ops = opArr;
+        events = eventList;
         return timeline;
     }
 
     #endregion
 
-    #region T Flip-Flop Simulation (Future Extension)
+    #region T Flip-Flop Simulation
 
     /// <summary>
-    /// Computes per-tile timeline for T flip-flop.
+    /// Computes T flip-flop timeline with doubled-resolution output.
+    /// Returns doubled-resolution output: each input tile produces 2 output positions (X.0 and X.5).
+    /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
     /// Q toggles when T=1 at clock edge, holds when T=0.
     /// </summary>
-    public static bool[] ComputeTTimeline(bool[] tSignal, int clockStep, int diagramLength)
+    public static bool[] ComputeTTimeline(bool[] tSignal, bool[] presetSignal, bool[] clearSignal,
+        int clockStep, int diagramLength, out string[] ops, out List<SignalEvent> events, bool asyncActiveHigh = true)
     {
+        ops = null;
+        events = null;
         if (diagramLength <= 0) return null;
-        int totalLength = diagramLength + 1;
 
-        var timeline = new bool[totalLength];
+        int inputLength = diagramLength + 1;
+        int outputLength = inputLength * 2;
+        var timeline = new bool[outputLength];
+        var opArr = new string[outputLength];
+        var eventList = new List<SignalEvent>();
+
         bool q = false;
+        bool asyncSincePrevEdge = false;
 
-        for (int i = 0; i < totalLength; i++)
+        for (int i = 0; i < inputLength; i++)
         {
+            int syncIndex = i * 2;
+            int asyncIndex = i * 2 + 1;
+
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
+
+            // === SYNCHRONOUS PHASE (X.0) ===
+            bool qBeforeSync = q;
+            bool syncApplied = false;
+            string syncToken = null;
 
             if (isEdge)
             {
-                bool t = GetAt(tSignal, i - 1);
-                if (t) q = !q;
+                if (!asyncSincePrevEdge)
+                {
+                    bool t = GetAt(tSignal, i - 1);
+                    if (t) q = !q;
+
+                    syncApplied = true;
+                    syncToken = t ? (qBeforeSync != q ? "toggle_sync" : "hold_sync") : "hold_sync";
+
+                    if (q != qBeforeSync)
+                    {
+                        eventList.Add(new SignalEvent(i, q));
+                    }
+                }
+                else
+                {
+                    syncApplied = false;
+                    syncToken = "sync_ignored";
+                }
+
+                asyncSincePrevEdge = false;
             }
 
-            timeline[i] = q;
+            timeline[syncIndex] = q;
+            opArr[syncIndex] = syncApplied && syncToken != null && syncToken != "hold_sync"
+                ? syncToken
+                : (syncToken == "sync_ignored" ? syncToken : (qBeforeSync == q ? "keep" : (q ? "set_initial" : "reset_initial")));
+
+            // === ASYNCHRONOUS PHASE (X.5) ===
+            bool qBeforeAsync = q;
+            bool presetValue = GetAt(presetSignal, i);
+            bool clearValue = GetAt(clearSignal, i);
+
+            bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
+            bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
+
+            string asyncToken;
+
+            if (hasPreset || hasClear)
+            {
+                q = hasClear ? false : true;
+
+                asyncToken = (q != qBeforeAsync)
+                    ? (hasClear ? "clear_async" : "preset_async")
+                    : (hasClear ? "clear_async_noop" : "preset_async_noop");
+
+                if (q != qBeforeAsync)
+                {
+                    eventList.Add(new SignalEvent(i + 0.5f, q));
+                }
+
+                asyncSincePrevEdge = true;
+            }
+            else
+            {
+                asyncToken = (qBeforeAsync == q) ? "keep" : (q ? "set_initial" : "reset_initial");
+            }
+
+            timeline[asyncIndex] = q;
+            opArr[asyncIndex] = asyncToken;
         }
+
+        ops = opArr;
+        events = eventList;
         return timeline;
     }
 
