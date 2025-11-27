@@ -11,240 +11,113 @@ public static class FlipFlopSimulator
     #region JK Flip-Flop Simulation
 
     /// <summary>
-    /// Computes per-tile timeline for JK flip-flop with async preset/clear.
-    /// JK evaluated at clock edges; async inputs take effect immediately and suppress next edge.
+    /// Computes JK flip-flop timeline with asynchronous preset/clear support.
+    /// Returns doubled-resolution output: each input tile produces 2 output positions (X.0 and X.5).
+    /// This allows both synchronous (at X.0) and asynchronous (at X.5) operations to coexist.
+    /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
     /// </summary>
     /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0</param>
     public static bool[] ComputeJKTimeline(bool[] jSignal, bool[] kSignal, bool[] presetSignal, bool[] clearSignal,
-        int clockStep, int diagramLength, bool asyncActiveHigh = true)
-    {
-        if (diagramLength <= 0) return null;
-        int totalLength = diagramLength + 1;
-
-        var timeline = new bool[totalLength];
-        bool q = false;
-        bool asyncSincePrevEdge = false;
-
-        for (int i = 0; i < totalLength; i++)
-        {
-            bool presetValue = GetAt(presetSignal, i);
-            bool clearValue = GetAt(clearSignal, i);
-
-            // If asyncActiveHigh=true: active when signal=1
-            // If asyncActiveHigh=false: active when signal=0 (inverted)
-            bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
-            bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
-
-            bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
-            bool hasAsyncCurrent = (hasPreset || hasClear);
-
-            // 1) Apply JK at clock edge (sampling J/K at i-1)
-            if (isEdge)
-            {
-                bool suppressEdge = asyncSincePrevEdge && !hasAsyncCurrent;
-                if (!suppressEdge)
-                {
-                    bool j = GetAt(jSignal, i - 1);
-                    bool k = GetAt(kSignal, i - 1);
-                    if (j && !k) q = true;
-                    else if (!j && k) q = false;
-                    else if (j && k) q = !q;
-                }
-                asyncSincePrevEdge = false;
-            }
-
-            // 2) Apply asynchronous preset/clear immediately
-            if (hasPreset && hasClear)
-            {
-                q = false; // Clear priority
-                asyncSincePrevEdge = true;
-            }
-            else if (hasClear)
-            {
-                q = false;
-                asyncSincePrevEdge = true;
-            }
-            else if (hasPreset)
-            {
-                q = true;
-                asyncSincePrevEdge = true;
-            }
-
-            timeline[i] = q;
-        }
-        return timeline;
-    }
-
-    /// <summary>
-    /// Computes JK timeline with operation labels per tile (keep, set_sync, reset_sync, preset_async, etc).
-    /// </summary>
-    /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0</param>
-    public static bool[] ComputeJKTimelineWithOps(bool[] jSignal, bool[] kSignal, bool[] presetSignal, bool[] clearSignal,
-        int clockStep, int diagramLength, out string[] ops, bool asyncActiveHigh = true)
+        int clockStep, int diagramLength, out string[] ops, out List<SignalEvent> events, bool asyncActiveHigh = true)
     {
         ops = null;
+        events = null;
         if (diagramLength <= 0) return null;
-        int totalLength = diagramLength + 1;
 
-        var timeline = new bool[totalLength];
-        var opArr = new string[totalLength];
+        int inputLength = diagramLength + 1;
+        int outputLength = inputLength * 2; // Double resolution: X.0 and X.5 for each tile
+        var timeline = new bool[outputLength];
+        var opArr = new string[outputLength];
+        var eventList = new List<SignalEvent>();
+
         bool q = false;
         bool asyncSincePrevEdge = false;
 
-        for (int i = 0; i < totalLength; i++)
+        for (int i = 0; i < inputLength; i++)
         {
-            bool prevQ = q;
-            bool presetValue = GetAt(presetSignal, i);
-            bool clearValue = GetAt(clearSignal, i);
-
-            // If asyncActiveHigh=true: active when signal=1
-            // If asyncActiveHigh=false: active when signal=0 (inverted)
-            bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
-            bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
+            int syncIndex = i * 2;      // Even index: synchronous operations at X.0
+            int asyncIndex = i * 2 + 1; // Odd index: asynchronous operations at X.5
 
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
-            bool hasAsyncCurrent = (hasPreset || hasClear);
 
+            // === SYNCHRONOUS PHASE (X.0) ===
+            bool qBeforeSync = q;
             bool syncApplied = false;
             string syncToken = null;
 
-            // 1) Apply JK at edge
             if (isEdge)
             {
-                bool suppressEdge = asyncSincePrevEdge && !hasAsyncCurrent;
-                if (!suppressEdge)
+                if (!asyncSincePrevEdge)
                 {
                     bool j = GetAt(jSignal, i - 1);
                     bool k = GetAt(kSignal, i - 1);
-                    bool beforeSyncQ = q;
-                    if (j && !k) { q = true; syncApplied = true; syncToken = beforeSyncQ != q ? "set_sync" : "hold_sync"; }
-                    else if (!j && k) { q = false; syncApplied = true; syncToken = beforeSyncQ != q ? "reset_sync" : "hold_sync"; }
-                    else if (j && k) { q = !q; syncApplied = true; syncToken = "switch_sync"; }
-                    else { syncApplied = true; syncToken = "hold_sync"; }
+
+                    // JK truth table
+                    if (j && !k) q = true;
+                    else if (!j && k) q = false;
+                    else if (j && k) q = !q;
+
+                    syncApplied = true;
+                    if (j && k) syncToken = "switch_sync";
+                    else if (qBeforeSync != q) syncToken = j ? "set_sync" : "reset_sync";
+                    else syncToken = "hold_sync";
+
+                    if (q != qBeforeSync)
+                    {
+                        eventList.Add(new SignalEvent(i, q));
+                    }
                 }
                 else
                 {
                     syncApplied = false;
                     syncToken = "sync_ignored";
                 }
+
                 asyncSincePrevEdge = false;
             }
 
-            // 2) Apply async
-            string asyncToken = null;
-            if (hasPreset && hasClear)
-            {
-                bool changed = q != false;
-                q = false;
-                asyncToken = changed ? "clear_async" : "clear_async_noop";
-                asyncSincePrevEdge = true;
-            }
-            else if (hasClear)
-            {
-                bool changed = q != false;
-                q = false;
-                asyncToken = changed ? "clear_async" : "clear_async_noop";
-                asyncSincePrevEdge = true;
-            }
-            else if (hasPreset)
-            {
-                bool changed = q != true;
-                q = true;
-                asyncToken = changed ? "preset_async" : "preset_async_noop";
-                asyncSincePrevEdge = true;
-            }
+            timeline[syncIndex] = q;
+            opArr[syncIndex] = syncApplied && syncToken != null && syncToken != "hold_sync"
+                ? syncToken
+                : (syncToken == "sync_ignored" ? syncToken : (qBeforeSync == q ? "keep" : (q ? "set_initial" : "reset_initial")));
 
-            timeline[i] = q;
-
-            // 3) Decide final operation label
-            string finalToken;
-            bool asyncIsNoop = (asyncToken != null && asyncToken.EndsWith("_noop"));
-            if (syncApplied && syncToken != null && syncToken != "hold_sync")
-            {
-                finalToken = (!asyncIsNoop && asyncToken != null) ? (syncToken + "_then_" + asyncToken) : syncToken;
-            }
-            else if (asyncToken != null)
-            {
-                finalToken = asyncToken;
-            }
-            else
-            {
-                finalToken = (prevQ == q) ? "keep" : (q ? "set_initial" : "reset_initial");
-            }
-            opArr[i] = finalToken;
-        }
-        ops = opArr;
-        return timeline;
-    }
-
-    /// <summary>
-    /// Generates signal events from JK simulation: sync at X=i, async at X=i+0.5.
-    /// Used for PathVerifier reference path generation.
-    /// </summary>
-    /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0</param>
-    public static List<SignalEvent> ComputeJKEvents(bool[] jSignal, bool[] kSignal, bool[] presetSignal, bool[] clearSignal,
-        int clockStep, int diagramLength, bool asyncActiveHigh = true)
-    {
-        if (diagramLength <= 0) return null;
-        int totalLength = diagramLength + 1;
-
-        var events = new List<SignalEvent>();
-        bool q = false;
-        bool prev = q;
-        bool asyncSincePrevEdge = false;
-
-        for (int i = 0; i < totalLength; i++)
-        {
-            bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
+            // === ASYNCHRONOUS PHASE (X.5) ===
+            bool qBeforeAsync = q;
             bool presetValue = GetAt(presetSignal, i);
             bool clearValue = GetAt(clearSignal, i);
 
-            // If asyncActiveHigh=true: active when signal=1
-            // If asyncActiveHigh=false: active when signal=0 (inverted)
             bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
             bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
 
-            bool hasAsyncCurrent = (hasPreset || hasClear);
+            string asyncToken;
 
-            // 1) Synchronous edge effect at integer X=i
-            if (isEdge)
-            {
-                bool suppressEdge = asyncSincePrevEdge && !hasAsyncCurrent;
-                if (!suppressEdge)
-                {
-                    bool j = GetAt(jSignal, i - 1);
-                    bool k = GetAt(kSignal, i - 1);
-                    bool qSync = q;
-                    if (j && !k) qSync = true;
-                    else if (!j && k) qSync = false;
-                    else if (j && k) qSync = !qSync;
-
-                    if (qSync != prev)
-                    {
-                        events.Add(new SignalEvent(i, qSync));
-                        prev = qSync;
-                    }
-                    q = qSync;
-                }
-                asyncSincePrevEdge = false;
-            }
-
-            // 2) Asynchronous immediate effect at half tile X=i+0.5
             if (hasPreset || hasClear)
             {
-                bool qBefore = q;
                 q = hasClear ? false : true; // Clear priority
-                bool asyncChanged = (q != qBefore);
-                if (asyncChanged)
+
+                asyncToken = (q != qBeforeAsync)
+                    ? (hasClear ? "clear_async" : "preset_async")
+                    : (hasClear ? "clear_async_noop" : "preset_async_noop");
+
+                if (q != qBeforeAsync)
                 {
-                    float xPos = i + 0.5f;
-                    events.Add(new SignalEvent(xPos, q));
-                    prev = q;
+                    eventList.Add(new SignalEvent(i + 0.5f, q));
                 }
-                asyncSincePrevEdge = asyncChanged;
+
+                asyncSincePrevEdge = true;
             }
+            else
+            {
+                asyncToken = (qBeforeAsync == q) ? "keep" : (q ? "set_initial" : "reset_initial");
+            }
+
+            timeline[asyncIndex] = q;
+            opArr[asyncIndex] = asyncToken;
         }
-        return events;
+
+        ops = opArr;
+        events = eventList;
+        return timeline;
     }
 
     #endregion

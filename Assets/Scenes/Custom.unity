@@ -2542,7 +2542,7 @@ MonoBehaviour:
   obstaclePrefabs:
   - type: mace
     prefab: {fileID: 8158824412335418091, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
-  debugLogOutputVector: 0
+  debugLogOutputVector: 1
   debugOutputVector: 
   outputOpsPerTile: []
 --- !u!1 &1039474733

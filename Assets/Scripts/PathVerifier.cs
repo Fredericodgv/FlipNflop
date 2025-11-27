@@ -410,12 +410,6 @@ public class PathVerifier : MonoBehaviour
         }
 
         var events = loader.ComputeOutputEventsFromParsedSignals();
-        if (events == null || events.Count == 0)
-        {
-            correctCorners = new List<Vector3>();
-            return;
-        }
-
         BuildCorrectCornersFromSignalEvents(events, 0f, false);
     }
 
@@ -444,17 +438,23 @@ public class PathVerifier : MonoBehaviour
     /// </summary>
     public void BuildCorrectCornersFromSignalEvents(List<SignalEvent> events, float initialX = 0f, bool initialState = false)
     {
+        correctCorners = new List<Vector3>();
+        bool qState = initialState;
+        float startY = qState ? highY : lowY;
+
+        // Always add initial corner
+        correctCorners.Add(new Vector3(initialX, startY, 0f));
+
         if (events == null || events.Count == 0)
         {
-            correctCorners = new List<Vector3>();
+            // No events: output is constant throughout the level
+            // Add end corner to show the constant line
+            float phaseEndX = (LevelManager.Instance != null) ? LevelManager.Instance.phaseEndX : 0f;
+            correctCorners.Add(new Vector3(phaseEndX, startY, 0f));
             return;
         }
 
         events.Sort((a, b) => a.x.CompareTo(b.x));
-
-        correctCorners = new List<Vector3>();
-        bool qState = initialState;
-        correctCorners.Add(new Vector3(initialX, qState ? highY : lowY, 0f));
 
         foreach (var ev in events)
         {
