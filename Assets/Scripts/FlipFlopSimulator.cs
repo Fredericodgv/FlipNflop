@@ -17,7 +17,7 @@ public static class FlipFlopSimulator
     /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
     /// </summary>
     /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0</param>
-    public static bool[] ComputeJKTimeline(bool[] jSignal, bool[] kSignal, bool[] presetSignal, bool[] clearSignal,
+    public static bool[] SimulateJK(bool[] jSignal, bool[] kSignal, bool[] presetSignal, bool[] clearSignal,
         int clockStep, int diagramLength, out string[] ops, out List<SignalEvent> events, bool asyncActiveHigh = true)
     {
         ops = null;
@@ -25,7 +25,7 @@ public static class FlipFlopSimulator
         if (diagramLength <= 0) return null;
 
         int inputLength = diagramLength + 1;
-        int outputLength = inputLength * 2; 
+        int outputLength = inputLength * 2;
         var timeline = new bool[outputLength];
         var opArr = new string[outputLength];
         var eventList = new List<SignalEvent>();
@@ -35,8 +35,8 @@ public static class FlipFlopSimulator
 
         for (int i = 0; i < inputLength; i++)
         {
-            int syncIndex = i * 2;      
-            int asyncIndex = i * 2 + 1; 
+            int syncIndex = i * 2;
+            int asyncIndex = i * 2 + 1;
 
             bool isEdge = (clockStep > 0 && i > 0 && (i % clockStep) == 0);
 
@@ -91,7 +91,7 @@ public static class FlipFlopSimulator
 
             if (hasPreset || hasClear)
             {
-                q = hasClear ? false : true; 
+                q = hasClear ? false : true;
 
                 asyncToken = (q != qBeforeAsync)
                     ? (hasClear ? "clear_async" : "preset_async")
@@ -128,7 +128,7 @@ public static class FlipFlopSimulator
     /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
     /// S=1 sets Q, R=1 resets Q, S=R=1 is typically invalid (can be configured).
     /// </summary>
-    public static bool[] ComputeSRTimeline(bool[] sSignal, bool[] rSignal, int clockStep, int diagramLength,
+    public static bool[] SimulateSR(bool[] sSignal, bool[] rSignal, int clockStep, int diagramLength,
         out string[] ops, out List<SignalEvent> events, bool invalidStateToZero = true)
     {
         ops = null;
@@ -206,7 +206,7 @@ public static class FlipFlopSimulator
     /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
     /// Q follows D input at each clock edge.
     /// </summary>
-    public static bool[] ComputeDTimeline(bool[] dSignal, bool[] presetSignal, bool[] clearSignal,
+    public static bool[] SimulateD(bool[] dSignal, bool[] presetSignal, bool[] clearSignal,
         int clockStep, int diagramLength, out string[] ops, out List<SignalEvent> events, bool asyncActiveHigh = true)
     {
         ops = null;
@@ -310,7 +310,7 @@ public static class FlipFlopSimulator
     /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
     /// Q toggles when T=1 at clock edge, holds when T=0.
     /// </summary>
-    public static bool[] ComputeTTimeline(bool[] tSignal, bool[] presetSignal, bool[] clearSignal,
+    public static bool[] SimulateT(bool[] tSignal, bool[] presetSignal, bool[] clearSignal,
         int clockStep, int diagramLength, out string[] ops, out List<SignalEvent> events, bool asyncActiveHigh = true)
     {
         ops = null;

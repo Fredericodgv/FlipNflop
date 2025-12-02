@@ -94,7 +94,7 @@ public class LevelJsonLoader : MonoBehaviour
         GetClockSamplingParameters(out int step, out int _);
 
         // Use consolidated method (discards timeline and ops, we only need events)
-        FlipFlopSimulator.ComputeJKTimeline(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal,
+        FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal,
             step, diagramLen, out _, out var events, asyncActiveHigh);
 
         // Convert FlipFlopSimulator.SignalEvent to PathVerifier.SignalEvent
@@ -218,7 +218,7 @@ public class LevelJsonLoader : MonoBehaviour
         // Compute and expose the per-tile output timeline (0/1) for PathVerifier/reference
         GetClockSamplingParameters(out int clockStep, out int _);
         int diagramLen = GetDiagramLength();
-        this.OutputTimeline = FlipFlopSimulator.ComputeJKTimeline(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
+        this.OutputTimeline = FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
         this.asyncActiveHigh = asyncActiveHigh;
         UpdateDebugOutputVectorString();
         if (debugLogOutputVector)
@@ -325,7 +325,7 @@ public class LevelJsonLoader : MonoBehaviour
         {
             GetClockSamplingParameters(out int clockStep, out int _);
             int diagramLen = GetDiagramLength();
-            OutputTimeline = FlipFlopSimulator.ComputeJKTimeline(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
+            OutputTimeline = FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
             UpdateDebugOutputVectorString();
         }
         Debug.Log($"LevelJsonLoader: Output timeline ({(OutputTimeline != null ? OutputTimeline.Length : 0)}): {debugOutputVector}");
@@ -338,7 +338,7 @@ public class LevelJsonLoader : MonoBehaviour
         {
             GetClockSamplingParameters(out int clockStep, out int _);
             int diagramLen = GetDiagramLength();
-            OutputTimeline = FlipFlopSimulator.ComputeJKTimeline(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
+            OutputTimeline = FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
             UpdateDebugOutputVectorString();
         }
         var sb = new StringBuilder(outputOpsPerTile.Length * 6);
