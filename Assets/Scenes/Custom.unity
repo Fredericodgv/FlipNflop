@@ -328,7 +328,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lineLength: 30
-  lineWidth: 0.15
+  lineWidth: 0.1
   dottedLineMaterial: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
   linesPerChunk: 100
   drawFullLevelGizmos: 1
@@ -444,8 +444,8 @@ MonoBehaviour:
   failureColor: {r: 1, g: 0, b: 0, a: 1}
   linePrefab: {fileID: 3090148692481908950, guid: f6794afdb432aaa46b21434cb386774a, type: 3}
   feedbackLinesParent: {fileID: 581705960}
-  enableDebugLogs: 0
-  showMissedCornersInGame: 0
+  enableDebugLogs: 1
+  showMissedCornersInGame: 1
 --- !u!1 &278653048
 GameObject:
   m_ObjectHideFlags: 0

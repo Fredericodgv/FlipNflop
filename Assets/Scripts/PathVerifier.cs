@@ -160,10 +160,12 @@ public class PathVerifier : MonoBehaviour
             Debug.Log($"  Tolerância: {cornerTolerance}");
         }
 
-        DrawFeedbackLines(signalPath.PathPoints);
-
+        // Primeiro avalia quais quinas foram perdidas
         List<bool> cornerChecks = EvaluateCorrectCorners(signalPath.PathPoints);
         bool isPathCorrectOverall = !cornerChecks.Contains(false);
+
+        // Depois desenha o feedback usando a informação de quinas perdidas
+        DrawFeedbackLines(signalPath.PathPoints, cornerChecks);
 
         if (enableDebugLogs)
         {
@@ -192,8 +194,9 @@ public class PathVerifier : MonoBehaviour
 
     /// <summary>
     /// Desenha o feedback iterando sobre cada pequeno segmento do caminho do jogador.
+    /// Linhas verticais próximas a quinas perdidas são pintadas de vermelho.
     /// </summary>
-    private void DrawFeedbackLines(List<Vector3> playerPath)
+    private void DrawFeedbackLines(List<Vector3> playerPath, List<bool> cornerChecks)
     {
         if (linePrefab == null || feedbackLinesParent == null) return;
         foreach (Transform child in feedbackLinesParent) Destroy(child.gameObject);
@@ -206,15 +209,47 @@ public class PathVerifier : MonoBehaviour
             Vector3 p_start = playerPath[i];
             Vector3 p_end = playerPath[i + 1];
 
-            Vector3 closestToStart = FindClosestPointOnFullPath(p_start, correctCorners);
-            float distStart = Vector3.Distance(p_start, closestToStart);
-            bool startIsOnPath = distStart <= cornerTolerance;
+            // Verifica se é linha vertical (transição entre níveis)
+            bool isVerticalLine = Mathf.Abs(p_start.y - p_end.y) > 0.1f;
 
-            Vector3 closestToEnd = FindClosestPointOnFullPath(p_end, correctCorners);
-            float distEnd = Vector3.Distance(p_end, closestToEnd);
-            bool endIsOnPath = distEnd <= cornerTolerance;
+            bool isSegmentCorrect = true;
 
-            bool isSegmentCorrect = startIsOnPath && endIsOnPath;
+            if (isVerticalLine)
+            {
+                // Para linhas verticais: verifica se algum dos endpoints está próximo de uma quina perdida
+                for (int c = 0; c < correctCorners.Count; c++)
+                {
+                    if (!cornerChecks[c]) // Quina foi perdida
+                    {
+                        Vector3 missedCorner = correctCorners[c];
+
+                        // Verifica se a linha vertical passa perto desta quina perdida
+                        // Tanto em X quanto em Y (para garantir que é a linha correta)
+                        float distToStart = Vector3.Distance(p_start, missedCorner);
+                        float distToEnd = Vector3.Distance(p_end, missedCorner);
+
+                        // Se qualquer endpoint da linha está próximo da quina perdida
+                        if (distToStart <= cornerTolerance * 1.5f || distToEnd <= cornerTolerance * 1.5f)
+                        {
+                            isSegmentCorrect = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Para linhas horizontais: verifica se ambos os pontos estão no caminho correto
+                Vector3 closestToStart = FindClosestPointOnFullPath(p_start, correctCorners);
+                float distStart = Vector3.Distance(p_start, closestToStart);
+                bool startIsOnPath = distStart <= cornerTolerance;
+
+                Vector3 closestToEnd = FindClosestPointOnFullPath(p_end, correctCorners);
+                float distEnd = Vector3.Distance(p_end, closestToEnd);
+                bool endIsOnPath = distEnd <= cornerTolerance;
+
+                isSegmentCorrect = startIsOnPath && endIsOnPath;
+            }
 
             if (isSegmentCorrect) correctSegments++;
             else incorrectSegments++;
