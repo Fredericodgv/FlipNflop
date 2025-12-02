@@ -328,7 +328,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lineLength: 30
-  lineWidth: 0.15
+  lineWidth: 0.1
   dottedLineMaterial: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
   linesPerChunk: 100
   drawFullLevelGizmos: 1
@@ -444,6 +444,8 @@ MonoBehaviour:
   failureColor: {r: 1, g: 0, b: 0, a: 1}
   linePrefab: {fileID: 3090148692481908950, guid: f6794afdb432aaa46b21434cb386774a, type: 3}
   feedbackLinesParent: {fileID: 581705960}
+  enableDebugLogs: 1
+  showMissedCornersInGame: 1
 --- !u!1 &278653048
 GameObject:
   m_ObjectHideFlags: 0
@@ -459,7 +461,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &278653049
 Transform:
   m_ObjectHideFlags: 0
@@ -713,7 +715,7 @@ Tilemap:
     m_Data: {r: 1e-45, g: 1e-45, b: 1e-45, a: 1e-45}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
-  m_Color: {r: 0, g: 1, b: 0.95960426, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Origin: {x: -37, y: -4, z: 0}
   m_Size: {x: 210, y: 13, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
@@ -2513,7 +2515,7 @@ MonoBehaviour:
   inputTilemap: {fileID: 1489212623}
   terrainTilemap: {fileID: 518293364}
   clockTilemap: {fileID: 460694105}
-  levelFile: {fileID: 4900000, guid: 51f35d87866b7954b87e5fc63ca4961a, type: 3}
+  levelFile: {fileID: 4900000, guid: a7aa602fe5529cc4a90bd46cd69f1923, type: 3}
   diagramTiles:
   - {fileID: 11400000, guid: f14421456d8d8574781262e667691d13, type: 2}
   - {fileID: 11400000, guid: 477b708c426c84449ac383aab54be103, type: 2}
@@ -2540,7 +2542,7 @@ MonoBehaviour:
   obstaclePrefabs:
   - type: mace
     prefab: {fileID: 8158824412335418091, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
-  debugLogOutputVector: 0
+  debugLogOutputVector: 1
   debugOutputVector: 
   outputOpsPerTile: []
 --- !u!1 &1039474733
@@ -3161,7 +3163,7 @@ Tilemap:
     m_Data: {r: 1e-45, g: 1e-45, b: 1e-45, a: 1e-45}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
-  m_Color: {r: 0, g: 1, b: 0.95960426, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Origin: {x: -37, y: -4, z: 0}
   m_Size: {x: 210, y: 13, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}

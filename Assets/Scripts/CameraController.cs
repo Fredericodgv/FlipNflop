@@ -61,20 +61,27 @@ public class CameraController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Clamps the camera X position based on current limits and ignoreRightLimit flag.
+    /// </summary>
+    private float ClampCameraX(float x)
+    {
+        if (ignoreRightLimit)
+        {
+            return Mathf.Max(x, minX);
+        }
+        else
+        {
+            return Mathf.Clamp(x, minX, maxX);
+        }
+    }
+
     private void FollowPlayer()
     {
         if (target != null)
         {
             Vector3 desiredPosition = new Vector3(target.position.x + offset.x, transform.position.y, transform.position.z);
-            if (ignoreRightLimit)
-            {
-                // Fase menor que a câmera: mantém preso no limite esquerdo
-                desiredPosition.x = minX;
-            }
-            else
-            {
-                desiredPosition.x = Mathf.Clamp(desiredPosition.x, minX, maxX);
-            }
+            desiredPosition.x = ClampCameraX(desiredPosition.x);
             Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
             transform.position = smoothedPosition;
         }
@@ -85,15 +92,7 @@ public class CameraController : MonoBehaviour
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         Vector3 movement = new Vector3(horizontalInput * manualMoveSpeed * Time.deltaTime, 0, 0);
         Vector3 newPosition = transform.position + movement;
-        if (ignoreRightLimit)
-        {
-            // Respeita apenas o limite esquerdo; direito é ignorado
-            newPosition.x = Mathf.Max(newPosition.x, minX);
-        }
-        else
-        {
-            newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
-        }
+        newPosition.x = ClampCameraX(newPosition.x);
         transform.position = newPosition;
     }
 
@@ -102,32 +101,24 @@ public class CameraController : MonoBehaviour
         currentMode = CameraMode.ManualControl;
     }
 
-    // Ativa o controle manual e ajusta o limite direito da câmera para um X específico (posição de morte do jogador, por exemplo).
+    /// <summary>
+    /// Enables manual control and locks the right limit at the camera's current position.
+    /// Used when the player dies to prevent camera from moving further right.
+    /// </summary>
     public void EnableManualControlWithRightLimit(float rightLimitWorldX)
     {
-        // Mantém o centro da câmera exatamente onde já estava (no momento da morte)
-        // e usa essa posição atual como limite direito de deslocamento.
-        float desiredCenter = transform.position.x;
-        if (ignoreRightLimit)
+        float currentCenterX = transform.position.x;
+
+        if (!ignoreRightLimit)
         {
-            maxX = minX; // continua travada no limite esquerdo
+            maxX = Mathf.Max(minX, currentCenterX);
         }
-        else
-        {
-            maxX = Mathf.Max(minX, desiredCenter);
-        }
+
         currentMode = CameraMode.ManualControl;
 
-        // Garante que a posição atual respeita os novos limites imediatamente
+        // Apply clamping immediately to respect new limits
         Vector3 pos = transform.position;
-        if (ignoreRightLimit)
-        {
-            pos.x = Mathf.Max(pos.x, minX);
-        }
-        else
-        {
-            pos.x = Mathf.Clamp(pos.x, minX, maxX);
-        }
+        pos.x = ClampCameraX(pos.x);
         transform.position = pos;
     }
 }

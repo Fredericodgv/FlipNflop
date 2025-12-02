@@ -5,8 +5,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 /// <summary>
-/// Loads level configuration from JSON (signals, floor/ceiling by tiles, total tiles and clock tiles),
-/// applies LevelManager settings, renders input diagrams and terrain bands, and spawns obstacles (prefabs).
+/// Loads level JSON, configures scene, renders diagrams/terrain, and spawns obstacles.
 /// </summary>
 public class LevelJsonLoader : MonoBehaviour
 {
@@ -47,7 +46,7 @@ public class LevelJsonLoader : MonoBehaviour
     [Tooltip("Parent transform for spawned obstacles (optional)")]
     [SerializeField] private Transform obstaclesParent;
     [Tooltip("Map JSON obstacle 'type' to prefab to spawn")]
-    [SerializeField] private List<ObstaclePrefabEntry> obstaclePrefabs = new List<ObstaclePrefabEntry>();
+    [SerializeField] private List<ObstacleSpawner.ObstaclePrefabEntry> obstaclePrefabs = new List<ObstacleSpawner.ObstaclePrefabEntry>();
 
     [Header("Debug")]
     [Tooltip("If true, logs the computed output vector (0/1) used by PathVerifier.")]
@@ -56,6 +55,13 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField]
     [TextArea]
     private string debugOutputVector;
+
+    #endregion
+
+    #region Components
+
+    private TilemapRenderer tilemapRenderer;
+    private ObstacleSpawner obstacleSpawner;
 
     #endregion
 
@@ -71,298 +77,43 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField]
     private string[] outputOpsPerTile;
 
+    // Async active mode: true = active-high (1), false = active-low (0)
+    private bool asyncActiveHigh = true;
+
     #endregion
 
-    /// <summary>
-    /// Compute the sequence of JK outputs sampled on the clock.
-    /// Sampling rule:
-    /// - Clock edges occur at exact multiples of step: X = step, 2*step, 3*step, ...
-    /// - The inputs J/K are sampled at the tile just BEFORE the edge: index = X - 1
-    ///   i.e., indices: step-1, 2*step-1, 3*step-1, ...
-    /// The JK behavior follows: J=1,K=0 => Q=1; J=0,K=1 => Q=0; J=1,K=1 => toggle; J=0,K=0 => hold.
-    /// Returns null if inputs are invalid.
-    /// </summary>
     #region Output Computation
-    public bool[] ComputeOutputSamplesFromParsedSignals()
-    {
-        GetClockSamplingParameters(out int step, out int startOffset);
-        // Sample at indices just before each edge: step-1, 2*step-1, ...
-        int sampleStartOffset = Mathf.Max(0, startOffset - 1);
-        var samples = BuildOutputSequenceFromSignalsWithAsync(this.ParsedJSignal, this.ParsedKSignal,
-            this.ParsedPresetSignal, this.ParsedClearSignal,
-            step, sampleStartOffset);
-        return samples;
-    }
-
     /// <summary>
-    /// Computes a per-tile output timeline applying asynchronous preset/clear immediately at their tile indices,
-    /// and JK logic starting on the tile AFTER each clock edge, using J/K sampled from the tile just before the edge (index = edgeX - 1).
-    /// Example: for edge at X = m*step, JK is applied at tile index i = m*step, sampling J/K at i-1.
-    /// </summary>
-    public bool[] ComputeOutputTimelineFromParsedSignals()
-    {
-        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
-        if (diagramLen <= 0)
-        {
-            diagramLen = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
-            if (diagramLen <= 0) return null;
-        }
-        int totalLength = diagramLen + 1; // inclui o tile imediatamente após a última borda de clock
-
-        GetClockSamplingParameters(out int step, out int _);
-        var timeline = new bool[totalLength];
-        bool q = false;
-        for (int i = 0; i < totalLength; i++)
-        {
-            bool hasPreset = GetAt(ParsedPresetSignal, i);
-            bool hasClear = GetAt(ParsedClearSignal, i);
-            if (hasPreset && hasClear)
-            {
-                q = false; // Clear priority
-            }
-            else if (hasClear)
-            {
-                q = false;
-            }
-            else if (hasPreset)
-            {
-                q = true;
-            }
-
-            // Apply JK at the first tile AFTER the clock edge.
-            // Edge at X = m*step is the boundary between tiles (i-1,i) where i = m*step.
-            if (step > 0 && i > 0 && (i % step) == 0)
-            {
-                bool j = GetAt(ParsedJSignal, i - 1);
-                bool k = GetAt(ParsedKSignal, i - 1);
-                if (j && !k) q = true;
-                else if (!j && k) q = false;
-                else if (j && k) q = !q;
-            }
-
-            timeline[i] = q;
-        }
-        return timeline;
-    }
-
-    /// <summary>
-    /// Computes per-tile timeline plus an operation label per tile describing what affected Q at that tile.
-    /// Operation tokens:
-    ///  - keep : no change
-    ///  - preset_async / clear_async : async signals present and applied (value may or may not change)
-    ///  - preset_async_noop / clear_async_noop : async present but value already same
-    ///  - set_sync / reset_sync / switch_sync : JK logic at clock edge caused change
-    ///  - hold_sync : JK evaluated (edge) but no change
-    ///  - combined: async changed then JK changed again same tile -> token 'preset_async+switch_sync' etc.
-    /// Priority order: apply async first (clear overrides preset), then JK at clock edge.
-    /// </summary>
-    public bool[] ComputeOutputTimelineWithOps(out string[] ops)
-    {
-        ops = null;
-        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
-        if (diagramLen <= 0)
-        {
-            diagramLen = MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
-            if (diagramLen <= 0) return null;
-        }
-        int totalLength = diagramLen + 1; // inclui o tile logo após a última borda de clock
-
-        GetClockSamplingParameters(out int step, out int _);
-        var timeline = new bool[totalLength];
-        var opArr = new string[totalLength];
-        bool q = false;
-        for (int i = 0; i < totalLength; i++)
-        {
-            bool prevQ = q;
-            bool hasPreset = GetAt(ParsedPresetSignal, i);
-            bool hasClear = GetAt(ParsedClearSignal, i);
-            string asyncToken = null;
-            if (hasPreset && hasClear)
-            {
-                // Clear priority
-                bool changed = q != false;
-                q = false;
-                asyncToken = changed ? "clear_async" : "clear_async_noop";
-            }
-            else if (hasClear)
-            {
-                bool changed = q != false;
-                q = false;
-                asyncToken = changed ? "clear_async" : "clear_async_noop";
-            }
-            else if (hasPreset)
-            {
-                bool changed = q != true;
-                q = true;
-                asyncToken = changed ? "preset_async" : "preset_async_noop";
-            }
-
-            bool afterAsyncQ = q;
-            bool syncApplied = false;
-            string syncToken = null;
-            // Apply JK at the first tile AFTER the edge; sample J/K from previous tile.
-            if (step > 0 && i > 0 && (i % step) == 0)
-            {
-                bool j = GetAt(ParsedJSignal, i - 1);
-                bool k = GetAt(ParsedKSignal, i - 1);
-                bool beforeSyncQ = q;
-                if (j && !k) { q = true; syncApplied = true; syncToken = beforeSyncQ != q ? "set_sync" : "hold_sync"; }
-                else if (!j && k) { q = false; syncApplied = true; syncToken = beforeSyncQ != q ? "reset_sync" : "hold_sync"; }
-                else if (j && k) { q = !q; syncApplied = true; syncToken = "switch_sync"; }
-                else { syncApplied = true; syncToken = "hold_sync"; }
-            }
-
-            timeline[i] = q;
-
-            string finalToken;
-            if (asyncToken == null && !syncApplied)
-            {
-                finalToken = prevQ == q ? "keep" : (q ? "set_initial" : "reset_initial");
-            }
-            else if (asyncToken != null && !syncApplied)
-            {
-                finalToken = asyncToken;
-            }
-            else if (asyncToken == null && syncApplied)
-            {
-                finalToken = syncToken;
-            }
-            else // both async and sync same tile
-            {
-                if (afterAsyncQ != q)
-                {
-                    // JK changed again after async
-                    finalToken = asyncToken + "+" + syncToken;
-                }
-                else
-                {
-                    // JK evaluated but didn't further change
-                    finalToken = asyncToken + "+" + syncToken;
-                }
-            }
-            opArr[i] = finalToken;
-        }
-        ops = opArr;
-        return timeline;
-    }
-
-
-
-    /// <summary>
-    /// Static helper: build an output sequence from raw J/K boolean arrays sampled every clockStep items,
-    /// honoring optional asynchronous Preset (force 1) and Clear (force 0). If both are true at the same
-    /// sampled index, Clear wins and a warning is logged. Sampling starts at startOffset and continues with step size clockStep.
-    /// </summary>
-    public static bool[] BuildOutputSequenceFromSignalsWithAsync(bool[] jSignal, bool[] kSignal,
-        bool[] presetSignal, bool[] clearSignal, int clockStep, int startOffset = 0)
-    {
-        if (jSignal == null || kSignal == null || clockStep <= 0) return null;
-        int maxIndex = Math.Min(jSignal.Length, kSignal.Length);
-        if (maxIndex == 0) return null;
-
-        var outputs = new List<bool>();
-        bool qState = false;
-
-        int startIdx = Mathf.Clamp(startOffset, 0, Math.Max(0, maxIndex - 1));
-        for (int idx = startIdx; idx < maxIndex; idx += clockStep)
-        {
-            bool hasPreset = (presetSignal != null && idx < presetSignal.Length) ? presetSignal[idx] : false;
-            bool hasClear = (clearSignal != null && idx < clearSignal.Length) ? clearSignal[idx] : false;
-
-            if (hasPreset && hasClear)
-            {
-                Debug.LogWarning($"LevelJsonLoader: Preset and Clear are both 1 at index {idx}. Applying Clear priority (Q=0).");
-                qState = false;
-            }
-            else if (hasClear)
-            {
-                qState = false;
-            }
-            else if (hasPreset)
-            {
-                qState = true;
-            }
-            else
-            {
-                bool j = jSignal[idx];
-                bool k = kSignal[idx];
-                if (j && !k) qState = true;
-                else if (!j && k) qState = false;
-                else if (j && k) qState = !qState;
-            }
-
-            outputs.Add(qState);
-        }
-
-        var outArr = outputs.Count > 0 ? outputs.ToArray() : null;
-        return outArr;
-    }
-
-    private static bool GetAt(bool[] arr, int idx)
-    {
-        return arr != null && idx >= 0 && idx < arr.Length && arr[idx];
-    }
-
-    private static int MaxLen(params bool[][] arrays)
-    {
-        int max = 0;
-        if (arrays == null) return 0;
-        for (int i = 0; i < arrays.Length; i++)
-        {
-            if (arrays[i] != null && arrays[i].Length > max) max = arrays[i].Length;
-        }
-        return max;
-    }
-
-    /// <summary>
-    /// Builds an ordered list of PathVerifier.SignalEvent from the clock-aligned output samples.
-    /// Event X positions occur at exact multiples of the clock step: X_n = (n+1) * step.
-    /// Note: Input sampling uses the tile just before the edge (index = X_n - 1), handled separately in ComputeOutputSamplesFromParsedSignals.
-    /// Returns null if there are no samples.
+    /// Computes output events from parsed signals using FlipFlopSimulator.
     /// </summary>
     public List<PathVerifier.SignalEvent> ComputeOutputEventsFromParsedSignals()
     {
-        // Ensure we have both timeline and ops tokens
-        if (OutputTimeline == null || outputOpsPerTile == null || OutputTimeline.Length != outputOpsPerTile.Length)
-        {
-            OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
-        }
-        var timeline = OutputTimeline;
-        if (timeline == null || timeline.Length == 0) return null;
+        int diagramLen = GetDiagramLength();
+        if (diagramLen <= 0) return null;
 
         GetClockSamplingParameters(out int step, out int _);
-        var events = new List<PathVerifier.SignalEvent>();
-        bool prev = timeline[0];
-        // Initial high state event (use async offset if caused by async and not at clock edge)
-        if (prev)
-        {
-            string op0 = outputOpsPerTile[0];
-            bool isClockEdge0 = (step > 0 && 0 > 0 && (0 % step) == 0); // false
-            bool asyncOnly0 = op0 != null && op0.Contains("_async") && !op0.Contains("+") && !isClockEdge0;
-            float x0 = 0f + (asyncOnly0 ? 0.5f : 0f);
-            events.Add(new PathVerifier.SignalEvent(x0, prev));
-        }
 
-        for (int i = 1; i < timeline.Length; i++)
+        // Use consolidated method (discards timeline and ops, we only need events)
+        FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal,
+            step, diagramLen, out _, out var events, asyncActiveHigh);
+
+        // Convert FlipFlopSimulator.SignalEvent to PathVerifier.SignalEvent
+        var pathEvents = new List<PathVerifier.SignalEvent>();
+        if (events != null)
         {
-            bool cur = timeline[i];
-            if (cur != prev)
+            foreach (var evt in events)
             {
-                string op = (i < outputOpsPerTile.Length) ? outputOpsPerTile[i] : null;
-                bool isClockEdge = (step > 0 && (i % step) == 0);
-                bool asyncOnly = op != null && op.Contains("_async") && !op.Contains("+") && !isClockEdge;
-                float xPos = i + (asyncOnly ? 0.5f : 0f);
-                events.Add(new PathVerifier.SignalEvent(xPos, cur));
-                prev = cur;
+                pathEvents.Add(new PathVerifier.SignalEvent(evt.x, evt.value));
             }
         }
-        return events;
+        return pathEvents;
     }
 
+    #endregion
+
+    #region Helpers
     /// <summary>
-    /// Determines clock sampling parameters (step in tiles and startOffset) based on LevelManager.clockStepX.
-    /// startOffset rule (edge positions): first edge at X=step (i.e., startOffset = step).
-    /// Input sampling uses X - 1; event X uses exact multiples.
+    /// Gets clock step/startOffset (first edge at X=step).
     /// </summary>
     private void GetClockSamplingParameters(out int step, out int startOffset)
     {
@@ -371,6 +122,40 @@ public class LevelJsonLoader : MonoBehaviour
             : 1f;
         step = Mathf.Max(1, Mathf.RoundToInt(stepF));
         startOffset = step;
+    }
+
+    /// <summary>
+    /// Gets diagram length from LevelManager or signal arrays.
+    /// </summary>
+    private int GetDiagramLength()
+    {
+        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
+        if (diagramLen <= 0)
+        {
+            diagramLen = FlipFlopSimulator.MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
+        }
+        return diagramLen;
+    }
+
+    private static Color ParseColor(string hex, Color fallback)
+    {
+        if (string.IsNullOrWhiteSpace(hex)) return fallback;
+        string s = hex.Trim();
+        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) s = "#" + s.Substring(2);
+        else if (!s.StartsWith("#")) s = "#" + s;
+        if (ColorUtility.TryParseHtmlString(s, out var c)) return c;
+        return fallback;
+    }
+
+    private void ColorRow(Tilemap map, int length, int yRow, int baseX, Color color)
+    {
+        if (map == null || length <= 0) return;
+        for (int i = 0; i < length; i++)
+        {
+            var pos = new Vector3Int(baseX + i, yRow, 0);
+            map.SetTileFlags(pos, TileFlags.None);
+            map.SetColor(pos, color);
+        }
     }
 
     #endregion
@@ -388,12 +173,34 @@ public class LevelJsonLoader : MonoBehaviour
             if (!ValidateAll(data)) return;
 #endif
 
+        // Initialize rendering components
+        tilemapRenderer = new TilemapRenderer(
+            inputTilemap,
+            terrainTilemap,
+            clockTilemap,
+            diagramTiles,
+            floorTile,
+            ceilingTile,
+            wallTile,
+            flipCeilingY,
+            startX);
+
+        obstacleSpawner = new ObstacleSpawner(
+            obstaclesParent,
+            obstaclePrefabs,
+            terrainTilemap,
+            startX,
+            floorYRow,
+            obstacleYRelativeToFloor);
+
         ApplyLevelConfig(data);
 
         var jSignal = ParseInputString(data.jSignal);
         var kSignal = ParseInputString(data.kSignal);
         var presetSignal = ParseInputString(data.presetSignal);
         var clearSignal = ParseInputString(data.clearSignal);
+
+        // Store parsed signals without modification (visual diagram shows JSON as-is)
         this.ParsedJSignal = jSignal;
         this.ParsedKSignal = kSignal;
         this.ParsedPresetSignal = presetSignal;
@@ -402,41 +209,67 @@ public class LevelJsonLoader : MonoBehaviour
         var floorBand = ParseInputString(data.floor);
         var ceilingBand = ParseInputString(data.ceiling);
 
+        // Async active mode:
+        // asyncActive = 1 (active-high): preset/clear operations execute when signal=1
+        // asyncActive = 0 (active-low): preset/clear operations execute when signal=0
+        int asyncActiveMode = (data != null ? data.asyncActive : 1);
+        bool asyncActiveHigh = asyncActiveMode == 1;
+
         // Compute and expose the per-tile output timeline (0/1) for PathVerifier/reference
-        this.OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+        GetClockSamplingParameters(out int clockStep, out int _);
+        int diagramLen = GetDiagramLength();
+        this.OutputTimeline = FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
+        this.asyncActiveHigh = asyncActiveHigh;
         UpdateDebugOutputVectorString();
         if (debugLogOutputVector)
         {
             Debug.Log($"LevelJsonLoader: Output timeline ({(OutputTimeline != null ? OutputTimeline.Length : 0)}): {debugOutputVector}");
         }
 
-        ClearAllTilemaps();
-        GenerateDiagram(inputTilemap, jSignal, j_YRow);
-        GenerateDiagram(inputTilemap, kSignal, k_YRow);
+        tilemapRenderer.ClearAllTilemaps();
+        // Parse colors (accepts 0xRRGGBB, #RRGGBB, RRGGBB)
+        Color jColor = ParseColor(data?.jSignalColor, Color.white);
+        Color kColor = ParseColor(data?.kSignalColor, Color.white);
+        Color presetColor = ParseColor(data?.presetSignalColor, Color.white);
+        Color clearColor = ParseColor(data?.clearSignalColor, Color.white);
+        Color clockColor = ParseColor(data?.clockSignalColor, Color.white);
+
+        // Calculate Y positions: J=12, Clock=4, others distributed between
+        bool hasAsync = (presetSignal != null || clearSignal != null);
+        int j_Y = 12;
+        int k_Y = hasAsync ? 8 : 8;
+        int preset_Y = 10;
+        int clear_Y = 6;
+        int clock_Y = 4;
+
+        tilemapRenderer.RenderDiagram(jSignal, j_Y, jColor);
+        tilemapRenderer.RenderDiagram(kSignal, k_Y, kColor);
         if (presetSignal != null)
-            GenerateDiagram(inputTilemap, presetSignal, preset_YRow);
+            tilemapRenderer.RenderDiagram(presetSignal, preset_Y, presetColor);
         if (clearSignal != null)
-            GenerateDiagram(inputTilemap, clearSignal, clear_YRow);
+            tilemapRenderer.RenderDiagram(clearSignal, clear_Y, clearColor);
 
         // Use values already defined in ApplyLevelConfig (no redundant checks here)
-        int clockStep = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.clockStepX : data.clockTiles);
-        int levelLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : (data.clockTiles * data.clockCicles));
+        int levelLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : (6 * data.clockCicles));
 
-        var clockPattern = BuildClockPattern(levelLength, clockStep, false);
-        DrawPattern(clockTilemap, clockPattern, clock_YRow, startX);
+        // Parse active clock edge ("rising" or "falling")
+        bool isRisingEdge = data.activeClockEdge != null && data.activeClockEdge.ToLower() == "rising";
+        var clockPattern = BuildClockPattern(levelLength, clockStep, isRisingEdge);
+        tilemapRenderer.RenderClock(clockPattern, clock_Y, clockColor);
         // Extend floor and ceiling by +3 tiles beyond the last '1' defined in JSON
-        GenerateBand(terrainTilemap, floorBand, floorYRow, floorTile, false, 3);
-        GenerateBand(terrainTilemap, ceilingBand, ceilingYRow, ceilingTile, flipCeilingY, 3);
+        tilemapRenderer.RenderTerrain(floorBand, ceilingBand, floorYRow, ceilingYRow, 3);
 
-        CompleteStaticScenery();
+        tilemapRenderer.CompleteStaticScenery(floorYRow, ceilingYRow);
 
         if (data.obstacles != null && data.obstacles.Count > 0)
         {
-            SpawnObstacles(data.obstacles);
+            obstacleSpawner.SpawnObstacles(data.obstacles);
         }
     }
 
+    #endregion
 
+    #region Clock Pattern
 
     /// <summary>
     /// Builds the clock pattern:
@@ -444,58 +277,26 @@ public class LevelJsonLoader : MonoBehaviour
     /// For odd S this creates a slightly asymmetric duty cycle (ex: S=5 -> 2 zeros, 3 ones).
     /// Returns int[] of length totalLength with values: 0=low, 1=high.
     /// </summary>
-    #endregion
-
-    #region Clock Pattern
-    public static int[] BuildClockPattern(int totalLength, int step, bool startHigh = false)
+    /// <summary>
+    /// Builds clock signal pattern.
+    /// For falling edge (default): pattern is 000111 000111 (edge at transition from 1 to 0)
+    /// For rising edge: pattern is 111000 111000 (edge at transition from 0 to 1)
+    /// </summary>
+    public static int[] BuildClockPattern(int totalLength, int step, bool risingEdge = false)
     {
         if (totalLength <= 0 || step <= 0) return null;
         var arr = new int[totalLength + step];
-        int half = step / 2; // floor division for odd steps
+        int half = step / 2;
         var period = new int[step];
-        int firstVal = startHigh ? 1 : 0;
-        int secondVal = startHigh ? 0 : 1;
-        for (int i = 0; i < half; i++) period[i] = firstVal;
-        for (int i = half; i < step; i++) period[i] = secondVal; // odd steps: extra tile in second half
-        for (int i = 0; i < totalLength + step; i++)
-            arr[i] = period[i % step];
+        // Rising edge: start HIGH (111000), falling edge: start LOW (000111)
+        int a = risingEdge ? 1 : 0;
+        int b = risingEdge ? 0 : 1;
+        for (int i = 0; i < half; i++) period[i] = a;
+        for (int i = half; i < step; i++) period[i] = b;
+        for (int i = 0; i < totalLength + step; i++) arr[i] = period[i % step];
         return arr;
     }
 
-    /// <summary>
-    /// Generalized pattern renderer for both inputs and clock.
-    /// pattern codes: 0 = low, 1 = high.
-    /// </summary>
-    private void DrawPattern(Tilemap map, int[] pattern, int yRow, int startX)
-    {
-        if (map == null || pattern == null || pattern.Length == 0) return;
-
-        for (int i = 0; i < pattern.Length; i++)
-        {
-            int curr = pattern[i];
-            int prev = (i > 0) ? pattern[i - 1] : curr;
-            int next = (i < pattern.Length - 1) ? pattern[i + 1] : curr;
-
-            int prevBit = prev != 0 ? 1 : 0;
-            int currBit = curr != 0 ? 1 : 0;
-            int nextBit = next != 0 ? 1 : 0;
-            int idx = (prevBit << 2) | (currBit << 1) | nextBit;
-
-            TileBase tile = SafeTile(idx);
-            if (tile != null)
-                map.SetTile(new Vector3Int(startX + i, yRow, 0), tile);
-        }
-    }
-
-    private TileBase SafeTile(int idx)
-    {
-        if (diagramTiles == null || diagramTiles.Length <= idx || idx < 0) return null;
-        return diagramTiles[idx];
-    }
-
-    /// <summary>
-    /// Loads and parses the JSON asset into a LevelData instance.
-    /// </summary>
     #endregion
 
     #region JSON & Config
@@ -522,7 +323,9 @@ public class LevelJsonLoader : MonoBehaviour
     {
         if (OutputTimeline == null)
         {
-            OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+            GetClockSamplingParameters(out int clockStep, out int _);
+            int diagramLen = GetDiagramLength();
+            OutputTimeline = FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
             UpdateDebugOutputVectorString();
         }
         Debug.Log($"LevelJsonLoader: Output timeline ({(OutputTimeline != null ? OutputTimeline.Length : 0)}): {debugOutputVector}");
@@ -533,7 +336,9 @@ public class LevelJsonLoader : MonoBehaviour
     {
         if (outputOpsPerTile == null || OutputTimeline == null)
         {
-            OutputTimeline = ComputeOutputTimelineWithOps(out outputOpsPerTile);
+            GetClockSamplingParameters(out int clockStep, out int _);
+            int diagramLen = GetDiagramLength();
+            OutputTimeline = FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
             UpdateDebugOutputVectorString();
         }
         var sb = new StringBuilder(outputOpsPerTile.Length * 6);
@@ -558,26 +363,20 @@ public class LevelJsonLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// Single validation entry point: verifies required scene references and basic JSON presence.
-    /// Does not enforce value ranges or parity; assumes JSON is trusted for semantics.
+    /// Basic validations for scene refs and JSON presence.
     /// </summary>
     private bool ValidateAll(LevelData data)
     {
-        // JSON must be parsed successfully
         if (data == null)
         {
             Debug.LogError("LevelJsonLoader: LevelData is null (JSON parsing failed).");
             return false;
         }
-
-        // Required tilemaps
         if (inputTilemap == null || terrainTilemap == null || clockTilemap == null)
         {
             Debug.LogError("LevelJsonLoader: One or more required Tilemap references are missing (input/terrain/clock).");
             return false;
         }
-
-        // Diagram tiles mapping (8 variants 000..111)
         if (diagramTiles == null || diagramTiles.Length < 8)
         {
             Debug.LogError("LevelJsonLoader: diagramTiles must have 8 entries (indices 0..7 for 000..111).");
@@ -591,8 +390,6 @@ public class LevelJsonLoader : MonoBehaviour
                 return false;
             }
         }
-
-        // Terrain tiles
         if (floorTile == null || ceilingTile == null)
         {
             Debug.LogError("LevelJsonLoader: Floor or ceiling tile is not assigned.");
@@ -603,13 +400,19 @@ public class LevelJsonLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// Applies clock configuration to LevelManager: step (tiles, no parity coercion) and total length (cycles * step).
+    /// Sets fixed clock step (6) and derived lengths from level data.
     /// </summary>
     private void ApplyLevelConfig(LevelData data)
     {
         if (LevelManager.Instance != null)
         {
-            int step = data.clockTiles;
+            if (data.clockCicles <= 0)
+            {
+                Debug.LogWarning($"LevelJsonLoader: Invalid clockCicles={data.clockCicles}. Using default value of 10.");
+                data.clockCicles = 10;
+            }
+
+            int step = 6;
             LevelManager.Instance.clockStepX = step;
             LevelManager.Instance.diagramEndX = data.clockCicles * step;
             LevelManager.Instance.phaseEndX = LevelManager.Instance.diagramEndX + LevelManager.Instance.phaseSlackTiles;
@@ -619,111 +422,9 @@ public class LevelJsonLoader : MonoBehaviour
 
 
 
-    /// <summary>
-    /// Renders a signal diagram onto a tilemap using rising/falling/flat tiles.
-    /// </summary>
     #endregion
 
-    #region Diagram Rendering
-    private void GenerateDiagram(Tilemap targetMap, bool[] signal, int yRow)
-    {
-        GenerateDiagram(targetMap, signal, yRow, startX);
-    }
-
-    private void GenerateDiagram(Tilemap targetMap, bool[] signal, int yRow, int baseX)
-    {
-        if (targetMap == null || signal == null) return;
-        var pattern = new int[signal.Length];
-        for (int i = 0; i < signal.Length; i++) pattern[i] = signal[i] ? 1 : 0;
-        DrawPattern(targetMap, pattern, yRow, baseX);
-    }
-
-    /// <summary>
-    /// Renders a 0/1 band onto a tilemap at the given Y row.
-    /// </summary>
-    private void GenerateBand(Tilemap targetMap, bool[] band, int yRow, TileBase tile, bool flipY = false, int extendRight = 0)
-    {
-        if (targetMap == null || band == null || tile == null) return;
-        for (int i = 0; i < band.Length; i++)
-        {
-            if (!band[i]) continue;
-            var pos = new Vector3Int(startX + i, yRow, 0);
-            targetMap.SetTile(pos, tile);
-            if (flipY)
-            {
-                targetMap.SetTileFlags(pos, TileFlags.None);
-                targetMap.SetTransformMatrix(pos, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
-            }
-        }
-
-        // Extend the band by painting extra tiles to the right of the last '1'
-        if (extendRight > 0)
-        {
-            int lastIdx = -1;
-            for (int i = band.Length - 1; i >= 0; i--)
-            {
-                if (band[i]) { lastIdx = i; break; }
-            }
-            if (lastIdx >= 0)
-            {
-                for (int off = 1; off <= extendRight; off++)
-                {
-                    var posExt = new Vector3Int(startX + lastIdx + off, yRow, 0);
-                    targetMap.SetTile(posExt, tile);
-                    if (flipY)
-                    {
-                        targetMap.SetTileFlags(posExt, TileFlags.None);
-                        targetMap.SetTransformMatrix(posExt, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
-                    }
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Completes static scenery independent from level JSON: left wall and extra left floor tile.
-    /// </summary>
-    private void CompleteStaticScenery()
-    {
-        if (terrainTilemap != null && wallTile != null)
-        {
-            int yMin = Mathf.Min(floorYRow, ceilingYRow);
-            int yMax = Mathf.Max(floorYRow, ceilingYRow);
-            if (yMin <= yMax)
-            {
-                int xWall = startX - 2;
-                for (int y = yMin; y <= yMax; y++)
-                {
-                    terrainTilemap.SetTile(new Vector3Int(xWall, y, 0), wallTile);
-                }
-            }
-        }
-
-        if (terrainTilemap != null && floorTile != null)
-        {
-            int xFloor = startX - 1;
-            terrainTilemap.SetTile(new Vector3Int(xFloor, floorYRow, 0), floorTile);
-        }
-
-        if (terrainTilemap != null && ceilingTile != null)
-        {
-            int xCeil = startX - 1;
-            var pos = new Vector3Int(xCeil, ceilingYRow, 0);
-            terrainTilemap.SetTile(pos, ceilingTile);
-            if (flipCeilingY)
-            {
-                terrainTilemap.SetTileFlags(pos, TileFlags.None);
-                terrainTilemap.SetTransformMatrix(pos, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1f, -1f, 1f)));
-            }
-        }
-    }
-
-    /// <summary>
-    /// Parses a 0/1 string into a boolean array.
-    /// </summary>
-    #endregion
-
-    #region Parsing & Validation
+    #region Clock Patternion
     private bool[] ParseInputString(string data)
     {
         if (string.IsNullOrEmpty(data)) return null;
@@ -736,121 +437,30 @@ public class LevelJsonLoader : MonoBehaviour
         return list.Count > 0 ? list.ToArray() : null;
     }
 
-    /// <summary>
-    /// Validates required references.
-    /// </summary>
-    // Legacy per-section validations were consolidated into ValidateAll(LevelData)
-
-    /// <summary>
-    /// Clears all configured tilemaps.
-    /// </summary>
-    private void ClearAllTilemaps()
-    {
-        inputTilemap.ClearAllTiles();
-        if (clockTilemap != null) clockTilemap.ClearAllTiles();
-        terrainTilemap.ClearAllTiles();
-    }
-
-
-
-    /// <summary>
-    /// Spawns obstacle prefabs based on JSON data at cell-aligned positions.
-    /// </summary>
-    #endregion
-
-    #region Obstacles
-    private void SpawnObstacles(List<ObstacleData> obstacles)
-    {
-        foreach (var o in obstacles)
-        {
-            var prefab = ResolveObstaclePrefab(o.type);
-            if (prefab == null)
-            {
-                Debug.LogWarning($"LevelJsonLoader: No prefab mapped for obstacle type='{o.type}'.");
-                continue;
-            }
-
-            int cellX = startX + o.startX;
-            int cellY = obstacleYRelativeToFloor ? (floorYRow + o.startY) : o.startY;
-            var cell = new Vector3Int(cellX, cellY, 0);
-            var worldPos = terrainTilemap.GetCellCenterWorld(cell);
-
-            var go = Instantiate(prefab, worldPos, Quaternion.identity, obstaclesParent);
-            AttachObstacleConfig(go, o);
-        }
-    }
-
-    /// <summary>
-    /// Resolves a prefab by obstacle type string.
-    /// </summary>
-    private GameObject ResolveObstaclePrefab(string type)
-    {
-        if (string.IsNullOrEmpty(type)) return null;
-        for (int i = 0; i < obstaclePrefabs.Count; i++)
-        {
-            if (obstaclePrefabs[i] != null && obstaclePrefabs[i].prefab != null && obstaclePrefabs[i].type == type)
-                return obstaclePrefabs[i].prefab;
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// Attaches a simple config component with JSON-provided parameters for the obstacle controller to consume.
-    /// </summary>
-    private void AttachObstacleConfig(GameObject go, ObstacleData o)
-    {
-
-        var mace = go.GetComponent<MaceController>();
-        if (mace != null)
-        {
-
-            var cellSize = terrainTilemap != null && terrainTilemap.layoutGrid != null
-                ? terrainTilemap.layoutGrid.cellSize
-                : Vector3.one;
-            float speedUnits = o.speed * Mathf.Abs(cellSize.x);
-            float horizUnits = o.horizontalDistance * Mathf.Abs(cellSize.x);
-            float vertUnits = o.verticalDistance * Mathf.Abs(cellSize.y);
-            mace.ApplyObstacleData(o.startX, o.startY, speedUnits, horizUnits, vertUnits, o.starterCorner, o.clockwise, startX, floorYRow, obstacleYRelativeToFloor, terrainTilemap);
-            return;
-        }
-    }
-
     #endregion
 
     #region Data Classes
+
     [Serializable]
     private class LevelData
     {
         public string levelName;
         public int clockCicles;
-        public int clockTiles;
+        public int asyncActive = 1;
+        public string activeClockEdge = "falling"; // "rising" or "falling"
         public string jSignal;
         public string kSignal;
         public string presetSignal;
         public string clearSignal;
+        public string jSignalColor;
+        public string kSignalColor;
+        public string presetSignalColor;
+        public string clearSignalColor;
+        public string clockSignalColor;
         public string floor;
         public string ceiling;
-        public List<ObstacleData> obstacles;
+        public List<ObstacleSpawner.ObstacleData> obstacles;
     }
 
-    [Serializable]
-    private class ObstacleData
-    {
-        public string type;
-        public int startX;
-        public int startY;
-        public float speed;
-        public int horizontalDistance;
-        public int verticalDistance;
-        public string starterCorner;
-        public bool clockwise;
-    }
-
-    [Serializable]
-    private class ObstaclePrefabEntry
-    {
-        public string type;
-        public GameObject prefab;
-    }
     #endregion
 }
