@@ -342,7 +342,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void HandleGravityFlip()
     {
-        if (gravityFlipInput && isGrounded)
+        if (gravityFlipInput && isGrounded && !isDashing)
         {
             rb.gravityScale *= -1;
             transform.Rotate(0f, 0f, 180f);
