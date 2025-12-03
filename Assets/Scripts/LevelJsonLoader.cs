@@ -43,6 +43,10 @@ public class LevelJsonLoader : MonoBehaviour
     [Tooltip("Map JSON obstacle 'type' to prefab to spawn")]
     [SerializeField] private List<ObstacleSpawner.ObstaclePrefabEntry> obstaclePrefabs = new List<ObstacleSpawner.ObstaclePrefabEntry>();
 
+    [Header("HUD Labels")]
+    [Tooltip("Optional: SignalLabelRenderer to position HUD labels at signal Y positions")]
+    [SerializeField] private SignalLabelRenderer signalLabelRenderer;
+
     [Header("Debug")]
     [Tooltip("If true, logs the computed output vector (0/1) used by PathVerifier.")]
     [SerializeField] private bool debugLogOutputVector = false;
@@ -253,6 +257,12 @@ public class LevelJsonLoader : MonoBehaviour
         if (data.obstacles != null && data.obstacles.Count > 0)
         {
             obstacleSpawner.SpawnObstacles(data.obstacles);
+        }
+
+        // Generate HUD signal labels at correct Y positions
+        if (signalLabelRenderer != null)
+        {
+            signalLabelRenderer.GenerateLabels();
         }
     }
 
