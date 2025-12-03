@@ -32,11 +32,6 @@ public class LevelJsonLoader : MonoBehaviour
 
     [Header("Placement Settings")]
     [SerializeField] private int startX = 0;
-    [SerializeField] private int j_YRow = 8;
-    [SerializeField] private int k_YRow = 5;
-    [SerializeField] private int preset_YRow = 10;
-    [SerializeField] private int clear_YRow = 2;
-    [SerializeField] private int clock_YRow = 14;
     [SerializeField] private int floorYRow = 0;
     [SerializeField] private int ceilingYRow = 12;
 
@@ -209,13 +204,9 @@ public class LevelJsonLoader : MonoBehaviour
         var floorBand = ParseInputString(data.floor);
         var ceilingBand = ParseInputString(data.ceiling);
 
-        // Async active mode:
-        // asyncActive = 1 (active-high): preset/clear operations execute when signal=1
-        // asyncActive = 0 (active-low): preset/clear operations execute when signal=0
         int asyncActiveMode = (data != null ? data.asyncActive : 1);
         bool asyncActiveHigh = asyncActiveMode == 1;
 
-        // Compute and expose the per-tile output timeline (0/1) for PathVerifier/reference
         GetClockSamplingParameters(out int clockStep, out int _);
         int diagramLen = GetDiagramLength();
         this.OutputTimeline = FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
@@ -227,7 +218,7 @@ public class LevelJsonLoader : MonoBehaviour
         }
 
         tilemapRenderer.ClearAllTilemaps();
-        // Parse colors (accepts 0xRRGGBB, #RRGGBB, RRGGBB)
+
         Color jColor = ParseColor(data?.jSignalColor, Color.white);
         Color kColor = ParseColor(data?.kSignalColor, Color.white);
         Color presetColor = ParseColor(data?.presetSignalColor, Color.white);
@@ -237,8 +228,8 @@ public class LevelJsonLoader : MonoBehaviour
         // Calculate Y positions: J=12, Clock=4, others distributed between
         bool hasAsync = (presetSignal != null || clearSignal != null);
         int j_Y = 12;
-        int k_Y = hasAsync ? 8 : 8;
-        int preset_Y = 10;
+        int k_Y = hasAsync ? 10 : 8;
+        int preset_Y = 8;
         int clear_Y = 6;
         int clock_Y = 4;
 
@@ -249,14 +240,12 @@ public class LevelJsonLoader : MonoBehaviour
         if (clearSignal != null)
             tilemapRenderer.RenderDiagram(clearSignal, clear_Y, clearColor);
 
-        // Use values already defined in ApplyLevelConfig (no redundant checks here)
         int levelLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : (6 * data.clockCicles));
 
         // Parse active clock edge ("rising" or "falling")
         bool isRisingEdge = data.activeClockEdge != null && data.activeClockEdge.ToLower() == "rising";
         var clockPattern = BuildClockPattern(levelLength, clockStep, isRisingEdge);
         tilemapRenderer.RenderClock(clockPattern, clock_Y, clockColor);
-        // Extend floor and ceiling by +3 tiles beyond the last '1' defined in JSON
         tilemapRenderer.RenderTerrain(floorBand, ceilingBand, floorYRow, ceilingYRow, 3);
 
         tilemapRenderer.CompleteStaticScenery(floorYRow, ceilingYRow);
@@ -272,15 +261,9 @@ public class LevelJsonLoader : MonoBehaviour
     #region Clock Pattern
 
     /// <summary>
-    /// Builds the clock pattern:
-    /// Step S: period = S tiles. First floor(S/2) zeros, then remaining tiles ones (or inverted if startHigh).
-    /// For odd S this creates a slightly asymmetric duty cycle (ex: S=5 -> 2 zeros, 3 ones).
-    /// Returns int[] of length totalLength with values: 0=low, 1=high.
-    /// </summary>
-    /// <summary>
     /// Builds clock signal pattern.
-    /// For falling edge (default): pattern is 000111 000111 (edge at transition from 1 to 0)
-    /// For rising edge: pattern is 111000 111000 (edge at transition from 0 to 1)
+    /// Falling edge: 000111 (transition 1→0)
+    /// Rising edge: 111000 (transition 0→1)
     /// </summary>
     public static int[] BuildClockPattern(int totalLength, int step, bool risingEdge = false)
     {
@@ -288,7 +271,6 @@ public class LevelJsonLoader : MonoBehaviour
         var arr = new int[totalLength + step];
         int half = step / 2;
         var period = new int[step];
-        // Rising edge: start HIGH (111000), falling edge: start LOW (000111)
         int a = risingEdge ? 1 : 0;
         int b = risingEdge ? 0 : 1;
         for (int i = 0; i < half; i++) period[i] = a;
