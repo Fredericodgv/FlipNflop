@@ -309,7 +309,7 @@ GameObject:
   - component: {fileID: 72391401}
   - component: {fileID: 72391400}
   m_Layer: 31
-  m_Name: ClockManager
+  m_Name: HintManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -330,9 +330,14 @@ MonoBehaviour:
   lineLength: 30
   lineWidth: 0.1
   dottedLineMaterial: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
-  linesPerChunk: 100
-  drawFullLevelGizmos: 1
-  fullLevelGizmoColor: {r: 0, g: 0.9, b: 1, a: 0.6}
+  clockStep: 6
+  clockLineColor: {r: 0, g: 0.9, b: 1, a: 0.6}
+  showAsyncHints: 0
+  asyncHintColor: {r: 1, g: 0.5, b: 0, a: 0.6}
+  levelJsonLoader: {fileID: 992803105}
+  bufferLines: 5
+  drawClockGizmos: 0
+  drawAsyncGizmos: 0
   labelEveryN: 0
 --- !u!4 &72391401
 Transform:
@@ -2530,11 +2535,6 @@ MonoBehaviour:
   flipCeilingY: 1
   wallTile: {fileID: 11400000, guid: 3352361ed783d638e98428dd037de778, type: 2}
   startX: 0
-  j_YRow: 12
-  k_YRow: 10
-  preset_YRow: 8
-  clear_YRow: 6
-  clock_YRow: 4
   floorYRow: -4
   ceilingYRow: 2
   obstacleYRelativeToFloor: 1
