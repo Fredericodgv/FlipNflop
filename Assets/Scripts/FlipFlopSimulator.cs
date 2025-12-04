@@ -31,7 +31,7 @@ public static class FlipFlopSimulator
         var eventList = new List<SignalEvent>();
 
         bool q = false;
-        bool asyncSincePrevEdge = false;
+        bool asyncAtPreviousTile = false;
 
         for (int i = 0; i < inputLength; i++)
         {
@@ -46,7 +46,8 @@ public static class FlipFlopSimulator
 
             if (isEdge)
             {
-                if (!asyncSincePrevEdge)
+                // Only ignore sync if async happened at the IMMEDIATELY PREVIOUS tile (i-1)
+                if (!asyncAtPreviousTile)
                 {
                     bool j = GetAt(jSignal, i - 1);
                     bool k = GetAt(kSignal, i - 1);
@@ -71,8 +72,6 @@ public static class FlipFlopSimulator
                     syncApplied = false;
                     syncToken = "sync_ignored";
                 }
-
-                asyncSincePrevEdge = false;
             }
 
             timeline[syncIndex] = q;
@@ -102,11 +101,14 @@ public static class FlipFlopSimulator
                     eventList.Add(new SignalEvent(i + 0.5f, q));
                 }
 
-                asyncSincePrevEdge = true;
+                // Mark that async happened at THIS tile
+                asyncAtPreviousTile = true;
             }
             else
             {
                 asyncToken = (qBeforeAsync == q) ? "keep" : (q ? "set_initial" : "reset_initial");
+                // Reset flag since no async at this tile
+                asyncAtPreviousTile = false;
             }
 
             timeline[asyncIndex] = q;
