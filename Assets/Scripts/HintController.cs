@@ -222,18 +222,53 @@ public class HintController : MonoBehaviour
     }
 
     /// <summary>
-    /// Cycles through hint modes: ClockOnly -> ClockAndAsync -> Off -> ClockOnly
+    /// Cycles through hint modes: ClockOnly -> ClockAndAsync (if level has async) -> Off -> ClockOnly
+    /// Skips ClockAndAsync mode if level has no async signals.
     /// </summary>
     public void ToggleHintMode()
     {
+        bool hasAsync = HasAsyncSignals();
+        
         hintMode = hintMode switch
         {
             HintMode.Off => HintMode.ClockOnly,
-            HintMode.ClockOnly => HintMode.ClockAndAsync,
+            HintMode.ClockOnly => hasAsync ? HintMode.ClockAndAsync : HintMode.Off,
             HintMode.ClockAndAsync => HintMode.Off,
             _ => HintMode.ClockOnly
         };
         
+        Debug.Log($"<color=cyan>[HintController] Hint mode changed to: {hintMode}</color>");
+    }
+
+    /// <summary>
+    /// Checks if the level has any async preset/clear signals.
+    /// </summary>
+    private bool HasAsyncSignals()
+    {
+        if (levelJsonLoader == null) return false;
+
+        var presetSignal = levelJsonLoader.ParsedPresetSignal;
+        var clearSignal = levelJsonLoader.ParsedClearSignal;
+
+        // Check if there's any transition in preset signal
+        if (presetSignal != null && presetSignal.Length > 0)
+        {
+            for (int i = 1; i < presetSignal.Length; i++)
+            {
+                if (presetSignal[i] != presetSignal[i - 1]) return true;
+            }
+        }
+
+        // Check if there's any transition in clear signal
+        if (clearSignal != null && clearSignal.Length > 0)
+        {
+            for (int i = 1; i < clearSignal.Length; i++)
+            {
+                if (clearSignal[i] != clearSignal[i - 1]) return true;
+            }
+        }
+
+        return false;
     }
 
     #region Gizmos
