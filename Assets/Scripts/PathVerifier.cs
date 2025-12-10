@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-// (removed) using System.Text; - not needed in this file
 
 public class PathVerifier : MonoBehaviour
 {
