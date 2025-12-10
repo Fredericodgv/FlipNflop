@@ -332,7 +332,7 @@ MonoBehaviour:
   dottedLineMaterial: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
   clockStep: 6
   clockLineColor: {r: 0, g: 0.9, b: 1, a: 0.6}
-  showAsyncHints: 0
+  hintMode: 1
   asyncHintColor: {r: 1, g: 0.5, b: 0, a: 0.6}
   levelJsonLoader: {fileID: 992803105}
   bufferLines: 5
@@ -449,8 +449,8 @@ MonoBehaviour:
   failureColor: {r: 1, g: 0, b: 0, a: 1}
   linePrefab: {fileID: 3090148692481908950, guid: f6794afdb432aaa46b21434cb386774a, type: 3}
   feedbackLinesParent: {fileID: 581705960}
-  enableDebugLogs: 1
-  showMissedCornersInGame: 1
+  enableDebugLogs: 0
+  showMissedCornersInGame: 0
 --- !u!1 &278653048
 GameObject:
   m_ObjectHideFlags: 0
@@ -2542,7 +2542,7 @@ MonoBehaviour:
   obstaclePrefabs:
   - type: mace
     prefab: {fileID: 8158824412335418091, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
-  debugLogOutputVector: 1
+  debugLogOutputVector: 0
   debugOutputVector: 
   outputOpsPerTile: []
 --- !u!1 &1039474733
@@ -3005,7 +3005,6 @@ MonoBehaviour:
   painelSobre: {fileID: 0}
   successPanel: {fileID: 0}
   failurePanel: {fileID: 0}
-  hideHudButton: {fileID: 0}
   hideButtonName: HideButton
   menu: MenuWEB
   nomeDoLevel: 
@@ -3329,6 +3328,10 @@ PrefabInstance:
       propertyPath: flipGravityAction
       value: 
       objectReference: {fileID: 3506434624590365720, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: toggleHintsAction
+      value: 
+      objectReference: {fileID: 16159765081994869, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: groundLayer.m_Bits
       value: 64

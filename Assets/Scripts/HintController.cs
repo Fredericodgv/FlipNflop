@@ -3,10 +3,17 @@ using UnityEngine;
 
 /// <summary>
 /// Renders vertical dotted lines for clock edges and async preset/clear transitions.
-/// Clock step is now fixed at 6. Supports toggling async transition hints on/off.
+/// Clock step is now fixed at 6. Supports toggling between 3 hint states.
 /// </summary>
 public class HintController : MonoBehaviour
 {
+    public enum HintMode
+    {
+        Off,           
+        ClockOnly,    
+        ClockAndAsync
+    }
+
     [Header("Line Appearance")]
     [SerializeField] private float lineLength = 10f;
     [SerializeField] private float lineWidth = 0.1f;
@@ -18,9 +25,11 @@ public class HintController : MonoBehaviour
     [Tooltip("Color for clock edge lines.")]
     [SerializeField] private Color clockLineColor = new Color(0f, 0.9f, 1f, 0.6f);
 
+    [Header("Hint Mode")]
+    [Tooltip("Current hint display mode (Off, ClockOnly, ClockAndAsync). Default: ClockOnly")]
+    [SerializeField] private HintMode hintMode = HintMode.ClockOnly;
+    
     [Header("Async Transition Hints")]
-    [Tooltip("Enable rendering of vertical lines at async preset/clear transitions.")]
-    [SerializeField] private bool showAsyncHints = true;
     [Tooltip("Color for async transition hint lines.")]
     [SerializeField] private Color asyncHintColor = new Color(1f, 0.5f, 0f, 0.6f);
     [Tooltip("Reference to LevelJsonLoader to access preset/clear signals.")]
@@ -41,13 +50,13 @@ public class HintController : MonoBehaviour
     private Transform cameraTransform;
     private float lastCameraX;
     private readonly List<GameObject> activeLines = new List<GameObject>();
-    private bool lastShowAsyncHints;
+    private HintMode lastHintMode;
 
     private void Start()
     {
         cameraTransform = Camera.main.transform;
         lastCameraX = cameraTransform.position.x;
-        lastShowAsyncHints = showAsyncHints;
+        lastHintMode = hintMode;
         GenerateVisibleLines();
     }
 
@@ -62,10 +71,10 @@ public class HintController : MonoBehaviour
             needsUpdate = true;
         }
 
-        // Check if toggle changed
-        if (showAsyncHints != lastShowAsyncHints)
+        // Check if hint mode changed
+        if (hintMode != lastHintMode)
         {
-            lastShowAsyncHints = showAsyncHints;
+            lastHintMode = hintMode;
             needsUpdate = true;
         }
 
@@ -76,20 +85,25 @@ public class HintController : MonoBehaviour
     }
 
     /// <summary>
-    /// Generates clock and async hint lines around the current camera position.
+    /// Generates clock and async hint lines around the current camera position based on current hint mode.
     /// </summary>
     private void GenerateVisibleLines()
     {
         ClearAllLines();
 
+        if (hintMode == HintMode.Off) return;
+
         float cameraX = cameraTransform.position.x;
         float levelEndX = LevelManager.Instance != null ? LevelManager.Instance.levelEndX : 100f;
 
-        // Generate clock lines
-        GenerateClockLines(cameraX, levelEndX);
+        // Generate clock lines (ClockOnly and ClockAndAsync)
+        if (hintMode == HintMode.ClockOnly || hintMode == HintMode.ClockAndAsync)
+        {
+            GenerateClockLines(cameraX, levelEndX);
+        }
 
-        // Generate async hint lines
-        if (showAsyncHints)
+        // Generate async hint lines (only in ClockAndAsync mode)
+        if (hintMode == HintMode.ClockAndAsync)
         {
             GenerateAsyncHintLines(cameraX, levelEndX);
         }
@@ -205,6 +219,21 @@ public class HintController : MonoBehaviour
             if (line != null) Destroy(line);
         }
         activeLines.Clear();
+    }
+
+    /// <summary>
+    /// Cycles through hint modes: ClockOnly -> ClockAndAsync -> Off -> ClockOnly
+    /// </summary>
+    public void ToggleHintMode()
+    {
+        hintMode = hintMode switch
+        {
+            HintMode.Off => HintMode.ClockOnly,
+            HintMode.ClockOnly => HintMode.ClockAndAsync,
+            HintMode.ClockAndAsync => HintMode.Off,
+            _ => HintMode.ClockOnly
+        };
+        
     }
 
     #region Gizmos
