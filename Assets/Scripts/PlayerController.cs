@@ -251,6 +251,10 @@ public class PlayerController : MonoBehaviour
 
         if (transform.position.x > LevelManager.Instance.levelEndX + 1)
         {
+            // Para o movimento do player
+            rb.linearVelocity = Vector2.zero;
+            horizontalInput = 0f;
+
             if (pathVerifier != null)
             {
                 pathVerifier.FinalizeAndCheckPath();
