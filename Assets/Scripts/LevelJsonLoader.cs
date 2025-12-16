@@ -162,10 +162,29 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     private void Awake()
     {
-        var data = LoadLevelData(levelFile);
+        TextAsset jsonAssetToLoad = levelFile;
+        string jsonFileNameFromMenu = MenuManager.LevelToLoadJSON;
+
+        if (!string.IsNullOrEmpty(jsonFileNameFromMenu))
+        {
+            Debug.Log($"[LOADER] Tentando carregar recurso pelo caminho: '{jsonFileNameFromMenu}'");
+
+            jsonAssetToLoad = Resources.Load<TextAsset>("Levels/" + jsonFileNameFromMenu);
+
+            if (jsonAssetToLoad != null)
+                Debug.Log($"[LOADER] SUCESSO: TextAsset '{jsonFileNameFromMenu}' carregado!");
+            else
+                Debug.LogError($"[LOADER] FALHA: Arquivo '{jsonFileNameFromMenu}' não encontrado na pasta Resources. Usando TextAsset do Inspector.");
+        }
+        else
+        {
+            Debug.Log("[LOADER] Variável estática vazia. Usando TextAsset do Inspector (Fallback).");
+        }
+
+        var data = LoadLevelData(jsonAssetToLoad);
 
 #if UNITY_EDITOR
-            if (!ValidateAll(data)) return;
+        if (!ValidateAll(data)) return;
 #endif
 
         // Initialize rendering components
