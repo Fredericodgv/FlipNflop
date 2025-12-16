@@ -20,6 +20,8 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private string nomeDoLevel;
     [SerializeField] private string nextLevel;
     [SerializeField] private string levelAtual;
+    [SerializeField] private string customLevelName = "Custom";
+    public static string LevelToLoadJSON = "";
 
     public void Jogar()
     {
@@ -80,6 +82,25 @@ public class MenuManager : MonoBehaviour
         if (painelSobre != null) painelSobre.SetActive(false);
     }
 
+    public void LoadMenuPrincipal()
+    {
+        SceneManager.LoadScene(menu);
+    }
+
+    public void SelectLevelAndLoad(string levelJsonName)
+    {
+        if (string.IsNullOrEmpty(levelJsonName))
+        {
+            Debug.LogError("Nome do arquivo JSON não pode ser nulo ou vazio");
+            return;
+        }
+
+        LevelToLoadJSON = levelJsonName;
+        Debug.Log("JSON Selecionado: " + levelJsonName);
+
+        SceneManager.LoadScene(customLevelName);
+    }
+
     // Alterna a visibilidade dos filhos do painel mantendo o HideButton ativo
     private void TogglePanelContentKeepButton(GameObject panelRoot)
     {
@@ -121,4 +142,3 @@ public class MenuManager : MonoBehaviour
     }
     #endregion
 }
-
