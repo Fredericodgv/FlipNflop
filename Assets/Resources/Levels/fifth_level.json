@@ -51,7 +51,7 @@
             "type": "mace",
             "startX": 45,
             "startY": 3,
-            "speed": 2,
+            "speed": 1,
             "horizontalDistance": 4,
             "verticalDistance": 0,
             "starterCorner": "top-left",
