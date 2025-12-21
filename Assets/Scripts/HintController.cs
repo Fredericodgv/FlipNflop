@@ -3,10 +3,17 @@ using UnityEngine;
 
 /// <summary>
 /// Renders vertical dotted lines for clock edges and async preset/clear transitions.
-/// Clock step is now fixed at 6. Supports toggling async transition hints on/off.
+/// Clock step is now fixed at 6. Supports toggling between 3 hint states.
 /// </summary>
 public class HintController : MonoBehaviour
 {
+    public enum HintMode
+    {
+        Off,           
+        ClockOnly,    
+        ClockAndAsync
+    }
+
     [Header("Line Appearance")]
     [SerializeField] private float lineLength = 10f;
     [SerializeField] private float lineWidth = 0.1f;
@@ -18,9 +25,11 @@ public class HintController : MonoBehaviour
     [Tooltip("Color for clock edge lines.")]
     [SerializeField] private Color clockLineColor = new Color(0f, 0.9f, 1f, 0.6f);
 
+    [Header("Hint Mode")]
+    [Tooltip("Current hint display mode (Off, ClockOnly, ClockAndAsync). Default: ClockOnly")]
+    [SerializeField] private HintMode hintMode = HintMode.ClockOnly;
+    
     [Header("Async Transition Hints")]
-    [Tooltip("Enable rendering of vertical lines at async preset/clear transitions.")]
-    [SerializeField] private bool showAsyncHints = true;
     [Tooltip("Color for async transition hint lines.")]
     [SerializeField] private Color asyncHintColor = new Color(1f, 0.5f, 0f, 0.6f);
     [Tooltip("Reference to LevelJsonLoader to access preset/clear signals.")]
@@ -41,13 +50,13 @@ public class HintController : MonoBehaviour
     private Transform cameraTransform;
     private float lastCameraX;
     private readonly List<GameObject> activeLines = new List<GameObject>();
-    private bool lastShowAsyncHints;
+    private HintMode lastHintMode;
 
     private void Start()
     {
         cameraTransform = Camera.main.transform;
         lastCameraX = cameraTransform.position.x;
-        lastShowAsyncHints = showAsyncHints;
+        lastHintMode = hintMode;
         GenerateVisibleLines();
     }
 
@@ -62,10 +71,10 @@ public class HintController : MonoBehaviour
             needsUpdate = true;
         }
 
-        // Check if toggle changed
-        if (showAsyncHints != lastShowAsyncHints)
+        // Check if hint mode changed
+        if (hintMode != lastHintMode)
         {
-            lastShowAsyncHints = showAsyncHints;
+            lastHintMode = hintMode;
             needsUpdate = true;
         }
 
@@ -76,20 +85,25 @@ public class HintController : MonoBehaviour
     }
 
     /// <summary>
-    /// Generates clock and async hint lines around the current camera position.
+    /// Generates clock and async hint lines around the current camera position based on current hint mode.
     /// </summary>
     private void GenerateVisibleLines()
     {
         ClearAllLines();
 
+        if (hintMode == HintMode.Off) return;
+
         float cameraX = cameraTransform.position.x;
         float levelEndX = LevelManager.Instance != null ? LevelManager.Instance.levelEndX : 100f;
 
-        // Generate clock lines
-        GenerateClockLines(cameraX, levelEndX);
+        // Generate clock lines (ClockOnly and ClockAndAsync)
+        if (hintMode == HintMode.ClockOnly || hintMode == HintMode.ClockAndAsync)
+        {
+            GenerateClockLines(cameraX, levelEndX);
+        }
 
-        // Generate async hint lines
-        if (showAsyncHints)
+        // Generate async hint lines (only in ClockAndAsync mode)
+        if (hintMode == HintMode.ClockAndAsync)
         {
             GenerateAsyncHintLines(cameraX, levelEndX);
         }
@@ -205,6 +219,56 @@ public class HintController : MonoBehaviour
             if (line != null) Destroy(line);
         }
         activeLines.Clear();
+    }
+
+    /// <summary>
+    /// Cycles through hint modes: ClockOnly -> ClockAndAsync (if level has async) -> Off -> ClockOnly
+    /// Skips ClockAndAsync mode if level has no async signals.
+    /// </summary>
+    public void ToggleHintMode()
+    {
+        bool hasAsync = HasAsyncSignals();
+        
+        hintMode = hintMode switch
+        {
+            HintMode.Off => HintMode.ClockOnly,
+            HintMode.ClockOnly => hasAsync ? HintMode.ClockAndAsync : HintMode.Off,
+            HintMode.ClockAndAsync => HintMode.Off,
+            _ => HintMode.ClockOnly
+        };
+        
+        Debug.Log($"<color=cyan>[HintController] Hint mode changed to: {hintMode}</color>");
+    }
+
+    /// <summary>
+    /// Checks if the level has any async preset/clear signals.
+    /// </summary>
+    private bool HasAsyncSignals()
+    {
+        if (levelJsonLoader == null) return false;
+
+        var presetSignal = levelJsonLoader.ParsedPresetSignal;
+        var clearSignal = levelJsonLoader.ParsedClearSignal;
+
+        // Check if there's any transition in preset signal
+        if (presetSignal != null && presetSignal.Length > 0)
+        {
+            for (int i = 1; i < presetSignal.Length; i++)
+            {
+                if (presetSignal[i] != presetSignal[i - 1]) return true;
+            }
+        }
+
+        // Check if there's any transition in clear signal
+        if (clearSignal != null && clearSignal.Length > 0)
+        {
+            for (int i = 1; i < clearSignal.Length; i++)
+            {
+                if (clearSignal[i] != clearSignal[i - 1]) return true;
+            }
+        }
+
+        return false;
     }
 
     #region Gizmos

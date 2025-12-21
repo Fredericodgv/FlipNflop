@@ -20,7 +20,6 @@ public class CameraController : MonoBehaviour
     [Tooltip("Uma folga para a câmera ir um pouco além do final da tela. Use 0 para parar na borda.")]
     public float endPadding = 2f;
     private float maxX;
-    private bool ignoreRightLimit;
 
     private Camera cam;
 
@@ -37,11 +36,9 @@ public class CameraController : MonoBehaviour
         {
             float halfScreenWidth = cam.orthographicSize * cam.aspect;
             float levelRight = LevelManager.Instance.levelEndX;
-            float levelWidth = levelRight - minX;
-            ignoreRightLimit = levelWidth <= (2f * halfScreenWidth);
 
             float computedMax = (levelRight - halfScreenWidth) + endPadding;
-            maxX = ignoreRightLimit ? minX : Mathf.Max(minX, computedMax);
+            maxX = Mathf.Max(minX, computedMax);
         }
         else
         {
@@ -62,18 +59,11 @@ public class CameraController : MonoBehaviour
     }
 
     /// <summary>
-    /// Clamps the camera X position based on current limits and ignoreRightLimit flag.
+    /// Clamps the camera X position based on current limits.
     /// </summary>
     private float ClampCameraX(float x)
     {
-        if (ignoreRightLimit)
-        {
-            return Mathf.Max(x, minX);
-        }
-        else
-        {
-            return Mathf.Clamp(x, minX, maxX);
-        }
+        return Mathf.Clamp(x, minX, maxX);
     }
 
     private void FollowPlayer()
@@ -108,11 +98,7 @@ public class CameraController : MonoBehaviour
     public void EnableManualControlWithRightLimit(float rightLimitWorldX)
     {
         float currentCenterX = transform.position.x;
-
-        if (!ignoreRightLimit)
-        {
-            maxX = Mathf.Max(minX, currentCenterX);
-        }
+        maxX = Mathf.Max(minX, currentCenterX);
 
         currentMode = CameraMode.ManualControl;
 

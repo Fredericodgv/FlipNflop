@@ -14,14 +14,14 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private GameObject successPanel;
     [Tooltip("Painel de falha (Game Over). Será ocultado/desocultado como o de sucesso.")]
     [SerializeField] private GameObject failurePanel;
-    [Tooltip("Botão que aciona HideHUD. Se atribuído, garantimos que ele permaneça visível quando o HUD for escondido.")]
-    [SerializeField] private GameObject hideHudButton;
     [Tooltip("Nome do botão dentro do painel que deve permanecer visível ao ocultar o conteúdo.")]
     [SerializeField] private string hideButtonName = "HideButton";
     [SerializeField] private string menu;
     [SerializeField] private string nomeDoLevel;
     [SerializeField] private string nextLevel;
     [SerializeField] private string levelAtual;
+    [SerializeField] private string customLevelName = "Custom";
+    public static string LevelToLoadJSON = "";
 
     public void Jogar()
     {
@@ -42,7 +42,6 @@ public class MenuManager : MonoBehaviour
 
     public void Sair()
     {
-        //UnityEditor.EditorApplication.isPlaying = false;
         Application.Quit();
     }
 
@@ -81,7 +80,25 @@ public class MenuManager : MonoBehaviour
         // Fallback: cena de menu — oculta painéis do menu/sobre
         if (painelMenuInicial != null) painelMenuInicial.SetActive(false);
         if (painelSobre != null) painelSobre.SetActive(false);
-        if (hideHudButton != null) hideHudButton.SetActive(true);
+    }
+
+    public void LoadMenuPrincipal()
+    {
+        SceneManager.LoadScene(menu);
+    }
+
+    public void SelectLevelAndLoad(string levelJsonName)
+    {
+        if (string.IsNullOrEmpty(levelJsonName))
+        {
+            Debug.LogError("Nome do arquivo JSON não pode ser nulo ou vazio");
+            return;
+        }
+
+        LevelToLoadJSON = levelJsonName;
+        Debug.Log("JSON Selecionado: " + levelJsonName);
+
+        SceneManager.LoadScene(customLevelName);
     }
 
     // Alterna a visibilidade dos filhos do painel mantendo o HideButton ativo
@@ -125,4 +142,3 @@ public class MenuManager : MonoBehaviour
     }
     #endregion
 }
-

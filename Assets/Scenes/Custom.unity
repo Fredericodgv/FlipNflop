@@ -153,7 +153,7 @@ MonoBehaviour:
   dottedLineMaterial: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
   clockStep: 6
   clockLineColor: {r: 0, g: 0.9, b: 1, a: 0.6}
-  showAsyncHints: 0
+  hintMode: 1
   asyncHintColor: {r: 1, g: 0.5, b: 0, a: 0.6}
   levelJsonLoader: {fileID: 992803105}
   bufferLines: 5
@@ -267,8 +267,8 @@ MonoBehaviour:
   failureColor: {r: 1, g: 0, b: 0, a: 1}
   linePrefab: {fileID: 3090148692481908950, guid: f6794afdb432aaa46b21434cb386774a, type: 3}
   feedbackLinesParent: {fileID: 581705960}
-  enableDebugLogs: 1
-  showMissedCornersInGame: 1
+  enableDebugLogs: 0
+  showMissedCornersInGame: 0
 --- !u!1 &278653048
 GameObject:
   m_ObjectHideFlags: 0
@@ -284,7 +284,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &278653049
 Transform:
   m_ObjectHideFlags: 0
@@ -2339,7 +2339,7 @@ MonoBehaviour:
   inputTilemap: {fileID: 1489212623}
   terrainTilemap: {fileID: 518293364}
   clockTilemap: {fileID: 460694105}
-  levelFile: {fileID: 4900000, guid: a7aa602fe5529cc4a90bd46cd69f1923, type: 3}
+  levelFile: {fileID: 4900000, guid: 99ba21bd0a2f9254f9b04016833c26d2, type: 3}
   diagramTiles:
   - {fileID: 11400000, guid: f14421456d8d8574781262e667691d13, type: 2}
   - {fileID: 11400000, guid: 477b708c426c84449ac383aab54be103, type: 2}
@@ -2646,7 +2646,6 @@ MonoBehaviour:
   painelSobre: {fileID: 0}
   successPanel: {fileID: 0}
   failurePanel: {fileID: 0}
-  hideHudButton: {fileID: 0}
   hideButtonName: HideButton
   menu: MenuWEB
   nomeDoLevel: 
@@ -3027,6 +3026,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 3506434624590365720, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: toggleHintsAction
+      value: 
+      objectReference: {fileID: 16159765081994869, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    - target: {fileID: 1606421330312910537, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: groundLayer.m_Bits
       value: 64
       objectReference: {fileID: 0}
@@ -3089,6 +3092,10 @@ PrefabInstance:
     - target: {fileID: 8810556109205757782, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 8810556109205757782, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3838,7 +3845,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9046022349448231709, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_text
-      value: Diagram incorreto
+      value: Diagrama incorreto
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

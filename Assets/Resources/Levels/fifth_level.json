@@ -1,0 +1,61 @@
+{
+    "levelName": "fifth_level",
+    "levelDescription": "implementa obstáculos mace móveis, ou verticais ou horizontais",
+    "clockCicles": 8,
+    "jSignal": "111111 001100 111000 111110 011111 111001 111000 110001 111111",
+    "kSignal": "111111 100011 100001 110000 011111 001111 100111 111100 011111",
+    "floor": "110001 111111 110001 111111 111001 111111 111111 111111 111111 111111 111111 111",
+    "ceiling": "111111 100011 111111 100011 111111 110001 111111 111111 111111 111111 111111 111",
+    "obstacles": [
+        {
+            "type": "mace",
+            "startX": 8,
+            "startY": 1,
+            "speed": 2,
+            "horizontalDistance": 6,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 23,
+            "startY": 1,
+            "speed": 2,
+            "horizontalDistance": 0,
+            "verticalDistance": 3,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 33,
+            "startY": 4,
+            "speed": 2,
+            "horizontalDistance": 6,
+            "verticalDistance": 0,
+            "starterCorner": "top-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 43,
+            "startY": 4,
+            "speed": 2,
+            "horizontalDistance": 0,
+            "verticalDistance": 3,
+            "starterCorner": "top-left",
+            "clockwise": true
+        },
+        {
+            "type": "mace",
+            "startX": 45,
+            "startY": 3,
+            "speed": 1,
+            "horizontalDistance": 4,
+            "verticalDistance": 0,
+            "starterCorner": "top-left",
+            "clockwise": true
+        }
+    ]
+}

@@ -52,6 +52,7 @@ public class PlayerController : MonoBehaviour
     [Header("Object References")]
     [SerializeField] private PathVerifier pathVerifier;
     [SerializeField] private CameraController cameraController;
+    [SerializeField] private HintController hintController;
 
     [Header("Input System")]
     [Tooltip("Reference to the Move action (1D Axis/float).")]
@@ -62,6 +63,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionReference flipGravityAction;
     [Tooltip("Reference to the Dash action (Button).")]
     [SerializeField] private InputActionReference dashAction;
+    [Tooltip("Reference to the Toggle Hints action (Button).")]
+    [SerializeField] private InputActionReference toggleHintsAction;
 
     /// <summary>
     /// Logical gravity inversion state (independent from temporary physics tweaks like gravityScale = 0 during dash).
@@ -157,6 +160,12 @@ public class PlayerController : MonoBehaviour
             dashAction.action.performed += OnDashPerformed;
             dashAction.action.Enable();
         }
+
+        if (toggleHintsAction != null && toggleHintsAction.action != null)
+        {
+            toggleHintsAction.action.performed += OnToggleHintsPerformed;
+            toggleHintsAction.action.Enable();
+        }
     }
 
     /// <summary>
@@ -187,6 +196,12 @@ public class PlayerController : MonoBehaviour
         {
             dashAction.action.performed -= OnDashPerformed;
             dashAction.action.Disable();
+        }
+
+        if (toggleHintsAction != null && toggleHintsAction.action != null)
+        {
+            toggleHintsAction.action.performed -= OnToggleHintsPerformed;
+            toggleHintsAction.action.Disable();
         }
     }
 
@@ -232,6 +247,18 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
+    /// Cycles through hint display modes when toggle hints button is pressed.
+    /// </summary>
+    /// <param name="ctx">Input context.</param>
+    private void OnToggleHintsPerformed(InputAction.CallbackContext ctx)
+    {
+        if (hintController != null)
+        {
+            hintController.ToggleHintMode();
+        }
+    }
+
+    /// <summary>
     /// Updates the grounded state via OverlapCircle.
     /// </summary>
     private void CheckIfGrounded()
@@ -251,6 +278,10 @@ public class PlayerController : MonoBehaviour
 
         if (transform.position.x > LevelManager.Instance.levelEndX + 1)
         {
+            // Para o movimento do player
+            rb.linearVelocity = Vector2.zero;
+            horizontalInput = 0f;
+
             if (pathVerifier != null)
             {
                 pathVerifier.FinalizeAndCheckPath();
