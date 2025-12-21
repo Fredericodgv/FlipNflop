@@ -37,7 +37,7 @@ public class SignalPath : MonoBehaviour
 
     private void Update()
     {
-        if (!isDrawing) return;
+        if (!isDrawing || transform.position.x < 0) return;
 
         float targetY = playerController.IsGravityInverted ? ceilingY : groundY;
         Vector3 currentTargetPosition = new Vector3(transform.position.x, targetY, 0);
@@ -89,7 +89,7 @@ public class SignalPath : MonoBehaviour
             }
         }
     }
-    
+
     public void FinalizePath(float finalX)
     {
         if (pathPoints.Count == 0) return;

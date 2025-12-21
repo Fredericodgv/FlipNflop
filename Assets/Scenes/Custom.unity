@@ -3010,6 +3010,7 @@ MonoBehaviour:
   nomeDoLevel: 
   nextLevel: 
   levelAtual: Custom
+  customLevelName: Custom
 --- !u!1 &1489212619
 GameObject:
   m_ObjectHideFlags: 0
@@ -4327,7 +4328,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9046022349448231709, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_text
-      value: Diagram incorreto
+      value: Diagrama incorreto
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
