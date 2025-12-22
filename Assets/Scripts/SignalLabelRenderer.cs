@@ -20,10 +20,6 @@ public class SignalLabelRenderer : MonoBehaviour
     [SerializeField] private Sprite clockLabelSprite;
 
     [Header("Position Settings")]
-    [Tooltip("X offset from camera position (negative = left of camera center)")]
-    [SerializeField] private float labelXOffset = -8f;
-    [Tooltip("Z position for labels (typically 0 or slight offset for sorting)")]
-    [SerializeField] private float labelZ = 0f;
     [Tooltip("Scale multiplier for label sprites")]
     [SerializeField] private float labelScale = 1f;
 
@@ -34,6 +30,8 @@ public class SignalLabelRenderer : MonoBehaviour
     [SerializeField] private UnityEngine.Tilemaps.Tilemap inputTilemap;
     [Tooltip("Reference to main camera (if null, will use Camera.main)")]
     [SerializeField] private Camera mainCamera;
+    [Tooltip("Reference to the Canvas where labels will be placed")]
+    [SerializeField] private Canvas canvas;
 
     [Header("Parent Transform (Optional)")]
     [Tooltip("Parent transform for spawned labels. If null, labels are parented to this object.")]
@@ -53,57 +51,9 @@ public class SignalLabelRenderer : MonoBehaviour
         }
     }
 
-    private void LateUpdate()
-    {
-        // Update label X positions to follow camera
-        UpdateLabelXPositions();
-    }
 
-    /// <summary>
-    /// Updates the X position of all labels to follow the camera.
-    /// </summary>
-    private void UpdateLabelXPositions()
-    {
-        if (mainCamera == null) return;
 
-        float cameraX = mainCamera.transform.position.x;
-        float targetX = cameraX + labelXOffset;
 
-        if (jLabel != null)
-        {
-            Vector3 pos = jLabel.transform.position;
-            pos.x = targetX;
-            jLabel.transform.position = pos;
-        }
-
-        if (kLabel != null)
-        {
-            Vector3 pos = kLabel.transform.position;
-            pos.x = targetX;
-            kLabel.transform.position = pos;
-        }
-
-        if (presetLabel != null)
-        {
-            Vector3 pos = presetLabel.transform.position;
-            pos.x = targetX;
-            presetLabel.transform.position = pos;
-        }
-
-        if (clearLabel != null)
-        {
-            Vector3 pos = clearLabel.transform.position;
-            pos.x = targetX;
-            clearLabel.transform.position = pos;
-        }
-
-        if (clockLabel != null)
-        {
-            Vector3 pos = clockLabel.transform.position;
-            pos.x = targetX;
-            clockLabel.transform.position = pos;
-        }
-    }
 
     /// <summary>
     /// Generates and positions all signal labels after LevelJsonLoader has parsed signals.
@@ -113,19 +63,15 @@ public class SignalLabelRenderer : MonoBehaviour
     {
         ClearExistingLabels();
 
-        if (levelJsonLoader == null)
+        if (levelJsonLoader == null || mainCamera == null || inputTilemap == null)
         {
-            Debug.LogWarning("SignalLabelRenderer: LevelJsonLoader reference is missing. Cannot determine signal positions.");
+            Debug.LogWarning("SignalLabelRenderer: LevelJsonLoader, MainCamera, or InputTilemap reference is missing.");
             return;
         }
 
-        if (inputTilemap == null)
-        {
-            Debug.LogWarning("SignalLabelRenderer: Input Tilemap reference is missing. Cannot convert tilemap coords to world coords.");
-            return;
-        }
+        Transform parent = (labelsParent != null) ? labelsParent : (canvas != null ? canvas.transform : transform);
 
-        // Determine Y positions using same logic as LevelJsonLoader
+        // Calculate Y positions using same logic as LevelJsonLoader
         bool hasAsync = (levelJsonLoader.ParsedPresetSignal != null || levelJsonLoader.ParsedClearSignal != null);
         int j_Y = 12;
         int k_Y = hasAsync ? 10 : 8;
@@ -133,30 +79,49 @@ public class SignalLabelRenderer : MonoBehaviour
         int clear_Y = 6;
         int clock_Y = 4;
 
-        Transform parent = labelsParent != null ? labelsParent : transform;
+        // Convert tilemap Y to world Y and then to screen Y
+        float jY = CalculateScreenY(GetWorldY(j_Y));
+        float kY = CalculateScreenY(GetWorldY(k_Y));
+        float clockY = CalculateScreenY(GetWorldY(clock_Y));
 
         // Always create J, K, Clock labels
-        jLabel = CreateLabel("J_Label", jLabelSprite, j_Y, parent);
-        kLabel = CreateLabel("K_Label", kLabelSprite, k_Y, parent);
-        clockLabel = CreateLabel("Clock_Label", clockLabelSprite, clock_Y, parent);
+        jLabel = CreateLabel("J_Label", jLabelSprite, jY, parent);
+        kLabel = CreateLabel("K_Label", kLabelSprite, kY, parent);
+        clockLabel = CreateLabel("Clock_Label", clockLabelSprite, clockY, parent);
 
         // Conditionally create Preset and Clear labels
         if (levelJsonLoader.ParsedPresetSignal != null)
         {
-            presetLabel = CreateLabel("Preset_Label", presetLabelSprite, preset_Y, parent);
+            float presetY = CalculateScreenY(GetWorldY(preset_Y));
+            presetLabel = CreateLabel("Preset_Label", presetLabelSprite, presetY, parent);
         }
 
         if (levelJsonLoader.ParsedClearSignal != null)
         {
-            clearLabel = CreateLabel("Clear_Label", clearLabelSprite, clear_Y, parent);
+            float clearY = CalculateScreenY(GetWorldY(clear_Y));
+            clearLabel = CreateLabel("Clear_Label", clearLabelSprite, clearY, parent);
         }
     }
 
     /// <summary>
-    /// Creates a single label GameObject with SpriteRenderer at the specified Y position.
-    /// Converts tilemap Y coordinate to world position.
+    /// Converts tilemap Y coordinate to world Y position.
     /// </summary>
-    private GameObject CreateLabel(string name, Sprite sprite, int tilemapY, Transform parent)
+    private float GetWorldY(int tilemapY)
+    {
+        Vector3 worldPos = inputTilemap.CellToWorld(new Vector3Int(0, tilemapY, 0));
+        worldPos.y += inputTilemap.cellSize.y / 2f;
+        return worldPos.y;
+    }
+
+    /// <summary>
+    /// Converts world Y position to screen Y position for UI anchoring.
+    /// </summary>
+    private float CalculateScreenY(float worldY)
+    {
+        Vector3 screenPos = mainCamera.WorldToScreenPoint(new Vector3(0, worldY, 0));
+        return screenPos.y - Screen.height / 2f;
+    }
+    private GameObject CreateLabel(string name, Sprite sprite, float yPos, Transform parent)
     {
         if (sprite == null)
         {
@@ -167,29 +132,17 @@ public class SignalLabelRenderer : MonoBehaviour
         GameObject labelObj = new GameObject(name);
         labelObj.transform.SetParent(parent);
 
-        // Convert tilemap Y to world Y (using tilemap cell to world conversion)
-        Vector3 worldPos = inputTilemap.CellToWorld(new Vector3Int(0, tilemapY, 0));
-        // Add half cell size to center the label vertically in the tile
-        worldPos.y += inputTilemap.cellSize.y / 2f;
+        // Set RectTransform for UI positioning
+        RectTransform rt = labelObj.AddComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(sprite.rect.width * labelScale, sprite.rect.height * labelScale);
+        // Anchor to left-center
+        rt.anchorMin = new Vector2(0, 0.5f);
+        rt.anchorMax = new Vector2(0, 0.5f);
+        rt.pivot = new Vector2(0, 0.5f);
+        rt.anchoredPosition = new Vector2(0, yPos);
 
-        // X position will be updated in LateUpdate to follow camera
-        if (mainCamera != null)
-        {
-            worldPos.x = mainCamera.transform.position.x + labelXOffset;
-        }
-        else
-        {
-            worldPos.x = labelXOffset; // Fallback if camera not set yet
-        }
-
-        worldPos.z = labelZ;
-
-        labelObj.transform.position = worldPos;
-        labelObj.transform.localScale = Vector3.one * labelScale;
-
-        SpriteRenderer sr = labelObj.AddComponent<SpriteRenderer>();
-        sr.sprite = sprite;
-        sr.sortingOrder = 10; // Ensure labels render on top
+        Image img = labelObj.AddComponent<Image>();
+        img.sprite = sprite;
 
         return labelObj;
     }
