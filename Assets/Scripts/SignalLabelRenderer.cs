@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 /// <summary>
 /// Positions HUD label images at the exact Y positions of signal lines (J, K, Preset, Clear, Clock).
@@ -121,6 +122,19 @@ public class SignalLabelRenderer : MonoBehaviour
         Vector3 screenPos = mainCamera.WorldToScreenPoint(new Vector3(0, worldY, 0));
         return screenPos.y - Screen.height / 2f;
     }
+
+    /// <summary>
+    /// Gets the sigla for the signal based on the label name.
+    /// </summary>
+    private string GetSigla(string name)
+    {
+        if (name.Contains("J")) return "J";
+        if (name.Contains("K")) return "K";
+        if (name.Contains("Preset")) return "P";
+        if (name.Contains("Clear")) return "C";
+        if (name.Contains("Clock")) return "CLK";
+        return "";
+    }
     private GameObject CreateLabel(string name, Sprite sprite, float yPos, Transform parent)
     {
         if (sprite == null)
@@ -143,6 +157,22 @@ public class SignalLabelRenderer : MonoBehaviour
 
         Image img = labelObj.AddComponent<Image>();
         img.sprite = sprite;
+
+        // Add text label
+        GameObject textObj = new GameObject("Text");
+        textObj.transform.SetParent(labelObj.transform);
+        TextMeshProUGUI tmp = textObj.AddComponent<TextMeshProUGUI>();
+        tmp.text = GetSigla(name);
+        tmp.fontSize = name.Contains("Clock") ? 18 : 24; // Smaller font for CLK
+        tmp.color = Color.white;
+        tmp.alignment = TextAlignmentOptions.Center;
+
+        RectTransform textRt = textObj.GetComponent<RectTransform>();
+        textRt.sizeDelta = rt.sizeDelta; // same size as image
+        textRt.anchorMin = new Vector2(0, 0.5f);
+        textRt.anchorMax = new Vector2(0, 0.5f);
+        textRt.pivot = new Vector2(0, 0.5f);
+        textRt.anchoredPosition = new Vector2(0, 0); // centered on the image
 
         return labelObj;
     }
