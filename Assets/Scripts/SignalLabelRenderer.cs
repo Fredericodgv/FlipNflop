@@ -20,11 +20,21 @@ public class SignalLabelRenderer : MonoBehaviour
     [Tooltip("Sprite for Clock signal label")]
     [SerializeField] private Sprite clockLabelSprite;
 
-    [Header("Position Settings")]
-    [Tooltip("Fraction of screen height for J position (0-1)")]
-    [SerializeField] private float jYFraction = 0.85f;
-    [Tooltip("Fraction of screen height for Clock position (0-1)")]
-    [SerializeField] private float clockYFraction = 0.45f;
+    [Header("Position Settings (in pixels)")]
+    [Tooltip("Y position for J label from top of screen")]
+    [SerializeField] private float jLabelY = 100f;
+    [Tooltip("Y position for K label from top of screen")]
+    [SerializeField] private float kLabelY = 200f;
+    [Tooltip("Y position for Preset label from top of screen")]
+    [SerializeField] private float presetLabelY = 300f;
+    [Tooltip("Y position for Clear label from top of screen")]
+    [SerializeField] private float clearLabelY = 400f;
+    [Tooltip("Y position for Clock label from top of screen")]
+    [SerializeField] private float clockLabelY = 500f;
+    [Tooltip("X offset from left edge")]
+    [SerializeField] private float xOffset = 10f;
+    [Tooltip("Width and height of labels in pixels (will scale with Canvas Scaler)")]
+    [SerializeField] private float labelSizePixels = 50f;
     [Tooltip("Update positions in real-time (temporary for tweaking)")]
     [SerializeField] private bool updateInRealTime = false;
     [Tooltip("Scale multiplier for label sprites")]
@@ -86,42 +96,23 @@ public class SignalLabelRenderer : MonoBehaviour
 
         Transform parent = (labelsParent != null) ? labelsParent : (canvas != null ? canvas.transform : transform);
 
-        // Position labels: J and Clock at configurable fractions of screen height
+        // Position labels using fixed pixel values (will be scaled by Canvas Scaler)
         bool hasAsync = (levelJsonLoader.ParsedPresetSignal != null || levelJsonLoader.ParsedClearSignal != null);
-        float jY = Screen.height * jYFraction - Screen.height / 2f;
-        float clockY = Screen.height * clockYFraction - Screen.height / 2f;
-
-        float kY, presetY = 0, clearY = 0;
-
-        if (hasAsync)
-        {
-            // K, Preset, Clear evenly spaced between J and Clock
-            float totalSpace = jY - clockY;
-            float step = totalSpace / 4f; // 4 intervals for K, Preset, Clear, Clock
-            kY = jY - step;
-            presetY = jY - 2 * step;
-            clearY = jY - 3 * step;
-        }
-        else
-        {
-            // K exactly between J and Clock
-            kY = (jY + clockY) / 2f;
-        }
 
         // Always create J, K, Clock labels
-        jLabel = CreateLabel("J_Label", jLabelSprite, jY, parent);
-        kLabel = CreateLabel("K_Label", kLabelSprite, kY, parent);
-        clockLabel = CreateLabel("Clock_Label", clockLabelSprite, clockY, parent);
+        jLabel = CreateLabel("J_Label", jLabelSprite, jLabelY, xOffset, parent);
+        kLabel = CreateLabel("K_Label", kLabelSprite, kLabelY, xOffset, parent);
+        clockLabel = CreateLabel("Clock_Label", clockLabelSprite, clockLabelY, xOffset, parent);
 
         // Conditionally create Preset and Clear labels
         if (levelJsonLoader.ParsedPresetSignal != null)
         {
-            presetLabel = CreateLabel("Preset_Label", presetLabelSprite, presetY, parent);
+            presetLabel = CreateLabel("Preset_Label", presetLabelSprite, presetLabelY, xOffset, parent);
         }
 
         if (levelJsonLoader.ParsedClearSignal != null)
         {
-            clearLabel = CreateLabel("Clear_Label", clearLabelSprite, clearY, parent);
+            clearLabel = CreateLabel("Clear_Label", clearLabelSprite, clearLabelY, xOffset, parent);
         }
     }
 
@@ -133,6 +124,15 @@ public class SignalLabelRenderer : MonoBehaviour
         Vector3 worldPos = inputTilemap.CellToWorld(new Vector3Int(0, tilemapY, 0));
         worldPos.y += inputTilemap.cellSize.y / 2f;
         return worldPos.y;
+    }
+
+    /// <summary>
+    /// Calculates the scale factor based on current screen resolution.
+    /// Reference resolution is 1080p (height=1080).
+    /// </summary>
+    private float GetResolutionScale()
+    {
+        return Screen.height / 1080f;
     }
 
     /// <summary>
@@ -156,7 +156,7 @@ public class SignalLabelRenderer : MonoBehaviour
         if (name.Contains("Clock")) return "CLK";
         return "";
     }
-    private GameObject CreateLabel(string name, Sprite sprite, float yPos, Transform parent)
+    private GameObject CreateLabel(string name, Sprite sprite, float yPixels, float xPixels, Transform parent)
     {
         if (sprite == null)
         {
@@ -167,14 +167,15 @@ public class SignalLabelRenderer : MonoBehaviour
         GameObject labelObj = new GameObject(name);
         labelObj.transform.SetParent(parent);
 
-        // Set RectTransform for UI positioning
+        // Set RectTransform for UI positioning anchored to top-left
         RectTransform rt = labelObj.AddComponent<RectTransform>();
-        rt.sizeDelta = new Vector2(sprite.rect.width * labelScale, sprite.rect.height * labelScale);
-        // Anchor to left-center
-        rt.anchorMin = new Vector2(0, 0.5f);
-        rt.anchorMax = new Vector2(0, 0.5f);
-        rt.pivot = new Vector2(0, 0.5f);
-        rt.anchoredPosition = new Vector2(0, yPos);
+        float scaledSize = labelSizePixels * labelScale * GetResolutionScale();
+        rt.sizeDelta = new Vector2(scaledSize, scaledSize);
+        // Anchor to top-left
+        rt.anchorMin = new Vector2(0, 1);
+        rt.anchorMax = new Vector2(0, 1);
+        rt.pivot = new Vector2(0, 1);
+        rt.anchoredPosition = new Vector2(xPixels, -yPixels); // Negative Y for down from top
 
         Image img = labelObj.AddComponent<Image>();
         img.sprite = sprite;
@@ -190,9 +191,9 @@ public class SignalLabelRenderer : MonoBehaviour
 
         RectTransform textRt = textObj.GetComponent<RectTransform>();
         textRt.sizeDelta = rt.sizeDelta; // same size as image
-        textRt.anchorMin = new Vector2(0, 0.5f);
-        textRt.anchorMax = new Vector2(0, 0.5f);
-        textRt.pivot = new Vector2(0, 0.5f);
+        textRt.anchorMin = new Vector2(0, 1);
+        textRt.anchorMax = new Vector2(0, 1);
+        textRt.pivot = new Vector2(0, 1);
         textRt.anchoredPosition = new Vector2(0, 0); // centered on the image
 
         return labelObj;

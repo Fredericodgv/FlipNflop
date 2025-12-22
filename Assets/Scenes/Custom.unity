@@ -3012,8 +3012,8 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 1280, y: 720}
-  m_ScreenMatchMode: 1
+  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
@@ -11218,8 +11218,13 @@ MonoBehaviour:
   presetLabelSprite: {fileID: 21300000, guid: 341fafd9c58a45d4c9d44738eb9b0047, type: 3}
   clearLabelSprite: {fileID: 21300000, guid: 341fafd9c58a45d4c9d44738eb9b0047, type: 3}
   clockLabelSprite: {fileID: 21300000, guid: 341fafd9c58a45d4c9d44738eb9b0047, type: 3}
-  jYFraction: 0.88
-  clockYFraction: 0.48
+  jLabelY: 70
+  kLabelY: 290
+  presetLabelY: 300
+  clearLabelY: 400
+  clockLabelY: 510
+  xOffset: 0
+  labelSizePixels: 390
   updateInRealTime: 0
   labelScale: 0.25
   levelJsonLoader: {fileID: 992803105}
