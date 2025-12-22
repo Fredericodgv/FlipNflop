@@ -21,6 +21,12 @@ public class SignalLabelRenderer : MonoBehaviour
     [SerializeField] private Sprite clockLabelSprite;
 
     [Header("Position Settings")]
+    [Tooltip("Fraction of screen height for J position (0-1)")]
+    [SerializeField] private float jYFraction = 0.85f;
+    [Tooltip("Fraction of screen height for Clock position (0-1)")]
+    [SerializeField] private float clockYFraction = 0.45f;
+    [Tooltip("Update positions in real-time (temporary for tweaking)")]
+    [SerializeField] private bool updateInRealTime = false;
     [Tooltip("Scale multiplier for label sprites")]
     [SerializeField] private float labelScale = 1f;
 
@@ -52,6 +58,14 @@ public class SignalLabelRenderer : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (updateInRealTime)
+        {
+            UpdateLabelPositions();
+        }
+    }
+
 
 
 
@@ -72,10 +86,10 @@ public class SignalLabelRenderer : MonoBehaviour
 
         Transform parent = (labelsParent != null) ? labelsParent : (canvas != null ? canvas.transform : transform);
 
-        // Position labels: J always at 1.35 * Screen.height, Clock always at 0.45 * Screen.height
+        // Position labels: J and Clock at configurable fractions of screen height
         bool hasAsync = (levelJsonLoader.ParsedPresetSignal != null || levelJsonLoader.ParsedClearSignal != null);
-        float jY = Screen.height * 1.325f - Screen.height / 2f;
-        float clockY = Screen.height * 0.45f - Screen.height / 2f;
+        float jY = Screen.height * jYFraction - Screen.height / 2f;
+        float clockY = Screen.height * clockYFraction - Screen.height / 2f;
 
         float kY, presetY = 0, clearY = 0;
 

@@ -176,7 +176,7 @@ MonoBehaviour:
   audioPanel: {fileID: 14302801}
   videoPanel: {fileID: 405350001}
   controlsPanel: {fileID: 932696005}
-  buttonConfig: {fileID: 0}
+  buttonConfig: {fileID: 88699029}
   nomeMenuInicial: LevelSelection
   keyA_Text: {fileID: 521883934}
   keyW_Text: {fileID: 876779654}
@@ -466,7 +466,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -22, y: -22.00003}
+  m_AnchoredPosition: {x: -22, y: -22}
   m_SizeDelta: {x: 30, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &88699031
@@ -3012,7 +3012,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ReferenceResolution: {x: 1280, y: 720}
   m_ScreenMatchMode: 1
   m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
@@ -3056,6 +3056,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1611166729}
+  - {fileID: 155108822}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -11217,7 +11218,10 @@ MonoBehaviour:
   presetLabelSprite: {fileID: 21300000, guid: 341fafd9c58a45d4c9d44738eb9b0047, type: 3}
   clearLabelSprite: {fileID: 21300000, guid: 341fafd9c58a45d4c9d44738eb9b0047, type: 3}
   clockLabelSprite: {fileID: 21300000, guid: 341fafd9c58a45d4c9d44738eb9b0047, type: 3}
-  labelScale: 0.15
+  jYFraction: 0.88
+  clockYFraction: 0.48
+  updateInRealTime: 0
+  labelScale: 0.25
   levelJsonLoader: {fileID: 992803105}
   inputTilemap: {fileID: 1489212623}
   mainCamera: {fileID: 519420031}
