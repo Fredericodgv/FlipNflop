@@ -140,7 +140,6 @@ public class ConfigMenuManager : MonoBehaviour
 
     #endregion
     #region Botões de x páginas
-    // BOTÕES DAS PÁGINAS DE OPÇÕES
 
     public void RestoreDefault()
     {
@@ -173,7 +172,6 @@ public class ConfigMenuManager : MonoBehaviour
 
     #endregion
     #region Botões da página de Controle
-    // BOTÕES DA SEXTA PÁGINA
 
     public void StartKeyBinding(string action)
     {
