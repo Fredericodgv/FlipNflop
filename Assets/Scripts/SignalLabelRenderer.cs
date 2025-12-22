@@ -72,18 +72,27 @@ public class SignalLabelRenderer : MonoBehaviour
 
         Transform parent = (labelsParent != null) ? labelsParent : (canvas != null ? canvas.transform : transform);
 
-        // Calculate Y positions using same logic as LevelJsonLoader
+        // Position labels: J always at 1.35 * Screen.height, Clock always at 0.45 * Screen.height
         bool hasAsync = (levelJsonLoader.ParsedPresetSignal != null || levelJsonLoader.ParsedClearSignal != null);
-        int j_Y = 12;
-        int k_Y = hasAsync ? 10 : 8;
-        int preset_Y = 8;
-        int clear_Y = 6;
-        int clock_Y = 4;
+        float jY = Screen.height * 1.325f - Screen.height / 2f;
+        float clockY = Screen.height * 0.45f - Screen.height / 2f;
 
-        // Convert tilemap Y to world Y and then to screen Y
-        float jY = CalculateScreenY(GetWorldY(j_Y));
-        float kY = CalculateScreenY(GetWorldY(k_Y));
-        float clockY = CalculateScreenY(GetWorldY(clock_Y));
+        float kY, presetY = 0, clearY = 0;
+
+        if (hasAsync)
+        {
+            // K, Preset, Clear evenly spaced between J and Clock
+            float totalSpace = jY - clockY;
+            float step = totalSpace / 4f; // 4 intervals for K, Preset, Clear, Clock
+            kY = jY - step;
+            presetY = jY - 2 * step;
+            clearY = jY - 3 * step;
+        }
+        else
+        {
+            // K exactly between J and Clock
+            kY = (jY + clockY) / 2f;
+        }
 
         // Always create J, K, Clock labels
         jLabel = CreateLabel("J_Label", jLabelSprite, jY, parent);
@@ -93,13 +102,11 @@ public class SignalLabelRenderer : MonoBehaviour
         // Conditionally create Preset and Clear labels
         if (levelJsonLoader.ParsedPresetSignal != null)
         {
-            float presetY = CalculateScreenY(GetWorldY(preset_Y));
             presetLabel = CreateLabel("Preset_Label", presetLabelSprite, presetY, parent);
         }
 
         if (levelJsonLoader.ParsedClearSignal != null)
         {
-            float clearY = CalculateScreenY(GetWorldY(clear_Y));
             clearLabel = CreateLabel("Clear_Label", clearLabelSprite, clearY, parent);
         }
     }
