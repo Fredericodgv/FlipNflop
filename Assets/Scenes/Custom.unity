@@ -513,7 +513,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 2152206}
         m_TargetAssemblyTypeName: ConfigMenuManager, Assembly-CSharp
         m_MethodName: OpenMenuConfig
         m_Mode: 1
