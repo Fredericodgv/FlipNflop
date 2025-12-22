@@ -1,3 +1,13 @@
+## [0.3.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.3.2...v0.3.3) (2025-10-24)
+
+
+### Bug Fixes
+
+* Adiciona S e DownArrow nos comandos ([14ea945](https://github.com/Fredericodgv/FlipNflop/commit/14ea94544a40ed4da72b7d509b0747d0fbcaa412))
+* Adjust how dash works ([0b23b7f](https://github.com/Fredericodgv/FlipNflop/commit/0b23b7f75c5a004fb40321b008e515c69e62956d))
+
+
+
 ## [0.3.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.3.1...v0.3.2) (2025-10-24)
 
 
@@ -39,16 +49,6 @@
 ### Bug Fixes
 
 * fix screen flickering ([e08845a](https://github.com/Fredericodgv/FlipNflop/commit/e08845ae3b1cf71acfade42c316bf09db74dfd9f))
-
-
-
-## [0.2.7](https://github.com/Fredericodgv/FlipNflop/compare/v0.2.6...v0.2.7) (2025-10-23)
-
-
-### Bug Fixes
-
-* teste de workflow ([3ecd447](https://github.com/Fredericodgv/FlipNflop/commit/3ecd4470db21c43179636c40c20acb4ee4ff494c))
-* teste de workflow ([2107bc1](https://github.com/Fredericodgv/FlipNflop/commit/2107bc1f6cb310f848b49e374acb738c2f56917a))
 
 
 
