@@ -3,7 +3,8 @@ name: Version & README updater
 on:
   push:
     branches:
-      - main # ou master
+      - main 
+      - develop
   workflow_dispatch:
 
 jobs:
