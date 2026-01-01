@@ -30,6 +30,8 @@ public class ConfigMenuManager : MonoBehaviour
     [SerializeField] private TMP_Text keyD_Text;
     [SerializeField] private TMP_Text keySpace_Text;
 
+    public bool IsMenuOpen => mainConfigMenu.activeSelf;
+
     private string waitingForKey = null; // identifica qual tecla estamos aguardando
 
     private Dictionary<string, KeyCode> keyBindings = new Dictionary<string, KeyCode>();
@@ -66,6 +68,7 @@ public class ConfigMenuManager : MonoBehaviour
 
     void Update()
     {
+        // Captura de tecla para remapeamento
         if (waitingForKey != null)
         {
             foreach (KeyCode key in System.Enum.GetValues(typeof(KeyCode)))
