@@ -1,3 +1,12 @@
+## [0.4.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.4.1...v0.4.2) (2026-01-05)
+
+
+### Bug Fixes
+
+* change level select buttons design ([4aa60cd](https://github.com/Fredericodgv/FlipNflop/commit/4aa60cd9fd9f80159231b5e2b8e439deaa538831))
+
+
+
 ## [0.4.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.4.0...v0.4.1) (2026-01-05)
 
 
@@ -90,17 +99,6 @@
 ### Bug Fixes
 
 * Implements player's dash ([65594bc](https://github.com/Fredericodgv/FlipNflop/commit/65594bc6fe7300053a419b77952f9515641e5478))
-
-
-
-## [0.3.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.3.0...v0.3.1) (2025-10-24)
-
-
-### Bug Fixes
-
-* Ajusta as posições do mundo para 0 ao invés de -10 ([6e17c22](https://github.com/Fredericodgv/FlipNflop/commit/6e17c22a59ad080eea37127d008ac23b550d5938))
-* centralize end game screens ([3ac1577](https://github.com/Fredericodgv/FlipNflop/commit/3ac1577264a15e1536f1c9acef9cd6d813441967))
-* Implements sprint and dash features to the player ([9ba2e3e](https://github.com/Fredericodgv/FlipNflop/commit/9ba2e3ea243bde53c5fa09abb67d8d13e62b8ebd))
 
 
 
