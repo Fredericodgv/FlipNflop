@@ -1337,7 +1337,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Menu
+  m_text: Sair
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -10957,7 +10957,7 @@ MonoBehaviour:
   failurePanel: {fileID: 0}
   hideButtonName: HideButton
   menu: MenuWEB
-  nomeDoLevel: 
+  nomeDoLevel: LevelSelection
   nextLevel: 
   levelAtual: Custom
   customLevelName: Custom
@@ -17022,6 +17022,18 @@ PrefabInstance:
       value: 0.4999999
       objectReference: {fileID: 0}
     - target: {fileID: 4686801895225786506, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4686801895225786506, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4686801895225786506, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4686801895225786506, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -100
       objectReference: {fileID: 0}
@@ -17029,10 +17041,34 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -100
       objectReference: {fileID: 0}
+    - target: {fileID: 4686801895225786506, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4888913397207640753, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1289131809}
+    - target: {fileID: 4888913397207640753, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Jogar
+      objectReference: {fileID: 0}
+    - target: {fileID: 5036617488924932877, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: d1d9c671d089d854186957b5246fd1eb, type: 3}
+    - target: {fileID: 5036617488924932877, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_Color.b
+      value: 0.7647059
+      objectReference: {fileID: 0}
+    - target: {fileID: 5036617488924932877, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_Color.g
+      value: 0.084888235
+      objectReference: {fileID: 0}
+    - target: {fileID: 5036617488924932877, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6622188655545027595, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_SizeDelta.x
       value: 1000
@@ -17047,7 +17083,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6906834842205528089, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6994120632407559903, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_Pivot.x
@@ -17143,7 +17179,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8219308617595114561, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9013028070381731413, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_IsActive
