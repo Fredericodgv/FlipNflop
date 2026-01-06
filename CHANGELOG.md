@@ -1,3 +1,12 @@
+## [0.4.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.4.2...v0.4.3) (2026-01-06)
+
+
+### Bug Fixes
+
+* Add HintController to Player comands ([c08882f](https://github.com/Fredericodgv/FlipNflop/commit/c08882f89bc83c6e2f25fe0afb0f6eed3ad866ea))
+
+
+
 ## [0.4.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.4.1...v0.4.2) (2026-01-05)
 
 
@@ -90,15 +99,6 @@
 
 * Adiciona S e DownArrow nos comandos ([14ea945](https://github.com/Fredericodgv/FlipNflop/commit/14ea94544a40ed4da72b7d509b0747d0fbcaa412))
 * Adjust how dash works ([0b23b7f](https://github.com/Fredericodgv/FlipNflop/commit/0b23b7f75c5a004fb40321b008e515c69e62956d))
-
-
-
-## [0.3.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.3.1...v0.3.2) (2025-10-24)
-
-
-### Bug Fixes
-
-* Implements player's dash ([65594bc](https://github.com/Fredericodgv/FlipNflop/commit/65594bc6fe7300053a419b77952f9515641e5478))
 
 
 
