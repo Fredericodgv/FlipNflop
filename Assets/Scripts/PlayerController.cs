@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SocialPlatforms.Impl;
 
 /// <summary>
 /// Controls the player's movement, jumping, gravity inversion, and animations.
@@ -53,6 +54,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private PathVerifier pathVerifier;
     [SerializeField] private CameraController cameraController;
     [SerializeField] private HintController hintController;
+    [SerializeField] private ScoreController scoreController;
 
     [Header("Input System")]
     [Tooltip("Reference to the Move action (1D Axis/float).")]
@@ -278,7 +280,11 @@ public class PlayerController : MonoBehaviour
 
         if (transform.position.x > LevelManager.Instance.levelEndX + 1)
         {
-            // Para o movimento do player
+            if (scoreController != null)
+            {
+                scoreController.StopTimer();
+            }
+
             rb.linearVelocity = Vector2.zero;
             horizontalInput = 0f;
 
@@ -450,6 +456,10 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void PlayerDeath()
     {
+        if (scoreController != null)
+        {
+            scoreController.StopTimer();
+        }
         // Entrega o controle para a câmera com limite direito fixado na posição de morte
         if (cameraController != null)
         {
