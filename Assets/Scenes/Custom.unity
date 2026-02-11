@@ -3005,7 +3005,6 @@ MonoBehaviour:
   painelSobre: {fileID: 0}
   successPanel: {fileID: 0}
   failurePanel: {fileID: 0}
-  hideHudButton: {fileID: 0}
   hideButtonName: HideButton
   menu: MenuWEB
   nomeDoLevel: 
@@ -3197,6 +3196,10 @@ PrefabInstance:
       propertyPath: m_FlipX
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 792765061534951494, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: d5a3e5a9fd6306243a820e20b3a224db, type: 3}
     - target: {fileID: 1160173156816950124, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
