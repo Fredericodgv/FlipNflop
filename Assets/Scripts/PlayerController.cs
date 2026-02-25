@@ -76,6 +76,7 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool jumpInput;
     private bool gravityFlipInput;
+    private bool isFlipping;
     private bool isDashing;
     private float dashEndTime;
     private float nextDashTime;
@@ -314,10 +315,10 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void Flip()
     {
-        // During dash, face dash direction using the same gravity-aware rule used in normal movement
+        if (isFlipping) return;
+
         if (isDashing)
         {
-            // Compute facing left for dash without introducing a new local conflicting name
             spriteRenderer.flipX = (dashDir < 0f) ^ IsGravityInverted;
             return;
         }
@@ -346,15 +347,27 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void HandleGravityFlip()
     {
-        if (gravityFlipInput && isGrounded && !isDashing)
+        if (gravityFlipInput && isGrounded && !isDashing && !isFlipping)
         {
+            isFlipping = true;
+
             rb.gravityScale *= -1;
-            transform.Rotate(0f, 0f, 180f);
-            spriteRenderer.flipX = !spriteRenderer.flipX;
             isGravityInvertedState = !isGravityInvertedState;
-            animator.SetTrigger("jump");
+
+            animator.SetTrigger("flip");
         }
         gravityFlipInput = false;
+    }
+
+    /// <summary>
+    /// Executes the actual gravity inversion and rotation. Should be called at the correct frame by an Animation Event in the Flip animation.
+    /// </summary>
+    public void ExecuteFlipVisuals() // Mudei o nome para fazer mais sentido
+    {
+        transform.Rotate(0f, 0f, 180f);
+        spriteRenderer.flipX = !spriteRenderer.flipX;
+
+        isFlipping = false;
     }
 
     /// <summary>
