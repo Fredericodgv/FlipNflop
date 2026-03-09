@@ -1,17 +1,17 @@
 fileFormatVersion: 2
-guid: 3e3b22c43ed2b004e80080e2ba03c760
+guid: 15628574899274d448f3d6f408eedf8f
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
   fontSize: 16
-  forceTextureCase: 3
+  forceTextureCase: -2
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Anton
+  - Fredoka
   fallbackFontReferences: []
-  customCharacters: 02-F
+  customCharacters: 
   fontRenderingMode: 0
   ascentCalculationMode: 1
   useLegacyBoundsCalculation: 0

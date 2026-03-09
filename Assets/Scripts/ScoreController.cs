@@ -91,19 +91,20 @@ public class ScoreController : MonoBehaviour
     /// Stops the timer, computes and displays the final score.
     /// </summary>
     /// <param name="correctSegments">Number of path segments the player drew correctly.</param>
-    /// <param name="totalSegments">Total number of segments evaluated.</param>
-    public void ReportResult(int correctSegments, int totalSegments)
+    /// <param name="gabaritoTotal">Total number of segments in the reference path.</param>
+    public void ReportResult(int correctSegments, int gabaritoTotal)
     {
         StopTimer();
 
-        int score = ComputeScore(correctSegments, totalSegments, elapsedTime);
+        int score = ComputeScore(correctSegments, gabaritoTotal, elapsedTime);
 
-        Debug.Log($"[ScoreController] correct:{correctSegments}/{totalSegments} | time:{elapsedTime:F1}s | score:{score}");
+        Debug.Log($"[ScoreController] correct:{correctSegments}/{gabaritoTotal} | time:{elapsedTime:F1}s | score:{score}");
 
         if (scoreText != null)
         {
             scoreText.gameObject.SetActive(true);
-            scoreText.text = $"Pontuação: {score}";
+            string resultado = correctSegments >= gabaritoTotal ? "Diagrama Correto!" : "Diagrama Incorreto";
+            scoreText.text = $"{resultado}\nPontuação: {score}";
         }
     }
 

@@ -18,8 +18,9 @@ public class PathVerifier : MonoBehaviour
 
     [Header("Referências Adicionais")]
     [SerializeField] private SignalPath signalPath;
-    [SerializeField] private GameObject successUI;
-    [SerializeField] private GameObject failureUI;
+    [SerializeField] private GameObject resultPanel;
+    [SerializeField] private GameObject continueButton;
+    [SerializeField] private GameObject retryButton;
     [SerializeField] private float cornerTolerance = 1.0f;
 
     [Header("Configuração de Feedback Visual")]
@@ -59,8 +60,7 @@ public class PathVerifier : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        if (successUI != null) successUI.SetActive(false);
-        if (failureUI != null) failureUI.SetActive(false);
+        if (resultPanel != null) resultPanel.SetActive(false);
     }
 
     /// <summary>
@@ -143,7 +143,12 @@ public class PathVerifier : MonoBehaviour
         if (signalPath == null || signalPath.PathPoints.Count < 2)
         {
             Debug.LogError("Caminho do jogador inválido ou não definido!");
-            if (failureUI != null) failureUI.SetActive(true);
+            if (resultPanel != null)
+            {
+                ActivateWithParent(resultPanel);
+                if (continueButton != null) continueButton.SetActive(false);
+                if (retryButton != null) retryButton.SetActive(true);
+            }
             return;
         }
 
@@ -173,21 +178,11 @@ public class PathVerifier : MonoBehaviour
             Debug.Log($"<color=yellow>[PathVerifier] Resultado: {correctCount}/{totalCount} quinas atingidas</color>");
         }
 
-        if (isPathCorrectOverall)
+        if (resultPanel != null)
         {
-            if (successUI != null)
-            {
-                ActivateWithParent(successUI);
-                if (failureUI != null) failureUI.SetActive(false);
-            }
-        }
-        else
-        {
-            if (failureUI != null)
-            {
-                ActivateWithParent(failureUI);
-                if (successUI != null) successUI.SetActive(false);
-            }
+            ActivateWithParent(resultPanel);
+            if (continueButton != null) continueButton.SetActive(isPathCorrectOverall);
+            if (retryButton != null) retryButton.SetActive(!isPathCorrectOverall);
         }
     }
 
