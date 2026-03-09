@@ -101,7 +101,6 @@ public class MenuManager : MonoBehaviour
         SceneManager.LoadScene(customLevelName);
     }
 
-    // Alterna a visibilidade dos filhos do painel mantendo o HideButton ativo
     private void TogglePanelContentKeepButton(GameObject panelRoot)
     {
         if (panelRoot == null) return;
@@ -109,9 +108,7 @@ public class MenuManager : MonoBehaviour
 
         Transform keepVisible = null;
         if (!string.IsNullOrEmpty(hideButtonName))
-        {
             keepVisible = panelRoot.transform.Find(hideButtonName);
-        }
 
         bool anyContentVisible = false;
         foreach (Transform child in panelRoot.transform)
@@ -122,23 +119,38 @@ public class MenuManager : MonoBehaviour
         }
 
         bool showContent = !anyContentVisible;
+
         foreach (Transform child in panelRoot.transform)
         {
             if (child == null) continue;
+
+            // HideButton sempre visível
             if (keepVisible != null && child == keepVisible)
             {
                 if (!child.gameObject.activeSelf) child.gameObject.SetActive(true);
                 continue;
             }
-            child.gameObject.SetActive(showContent);
+
+            if (showContent)
+            {
+                // Ao reexibir, restaura apenas quem tinha estado salvo como ativo
+                string key = $"hide_{panelRoot.name}_{child.name}";
+                bool wasActive = PlayerPrefs.GetInt(key, 0) == 1;
+                child.gameObject.SetActive(wasActive);
+            }
+            else
+            {
+                // Ao ocultar, salva o estado atual antes de desativar
+                string key = $"hide_{panelRoot.name}_{child.name}";
+                PlayerPrefs.SetInt(key, child.gameObject.activeSelf ? 1 : 0);
+                child.gameObject.SetActive(false);
+            }
         }
 
-        // Alterna o fundo do painel (se existir) para que a HUD suma de fato (sem afetar interações)
         var img = panelRoot.GetComponent<UnityEngine.UI.Image>();
         if (img != null) img.enabled = showContent;
         var raw = panelRoot.GetComponent<UnityEngine.UI.RawImage>();
         if (raw != null) raw.enabled = showContent;
-        // Não alterar CanvasGroup aqui para não prejudicar estados de hover/seleção do botão
     }
     #endregion
 }
