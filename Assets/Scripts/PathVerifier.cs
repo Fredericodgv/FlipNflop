@@ -149,7 +149,6 @@ public class PathVerifier : MonoBehaviour
 
         missedCorners.Clear();
         signalPath.GetComponent<LineRenderer>().enabled = false;
-        // Gabarito já inclui phaseEndX (diagramEndX + slack). Sem necessidade de ajuste dinâmico.
 
         if (enableDebugLogs)
         {
@@ -159,12 +158,13 @@ public class PathVerifier : MonoBehaviour
             Debug.Log($"  Tolerância: {cornerTolerance}");
         }
 
-        // Primeiro avalia quais quinas foram perdidas
         List<bool> cornerChecks = EvaluateCorrectCorners(signalPath.PathPoints);
         bool isPathCorrectOverall = !cornerChecks.Contains(false);
 
-        // Depois desenha o feedback usando a informação de quinas perdidas
-        DrawFeedbackLines(signalPath.PathPoints, cornerChecks);
+        int gabaritoTotal = correctCorners.Count - 1;
+        DrawFeedbackLines(signalPath.PathPoints, cornerChecks, out int correct, out int total);
+        int coveredSegments = CountCoveredGabaritoSegments(signalPath.PathPoints);
+        ScoreController.Instance?.ReportResult(coveredSegments, gabaritoTotal);
 
         if (enableDebugLogs)
         {
@@ -192,16 +192,36 @@ public class PathVerifier : MonoBehaviour
     }
 
     /// <summary>
+    /// Conta quantos segmentos do gabarito foram cobertos pelo caminho do jogador.
+    /// Um segmento gabarito[i]→gabarito[i+1] é considerado coberto se seu ponto
+    /// médio está suficientemente próximo do caminho do jogador.
+    /// </summary>
+    private int CountCoveredGabaritoSegments(List<Vector3> playerPath)
+    {
+        int covered = 0;
+        for (int i = 0; i < correctCorners.Count - 1; i++)
+        {
+            Vector3 midpoint = (correctCorners[i] + correctCorners[i + 1]) / 2f;
+            Vector3 closest = FindClosestPointOnFullPath(midpoint, playerPath);
+            if (Vector3.Distance(midpoint, closest) <= cornerTolerance)
+                covered++;
+        }
+        return covered;
+    }
+
+    /// <summary>
     /// Desenha o feedback iterando sobre cada pequeno segmento do caminho do jogador.
     /// Linhas verticais próximas a quinas perdidas são pintadas de vermelho.
     /// </summary>
-    private void DrawFeedbackLines(List<Vector3> playerPath, List<bool> cornerChecks)
+    private void DrawFeedbackLines(List<Vector3> playerPath, List<bool> cornerChecks,
+                               out int correctSegments, out int totalSegments)
+
     {
+        correctSegments = 0;
+        totalSegments = 0;
+
         if (linePrefab == null || feedbackLinesParent == null) return;
         foreach (Transform child in feedbackLinesParent) Destroy(child.gameObject);
-
-        int correctSegments = 0;
-        int incorrectSegments = 0;
 
         for (int i = 0; i < playerPath.Count - 1; i++)
         {
@@ -219,9 +239,9 @@ public class PathVerifier : MonoBehaviour
 
             // Verifica se é linha vertical (transição entre níveis)
             bool isVerticalLine = Mathf.Abs(p_start.y - p_end.y) > 0.1f;
-            
+
             bool isSegmentCorrect = startIsOnPath && endIsOnPath;
-            
+
             // Se for linha vertical, verifica adicionalmente se está na posição X correta de uma quina do gabarito
             if (isVerticalLine && isSegmentCorrect)
             {
@@ -229,14 +249,14 @@ public class PathVerifier : MonoBehaviour
                 bool verticalAtCorrectX = false;
                 foreach (Vector3 corner in correctCorners)
                 {
-                    if (Mathf.Abs(corner.x - p_start.x) <= cornerTolerance && 
+                    if (Mathf.Abs(corner.x - p_start.x) <= cornerTolerance &&
                         Mathf.Abs(corner.x - p_end.x) <= cornerTolerance)
                     {
                         verticalAtCorrectX = true;
                         break;
                     }
                 }
-                
+
                 if (!verticalAtCorrectX)
                 {
                     isSegmentCorrect = false;
@@ -244,7 +264,8 @@ public class PathVerifier : MonoBehaviour
             }
 
             if (isSegmentCorrect) correctSegments++;
-            else incorrectSegments++;
+
+            totalSegments++;
 
             Color segmentColor = isSegmentCorrect ? successColor : failureColor;
 
@@ -253,11 +274,6 @@ public class PathVerifier : MonoBehaviour
             lineSegment.SetPosition(1, p_end);
             lineSegment.startColor = segmentColor;
             lineSegment.endColor = segmentColor;
-        }
-
-        if (enableDebugLogs)
-        {
-            Debug.Log($"  Segmentos: <color=green>{correctSegments} corretos</color> | <color=red>{incorrectSegments} incorretos</color>");
         }
     }
 
