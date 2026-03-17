@@ -73,11 +73,11 @@ public class LevelJsonLoader : MonoBehaviour
     // Per-tile output timeline (async preset/clear immediate; JK at clock edges)
     public bool[] OutputTimeline { get; private set; }
     // Per-tile operation description (e.g., keep, preset_async, clear_async, set_sync, reset_sync, switch_sync, combined)
+    public bool asyncActiveHigh { get; private set; }
     [SerializeField]
     private string[] outputOpsPerTile;
 
     // Async active mode: true = active-high (1), false = active-low (0)
-    public bool asyncActiveHigh { get; private set; }
 
     #endregion
 
@@ -229,7 +229,7 @@ public class LevelJsonLoader : MonoBehaviour
 
         int asyncActiveMode = (data != null ? data.asyncActive : 1);
         bool asyncActiveHigh = asyncActiveMode == 1;
-        this.AsyncActiveHigh = asyncActiveHigh;
+        this.asyncActiveHigh = asyncActiveHigh;
 
         GetClockSamplingParameters(out int clockStep, out int _);
         int diagramLen = GetDiagramLength();
