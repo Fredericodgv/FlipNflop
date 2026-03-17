@@ -1,3 +1,12 @@
+## [0.6.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.6.0...v0.6.1) (2026-03-17)
+
+
+### Bug Fixes
+
+* fix operation hints ([f2522ac](https://github.com/Fredericodgv/FlipNflop/commit/f2522acde2fb72d3150b09750e036232282f29b5))
+
+
+
 # [0.6.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.5.1...v0.6.0) (2026-03-17)
 
 
@@ -41,15 +50,6 @@
 ### Bug Fixes
 
 * Add HintController to Player comands ([c08882f](https://github.com/Fredericodgv/FlipNflop/commit/c08882f89bc83c6e2f25fe0afb0f6eed3ad866ea))
-
-
-
-## [0.4.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.4.1...v0.4.2) (2026-01-05)
-
-
-### Bug Fixes
-
-* change level select buttons design ([4aa60cd](https://github.com/Fredericodgv/FlipNflop/commit/4aa60cd9fd9f80159231b5e2b8e439deaa538831))
 
 
 
