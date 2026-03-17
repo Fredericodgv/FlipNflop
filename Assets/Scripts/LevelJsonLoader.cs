@@ -77,7 +77,7 @@ public class LevelJsonLoader : MonoBehaviour
     private string[] outputOpsPerTile;
 
     // Async active mode: true = active-high (1), false = active-low (0)
-    private bool asyncActiveHigh = true;
+    public bool asyncActiveHigh { get; private set; }
 
     #endregion
 
@@ -229,6 +229,7 @@ public class LevelJsonLoader : MonoBehaviour
 
         int asyncActiveMode = (data != null ? data.asyncActive : 1);
         bool asyncActiveHigh = asyncActiveMode == 1;
+        this.AsyncActiveHigh = asyncActiveHigh;
 
         GetClockSamplingParameters(out int clockStep, out int _);
         int diagramLen = GetDiagramLength();
