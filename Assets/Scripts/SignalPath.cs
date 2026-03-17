@@ -21,6 +21,7 @@ public class SignalPath : MonoBehaviour
     private List<Vector3> pathPoints = new List<Vector3>();
     private Vector3 lastPointPosition;
     private bool isDrawing = true;
+    private bool lastGravityInverted;
 
     public List<Vector3> PathPoints => pathPoints;
 
@@ -37,14 +38,35 @@ public class SignalPath : MonoBehaviour
 
     private void Update()
     {
-        if (!isDrawing || transform.position.x < 0) return;
+        if (!isDrawing) return;
+
+        float currentX = transform.position.x;
+
+        // Se o player recuou para x <= 0, limpa tudo e reinicia
+        if (currentX <= 0)
+        {
+            ResetPath();
+            return;
+        }
 
         float targetY = playerController.IsGravityInverted ? ceilingY : groundY;
-        Vector3 currentTargetPosition = new Vector3(transform.position.x, targetY, 0);
 
-        if (currentTargetPosition.x < lastPointPosition.x)
+        bool gravityChanged = playerController.IsGravityInverted != lastGravityInverted;
+        if (gravityChanged)
         {
-            RemovePointsAfter(currentTargetPosition.x);
+            lastGravityInverted = playerController.IsGravityInverted;
+            float oldY = playerController.IsGravityInverted ? groundY : ceilingY;
+            AddPointToPath(new Vector3(currentX, oldY, 0));
+            AddPointToPath(new Vector3(currentX, targetY, 0));
+            return;
+        }
+
+        Vector3 currentTargetPosition = new Vector3(currentX, targetY, 0);
+
+        // Remove pontos se o player voltou para a esquerda
+        if (currentX < lastPointPosition.x)
+        {
+            RemovePointsAfter(currentX);
         }
 
         if (Vector3.Distance(currentTargetPosition, lastPointPosition) > pointSpacing)
@@ -56,10 +78,23 @@ public class SignalPath : MonoBehaviour
     private void InitializePath()
     {
         pathPoints.Clear();
+        float startX = Mathf.Max(transform.position.x, 0f);
         float startY = playerController.IsGravityInverted ? ceilingY : groundY;
-        Vector3 startPoint = new Vector3(transform.position.x, startY, 0);
-        AddPointToPath(startPoint);
+        lastPointPosition = new Vector3(startX, startY, 0);
     }
+
+    /// <summary>
+    /// Limpa o caminho completamente e reinicia o estado (chamado quando x <= 0).
+    /// </summary>
+    private void ResetPath()
+    {
+        pathPoints.Clear();
+        lineRenderer.positionCount = 0;
+        lastGravityInverted = playerController.IsGravityInverted;
+        float startY = lastGravityInverted ? ceilingY : groundY;
+        lastPointPosition = new Vector3(0f, startY, 0);
+    }
+
 
     private void AddPointToPath(Vector3 point)
     {
