@@ -65,9 +65,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionReference flipGravityAction;
     [Tooltip("Reference to the Dash action (Button).")]
     [SerializeField] private InputActionReference dashAction;
-    [Tooltip("Reference to the Toggle Hints action (Button).")]
-    [SerializeField] private InputActionReference toggleHintsAction;
-
     /// <summary>
     /// Logical gravity inversion state (independent from temporary physics tweaks like gravityScale = 0 during dash).
     /// </summary>
@@ -85,7 +82,7 @@ public class PlayerController : MonoBehaviour
     private float dashEndTime;
     private float nextDashTime;
     private float dashDir = 1f;
-    
+
     // Dash physics preservation
     private float preDashGravityScale = 1f;
     private RigidbodyConstraints2D preDashConstraints;
@@ -191,12 +188,6 @@ public class PlayerController : MonoBehaviour
             dashAction.action.performed += OnDashPerformed;
             dashAction.action.Enable();
         }
-
-        if (toggleHintsAction?.action != null)
-        {
-            toggleHintsAction.action.performed += OnToggleHintsPerformed;
-            toggleHintsAction.action.Enable();
-        }
     }
 
     private void OnDisable()
@@ -225,12 +216,6 @@ public class PlayerController : MonoBehaviour
             dashAction.action.performed -= OnDashPerformed;
             dashAction.action.Disable();
         }
-
-        if (toggleHintsAction?.action != null)
-        {
-            toggleHintsAction.action.performed -= OnToggleHintsPerformed;
-            toggleHintsAction.action.Disable();
-        }
     }
 
     private void OnMovePerformed(InputAction.CallbackContext ctx) => horizontalInput = ctx.ReadValue<float>();
@@ -238,14 +223,6 @@ public class PlayerController : MonoBehaviour
     private void OnJumpPerformed(InputAction.CallbackContext ctx) => jumpInput = true;
     private void OnFlipGravityPerformed(InputAction.CallbackContext ctx) => gravityFlipInput = true;
     private void OnDashPerformed(InputAction.CallbackContext ctx) => TryStartDash();
-
-    private void OnToggleHintsPerformed(InputAction.CallbackContext ctx)
-    {
-        if (hintController != null)
-        {
-            hintController.ToggleHintMode();
-        }
-    }
 
     private void CheckIfGrounded()
     {
@@ -295,7 +272,7 @@ public class PlayerController : MonoBehaviour
 
         float targetX = horizontalInput * moveSpeed;
         float newX = Mathf.MoveTowards(currentX, targetX, accel * Time.fixedDeltaTime);
-        
+
         rb.linearVelocity = new Vector2(newX, rb.linearVelocity.y);
         Flip();
     }
