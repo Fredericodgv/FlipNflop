@@ -92,13 +92,16 @@ public class OperationHint : MonoBehaviour
         float clockStep = LevelManager.Instance != null ? LevelManager.Instance.clockStepX : 6f;
         float playerX = player.position.x;
         int currentClock = Mathf.FloorToInt(playerX / clockStep);
-        int signalIndex = (currentClock + 1) * (int)clockStep;
+        int nextClock = currentClock + 1;
+        int signalIndex = nextClock * (int)clockStep - 1;
         float xPos = (currentClock + 1) * clockStep + xOffset;
 
         bool j = GetSignalAt(levelJsonLoader.ParsedJSignal, signalIndex);
         bool k = GetSignalAt(levelJsonLoader.ParsedKSignal, signalIndex);
         bool preset = GetSignalAt(levelJsonLoader.ParsedPresetSignal, signalIndex);
         bool clear = GetSignalAt(levelJsonLoader.ParsedClearSignal, signalIndex);
+
+        Debug.Log($"currentClock:{currentClock} nextClock:{nextClock} signalIndex:{signalIndex} J:{j} K:{k}");
 
         bool hasPreset = levelJsonLoader.ParsedPresetSignal != null;
         bool hasClear = levelJsonLoader.ParsedClearSignal != null;
