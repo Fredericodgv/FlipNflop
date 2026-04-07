@@ -35,6 +35,12 @@ public class PathVerifier : MonoBehaviour
     [Tooltip("O objeto pai que agrupará as linhas de feedback.")]
     [SerializeField] private Transform feedbackLinesParent;
 
+    [Header("Configuração da Linha Tracejada (Matemática)")]
+    [Tooltip("O tamanho de cada tracinho vermelho.")]
+    [SerializeField] private float dashLength = 0.15f;
+    [Tooltip("O tamanho do espaço vazio entre os tracinhos.")]
+    [SerializeField] private float dashGap = 0.1f;
+
     [Header("Debug")]
     [Tooltip("Se ativado, mostra logs detalhados sobre a validação do caminho.")]
     [SerializeField] private bool enableDebugLogs = false;
@@ -71,9 +77,8 @@ public class PathVerifier : MonoBehaviour
 
     private void Update()
     {
-        if (!realtimeFeedback) return;
-        if (signalPath == null || correctCorners == null) return;
-        if (signalPath.PathPoints.Count < 2) return;
+        if (!realtimeFeedback || signalPath == null || correctCorners == null || signalPath.PathPoints.Count < 2)
+            return;
 
         UpdateRealtimeFeedback();
     }
@@ -237,59 +242,108 @@ public class PathVerifier : MonoBehaviour
     /// Desenha o feedback iterando sobre cada pequeno segmento do caminho do jogador.
     /// Linhas verticais próximas a quinas perdidas são pintadas de vermelho.
     /// </summary>
-    private void DrawFeedbackLines(List<Vector3> playerPath, List<bool> cornerChecks,
-                               out int correctSegments, out int totalSegments)
+    private void DrawFeedbackLines(List<Vector3> playerPath, List<bool> cornerChecks, out int correctSegments, out int totalSegments)
     {
         correctSegments = 0;
         totalSegments = 0;
 
         if (linePrefab == null || feedbackLinesParent == null) return;
-        foreach (Transform child in feedbackLinesParent) Destroy(child.gameObject);
+
+        foreach (Transform child in feedbackLinesParent)
+            Destroy(child.gameObject);
+
+        float patternAccumulator = 0f;
+        bool isDrawingDash = true;
 
         for (int i = 0; i < playerPath.Count - 1; i++)
         {
             Vector3 p_start = playerPath[i];
             Vector3 p_end = playerPath[i + 1];
 
-            Vector3 closestToStart = FindClosestPointOnFullPath(p_start, correctCorners);
-            float distStart = Vector3.Distance(p_start, closestToStart);
-            bool startIsOnPath = distStart <= cornerTolerance;
+            // --- Verificação de pertencimento ao caminho ---
+            Vector3 closestStart = FindClosestPointOnFullPath(p_start, correctCorners);
+            Vector3 closestEnd = FindClosestPointOnFullPath(p_end, correctCorners);
 
-            Vector3 closestToEnd = FindClosestPointOnFullPath(p_end, correctCorners);
-            float distEnd = Vector3.Distance(p_end, closestToEnd);
-            bool endIsOnPath = distEnd <= cornerTolerance;
-
-            bool isVerticalLine = Mathf.Abs(p_start.y - p_end.y) > 0.1f;
+            bool startIsOnPath = Vector3.Distance(p_start, closestStart) <= cornerTolerance;
+            bool endIsOnPath = Vector3.Distance(p_end, closestEnd) <= cornerTolerance;
 
             bool isSegmentCorrect = startIsOnPath && endIsOnPath;
 
-            if (isVerticalLine && isSegmentCorrect)
+            // --- Regra extra para linhas verticais ---
+            bool isVertical = Mathf.Abs(p_start.y - p_end.y) > 0.1f;
+
+            if (isVertical && isSegmentCorrect)
             {
-                bool verticalAtCorrectX = false;
+                bool aligned = false;
+
                 foreach (Vector3 corner in correctCorners)
                 {
                     if (Mathf.Abs(corner.x - p_start.x) <= cornerTolerance &&
                         Mathf.Abs(corner.x - p_end.x) <= cornerTolerance)
                     {
-                        verticalAtCorrectX = true;
+                        aligned = true;
                         break;
                     }
                 }
 
-                if (!verticalAtCorrectX)
+                if (!aligned)
                     isSegmentCorrect = false;
             }
 
-            if (isSegmentCorrect) correctSegments++;
+            // --- Contadores ---
             totalSegments++;
+            if (isSegmentCorrect) correctSegments++;
 
-            Color segmentColor = isSegmentCorrect ? successColor : failureColor;
+            // --- Desenho ---
+            if (isSegmentCorrect)
+            {
+                DrawSolidLine(p_start, p_end, successColor);
 
-            LineRenderer lineSegment = Instantiate(linePrefab, feedbackLinesParent);
-            lineSegment.SetPosition(0, p_start);
-            lineSegment.SetPosition(1, p_end);
-            lineSegment.startColor = segmentColor;
-            lineSegment.endColor = segmentColor;
+                patternAccumulator = 0f;
+                isDrawingDash = true;
+            }
+            else
+            {
+                DrawDashedLine(p_start, p_end, ref patternAccumulator, ref isDrawingDash);
+            }
+        }
+    }
+
+    private void DrawSolidLine(Vector3 start, Vector3 end, Color color)
+    {
+        LineRenderer line = Instantiate(linePrefab, feedbackLinesParent);
+        line.SetPosition(0, start);
+        line.SetPosition(1, end);
+        line.startColor = color;
+        line.endColor = color;
+    }
+
+    private void DrawDashedLine(Vector3 start, Vector3 end, ref float accumulator, ref bool isDrawingDash)
+    {
+        float length = Vector3.Distance(start, end);
+        Vector3 direction = (end - start).normalized;
+        float traveled = 0f;
+
+        while (traveled < length - 0.001f)
+        {
+            float target = isDrawingDash ? dashLength : dashGap;
+            float step = Mathf.Min(target - accumulator, length - traveled);
+
+            if (isDrawingDash)
+            {
+                Vector3 subStart = start + direction * traveled;
+                Vector3 subEnd = subStart + direction * step;
+                DrawSolidLine(subStart, subEnd, failureColor);
+            }
+
+            traveled += step;
+            accumulator += step;
+
+            if (accumulator >= target - 0.001f)
+            {
+                accumulator = 0f;
+                isDrawingDash = !isDrawingDash;
+            }
         }
     }
 
@@ -302,9 +356,13 @@ public class PathVerifier : MonoBehaviour
     {
         if (linePrefab == null || feedbackLinesParent == null) return;
 
-        foreach (Transform child in feedbackLinesParent) Destroy(child.gameObject);
+        foreach (Transform child in feedbackLinesParent)
+            Destroy(child.gameObject);
 
         var points = signalPath.PathPoints;
+
+        float patternAccumulator = 0f;
+        bool isDrawingDash = true;
 
         for (int i = 0; i < points.Count - 1; i++)
         {
@@ -314,13 +372,18 @@ public class PathVerifier : MonoBehaviour
 
             Vector3 closest = FindClosestPointOnFullPath(midpoint, correctCorners);
             bool onPath = Vector3.Distance(midpoint, closest) <= cornerTolerance;
-            Color color = onPath ? successColor : failureColor;
 
-            LineRenderer lr = Instantiate(linePrefab, feedbackLinesParent);
-            lr.SetPosition(0, p_start);
-            lr.SetPosition(1, p_end);
-            lr.startColor = color;
-            lr.endColor = color;
+            if (onPath)
+            {
+                DrawSolidLine(p_start, p_end, successColor);
+
+                patternAccumulator = 0f;
+                isDrawingDash = true;
+            }
+            else
+            {
+                DrawDashedLine(p_start, p_end, ref patternAccumulator, ref isDrawingDash);
+            }
         }
     }
 
