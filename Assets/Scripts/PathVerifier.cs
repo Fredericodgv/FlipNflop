@@ -216,7 +216,6 @@ public class PathVerifier : MonoBehaviour
         int covered = 0;
         for (int i = 0; i < correctCorners.Count - 1; i++)
         {
-            // Ignora segmentos verticais (transições de nível lógico)
             if (Mathf.Abs(correctCorners[i].y - correctCorners[i + 1].y) > 0.1f) continue;
 
             Vector3 midpoint = (correctCorners[i] + correctCorners[i + 1]) / 2f;
@@ -260,7 +259,6 @@ public class PathVerifier : MonoBehaviour
             Vector3 p_start = playerPath[i];
             Vector3 p_end = playerPath[i + 1];
 
-            // --- Verificação de pertencimento ao caminho ---
             Vector3 closestStart = FindClosestPointOnFullPath(p_start, correctCorners);
             Vector3 closestEnd = FindClosestPointOnFullPath(p_end, correctCorners);
 
@@ -269,7 +267,6 @@ public class PathVerifier : MonoBehaviour
 
             bool isSegmentCorrect = startIsOnPath && endIsOnPath;
 
-            // --- Regra extra para linhas verticais ---
             bool isVertical = Mathf.Abs(p_start.y - p_end.y) > 0.1f;
 
             if (isVertical && isSegmentCorrect)
@@ -290,11 +287,9 @@ public class PathVerifier : MonoBehaviour
                     isSegmentCorrect = false;
             }
 
-            // --- Contadores ---
             totalSegments++;
             if (isSegmentCorrect) correctSegments++;
 
-            // --- Desenho ---
             if (isSegmentCorrect)
             {
                 DrawSolidLine(p_start, p_end, successColor);
