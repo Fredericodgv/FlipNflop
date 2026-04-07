@@ -1,3 +1,13 @@
+## [0.6.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.6.1...v0.6.2) (2026-04-07)
+
+
+### Bug Fixes
+
+* adjust timer and score ([bf9ed72](https://github.com/Fredericodgv/FlipNflop/commit/bf9ed72481d3ba8c3c69b5d9b8e32020c03e9053))
+* replace solid error feedback with dashed lines ([0e4e1b5](https://github.com/Fredericodgv/FlipNflop/commit/0e4e1b523e14895243c4962b490550d1ede49956))
+
+
+
 ## [0.6.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.6.0...v0.6.1) (2026-03-17)
 
 
@@ -41,15 +51,6 @@
 ### Features
 
 * Implements scoring system and feedback in PathVerifier ([3643ad2](https://github.com/Fredericodgv/FlipNflop/commit/3643ad241e9fd70d49b778591666981b3b269f11))
-
-
-
-## [0.4.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.4.2...v0.4.3) (2026-01-06)
-
-
-### Bug Fixes
-
-* Add HintController to Player comands ([c08882f](https://github.com/Fredericodgv/FlipNflop/commit/c08882f89bc83c6e2f25fe0afb0f6eed3ad866ea))
 
 
 
