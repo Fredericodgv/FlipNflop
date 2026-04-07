@@ -464,12 +464,9 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void PlayFootstepSound()
     {
-        if (isGrounded && audioSource != null && footstepSound != null)
-        {
-            audioSource.pitch = Random.Range(1f - pitchVariation, 1f + pitchVariation);
+        audioSource.pitch = Random.Range(1f - pitchVariation, 1f + pitchVariation);
 
-            audioSource.PlayOneShot(footstepSound);
-        }
+        audioSource.PlayOneShot(footstepSound);
     }
 
     #endregion
