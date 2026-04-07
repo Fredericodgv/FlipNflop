@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float minRunAnimSpeed = 0.3f;
     [Tooltip("If true, base run animation speed on input target speed (immediate); otherwise use rigidbody velocity (lagged).")]
     [SerializeField] private bool useInputForRunSpeed = true;
+
     [Header("Movement Smoothing")]
     [Tooltip("How fast the player accelerates toward target speed (units/s^2)")]
     [SerializeField] private float acceleration = 25f;
@@ -52,6 +53,8 @@ public class PlayerController : MonoBehaviour
     [Header("Object References")]
     [SerializeField] private PathVerifier pathVerifier;
     [SerializeField] private CameraController cameraController;
+    [SerializeField] private HintController hintController;
+    [SerializeField] private ScoreController scoreController;
 
     [Header("Input System")]
     [Tooltip("Reference to the Move action (1D Axis/float).")]
@@ -62,6 +65,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionReference flipGravityAction;
     [Tooltip("Reference to the Dash action (Button).")]
     [SerializeField] private InputActionReference dashAction;
+
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip footstepSound;
+    [Tooltip("Variação do som dos passos para não parecer uma metralhadora repetitiva.")]
+    [SerializeField] private float pitchVariation = 0.1f;
+
 
     /// <summary>
     /// Logical gravity inversion state (independent from temporary physics tweaks like gravityScale = 0 during dash).
@@ -81,19 +91,36 @@ public class PlayerController : MonoBehaviour
     private float dashEndTime;
     private float nextDashTime;
     private float dashDir = 1f;
-    // Dash physics preservation (Hollow Knight-style height lock)
+
+    // Dash physics preservation
     private float preDashGravityScale = 1f;
     private RigidbodyConstraints2D preDashConstraints;
     private float dashLockY;
 
     /// <summary>
-    /// Initializes references to required components.
+    /// Initializes references and validates dependencies.
     /// </summary>
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        scoreController = GetOrFind(scoreController, "ScoreController não encontrado!");
+        pathVerifier = GetOrFind(pathVerifier, "PathVerifier não encontrado!");
+        cameraController = GetOrFind(cameraController, "CameraController não encontrado!");
+        hintController = GetOrFind(hintController, "HintController não encontrado!");
+    }
+
+    private T GetOrFind<T>(T reference, string errorMessage) where T : Object
+    {
+        if (reference == null)
+            reference = FindFirstObjectByType<T>();
+
+        if (reference == null)
+            Debug.LogError(errorMessage);
+
+        return reference;
     }
 
     /// <summary>
@@ -102,7 +129,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         rb.gravityScale = Mathf.Abs(rb.gravityScale);
-        isGravityInvertedState = rb.gravityScale < 0f ? true : false;
+        isGravityInvertedState = rb.gravityScale < 0f;
     }
 
     /// <summary>
@@ -110,8 +137,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void Update()
     {
-        CheckWinAndLoseConditions();
         UpdateAnimator();
+        CheckWinAndLoseConditions();
     }
 
     /// <summary>
@@ -126,153 +153,95 @@ public class PlayerController : MonoBehaviour
         HandleDash();
     }
 
-
     #region Input & State Checks
 
-    /// <summary>
-    /// Subscribes to and enables Input System actions.
-    /// </summary>
     private void OnEnable()
     {
-        if (moveAction != null && moveAction.action != null)
+        if (moveAction?.action != null)
         {
             moveAction.action.performed += OnMovePerformed;
             moveAction.action.canceled += OnMoveCanceled;
             moveAction.action.Enable();
         }
 
-        if (jumpAction != null && jumpAction.action != null)
+        if (jumpAction?.action != null)
         {
             jumpAction.action.performed += OnJumpPerformed;
             jumpAction.action.Enable();
         }
 
-        if (flipGravityAction != null && flipGravityAction.action != null)
+        if (flipGravityAction?.action != null)
         {
             flipGravityAction.action.performed += OnFlipGravityPerformed;
             flipGravityAction.action.Enable();
         }
 
-        if (dashAction != null && dashAction.action != null)
+        if (dashAction?.action != null)
         {
             dashAction.action.performed += OnDashPerformed;
             dashAction.action.Enable();
         }
     }
 
-    /// <summary>
-    /// Unsubscribes from and disables Input System actions.
-    /// </summary>
     private void OnDisable()
     {
-        if (moveAction != null && moveAction.action != null)
+        if (moveAction?.action != null)
         {
             moveAction.action.performed -= OnMovePerformed;
             moveAction.action.canceled -= OnMoveCanceled;
             moveAction.action.Disable();
         }
 
-        if (jumpAction != null && jumpAction.action != null)
+        if (jumpAction?.action != null)
         {
             jumpAction.action.performed -= OnJumpPerformed;
             jumpAction.action.Disable();
         }
 
-        if (flipGravityAction != null && flipGravityAction.action != null)
+        if (flipGravityAction?.action != null)
         {
             flipGravityAction.action.performed -= OnFlipGravityPerformed;
             flipGravityAction.action.Disable();
         }
 
-        if (dashAction != null && dashAction.action != null)
+        if (dashAction?.action != null)
         {
             dashAction.action.performed -= OnDashPerformed;
             dashAction.action.Disable();
         }
     }
 
-    /// <summary>
-    /// Receives the horizontal movement axis value.
-    /// </summary>
-    /// <param name="ctx">Input context (axis float).</param>
-    private void OnMovePerformed(InputAction.CallbackContext ctx)
-    {
-        horizontalInput = ctx.ReadValue<float>();
-    }
+    private void OnMovePerformed(InputAction.CallbackContext ctx) => horizontalInput = ctx.ReadValue<float>();
+    private void OnMoveCanceled(InputAction.CallbackContext ctx) => horizontalInput = 0f;
+    private void OnJumpPerformed(InputAction.CallbackContext ctx) => jumpInput = true;
+    private void OnFlipGravityPerformed(InputAction.CallbackContext ctx) => gravityFlipInput = true;
+    private void OnDashPerformed(InputAction.CallbackContext ctx) => TryStartDash();
 
-    /// <summary>
-    /// Resets horizontal movement when input is canceled.
-    /// </summary>
-    /// <param name="ctx">Input context.</param>
-    private void OnMoveCanceled(InputAction.CallbackContext ctx)
-    {
-        horizontalInput = 0f;
-    }
-
-    /// <summary>
-    /// Flags the jump request (consumed in FixedUpdate).
-    /// </summary>
-    /// <param name="ctx">Input context.</param>
-    private void OnJumpPerformed(InputAction.CallbackContext ctx)
-    {
-        jumpInput = true;
-    }
-
-    /// <summary>
-    /// Flags the gravity flip request (consumed in FixedUpdate).
-    /// </summary>
-    /// <param name="ctx">Input context.</param>
-    private void OnFlipGravityPerformed(InputAction.CallbackContext ctx)
-    {
-        gravityFlipInput = true;
-    }
-
-    private void OnDashPerformed(InputAction.CallbackContext ctx)
-    {
-        TryStartDash();
-    }
-
-    /// <summary>
-    /// Updates the grounded state via OverlapCircle.
-    /// </summary>
     private void CheckIfGrounded()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, groundLayer);
     }
 
-    /// <summary>
-    /// Checks lose (fall) and level end conditions and triggers PathVerifier/Camera.
-    /// </summary>
     private void CheckWinAndLoseConditions()
     {
-        if (transform.position.y < fallKillThreshold || transform.position.y > -fallKillThreshold)
+        float limit = Mathf.Abs(fallKillThreshold);
+        float y = transform.position.y;
+
+        if (y < -limit || y > limit)
         {
             PlayerDeath();
         }
 
         if (transform.position.x > LevelManager.Instance.levelEndX + 1)
         {
-            // Para o movimento do player
+            scoreController.StopTimer();
+
             rb.linearVelocity = Vector2.zero;
             horizontalInput = 0f;
 
-            if (pathVerifier != null)
-            {
-                pathVerifier.FinalizeAndCheckPath();
-            }
-            else
-            {
-                Debug.LogError("Referência para o PathVerifier não definida no PlayerController!");
-            }
+            pathVerifier.FinalizeAndCheckPath();
 
-            if (cameraController != null)
-            {
-                cameraController.EnableManualControl();
-            }
-            else
-            {
-                Debug.LogError("Referência para o CameraController não definida no PlayerController!");
-            }
+            cameraController.EnableManualControl();
 
             this.enabled = false;
         }
@@ -283,18 +252,17 @@ public class PlayerController : MonoBehaviour
     #region Movement & Actions
 
     /// <summary>
-    /// Applies acceleration/deceleration to horizontal movement and flips the sprite.
+    /// Applies horizontal movement based on player input.
+    /// If the player is currently dashing, overrides movement to maintain constant dash velocity
+    /// and locks vertical position.
     /// </summary>
     private void HandleMovement()
     {
-        // If dashing, override horizontal velocity
         if (isDashing)
         {
-            // Maintain constant height and fixed horizontal speed during dash
             rb.linearVelocity = new Vector2(dashDir * dashSpeed, 0f);
-            // Force exact Y lock to avoid micro drift with some physics setups
             rb.position = new Vector2(rb.position.x, dashLockY);
-            Flip();
+            FlipSprite();
             return;
         }
 
@@ -304,16 +272,18 @@ public class PlayerController : MonoBehaviour
         if (!isGrounded) accel *= airControlMultiplier;
 
         float targetX = horizontalInput * moveSpeed;
-
         float newX = Mathf.MoveTowards(currentX, targetX, accel * Time.fixedDeltaTime);
+
         rb.linearVelocity = new Vector2(newX, rb.linearVelocity.y);
-        Flip();
+        FlipSprite();
     }
 
     /// <summary>
-    /// Sets the sprite orientation based on direction and gravity.
+    /// Updates the sprite orientation based on movement direction and gravity state.
+    /// During a dash, orientation follows the dash direction. Otherwise, it reflects
+    /// the current horizontal input, adjusted for gravity inversion.
     /// </summary>
-    private void Flip()
+    private void FlipSprite()
     {
         if (isFlipping) return;
 
@@ -329,7 +299,8 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Performs the jump when requested and grounded.
+    /// Processes jump input when the player is grounded, applying an instantaneous
+    /// vertical velocity in the direction opposite to gravity. Triggers the jump animation.
     /// </summary>
     private void HandleJump()
     {
@@ -343,7 +314,9 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Inverts gravity and rotates the character when requested and grounded.
+    /// Handles gravity inversion when triggered by input. Flips the gravity scale,
+    /// rotates the player, updates sprite orientation, and toggles the logical gravity state.
+    /// Only allowed when grounded and not dashing.
     /// </summary>
     private void HandleGravityFlip()
     {
@@ -377,23 +350,16 @@ public class PlayerController : MonoBehaviour
     {
         if (Time.time < nextDashTime) return;
 
-        // Choose dash direction robustly: prefer live input, then current velocity, then current facing
         if (Mathf.Abs(horizontalInput) > 0.01f)
-        {
             dashDir = Mathf.Sign(horizontalInput);
-        }
         else if (Mathf.Abs(rb.linearVelocity.x) > 0.05f)
-        {
             dashDir = Mathf.Sign(rb.linearVelocity.x);
-        }
         else
         {
-            // Fallback: derive intended left/right from current facing, compensating for gravity inversion
             bool facingLeft = spriteRenderer.flipX ^ IsGravityInverted;
             dashDir = facingLeft ? -1f : 1f;
         }
 
-        // Lock height during dash
         dashLockY = rb.position.y;
         preDashGravityScale = rb.gravityScale;
         preDashConstraints = rb.constraints;
@@ -407,7 +373,9 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Updates/ends the dash and restores physics when its duration elapses.
+    /// Updates the dash state over time. Ends the dash when its duration expires,
+    /// restores previous physics settings, and smoothly blends horizontal velocity
+    /// back toward player-controlled movement using inertia.
     /// </summary>
     private void HandleDash()
     {
@@ -415,11 +383,9 @@ public class PlayerController : MonoBehaviour
         if (Time.time >= dashEndTime)
         {
             isDashing = false;
-            // Restore physics
             rb.gravityScale = preDashGravityScale;
             rb.constraints = preDashConstraints;
 
-            // Reduce inertia so consecutive dashes don't keep excessive speed
             float currentX = rb.linearVelocity.x;
             float targetX = horizontalInput * moveSpeed;
             float newX = Mathf.Lerp(currentX, targetX, 1f - Mathf.Clamp01(postDashInertiaFactor));
@@ -432,37 +398,25 @@ public class PlayerController : MonoBehaviour
     #region Collision & Death
 
     /// <summary>
-    /// Activates the Game Over UI and disables the player object.
+    /// Handles the player's death by stopping the timer, enabling manual camera control
+    /// with a right boundary, evaluating the path up to the death position, and disabling
+    /// the player GameObject.
     /// </summary>
     private void PlayerDeath()
     {
-        // Entrega o controle para a câmera com limite direito fixado na posição de morte
-        if (cameraController != null)
-        {
-            cameraController.EnableManualControlWithRightLimit(transform.position.x);
-        }
-        else
-        {
-            Debug.LogError("Referência para o CameraController não definida no PlayerController!");
-        }
+        scoreController.StopTimer();
 
-        // Finaliza e avalia o caminho percorrido até o X de morte
-        if (pathVerifier != null)
-        {
-            pathVerifier.FinalizeAndCheckPathUntil(transform.position.x);
-        }
-        else
-        {
-            Debug.LogError("Referência para o PathVerifier não definida no PlayerController!");
-        }
+        cameraController.EnableManualControlWithRightLimit(transform.position.x);
+
+        pathVerifier.FinalizeAndCheckPathUntil(transform.position.x);
 
         gameObject.SetActive(false);
     }
 
     /// <summary>
-    /// Kills the player on collision with enemies.
+    /// Detects collisions with other objects. If the player collides with an object
+    /// tagged as "Enemy", triggers the death routine.
     /// </summary>
-    /// <param name="collision">2D collision data.</param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Enemy"))
@@ -476,7 +430,9 @@ public class PlayerController : MonoBehaviour
     #region Animation
 
     /// <summary>
-    /// Updates animation parameters (run, fall, run clip speed).
+    /// Updates animation parameters based on the player's current state, including
+    /// running, grounded status, falling condition relative to gravity direction,
+    /// and normalized horizontal speed with optional input-based responsiveness.
     /// </summary>
     private void UpdateAnimator()
     {
@@ -499,8 +455,28 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
+    #region Audio
+
     /// <summary>
-    /// Draws the ground check gizmo in the scene when selected
+    /// Plays a randomized footstep sound when the player is grounded, ensuring
+    /// an audio source and clip are available. Applies slight pitch variation
+    /// to avoid repetitive sound effects.
+    /// </summary>
+    public void PlayFootstepSound()
+    {
+        if (isGrounded && audioSource != null && footstepSound != null)
+        {
+            audioSource.pitch = Random.Range(1f - pitchVariation, 1f + pitchVariation);
+
+            audioSource.PlayOneShot(footstepSound);
+        }
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Draws a wireframe sphere in the editor to visualize the ground check area
+    /// when the GameObject is selected.
     /// </summary>
     private void OnDrawGizmosSelected()
     {

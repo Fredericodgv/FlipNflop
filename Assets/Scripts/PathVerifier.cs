@@ -18,8 +18,9 @@ public class PathVerifier : MonoBehaviour
 
     [Header("Referências Adicionais")]
     [SerializeField] private SignalPath signalPath;
-    [SerializeField] private GameObject successUI;
-    [SerializeField] private GameObject failureUI;
+    [SerializeField] private GameObject resultPanel;
+    [SerializeField] private GameObject continueButton;
+    [SerializeField] private GameObject retryButton;
     [SerializeField] private float cornerTolerance = 1.0f;
 
     [Header("Configuração de Feedback Visual")]
@@ -34,13 +35,22 @@ public class PathVerifier : MonoBehaviour
     [Tooltip("O objeto pai que agrupará as linhas de feedback.")]
     [SerializeField] private Transform feedbackLinesParent;
 
+    [Header("Configuração da Linha Tracejada (Matemática)")]
+    [Tooltip("O tamanho de cada tracinho vermelho.")]
+    [SerializeField] private float dashLength = 0.15f;
+    [Tooltip("O tamanho do espaço vazio entre os tracinhos.")]
+    [SerializeField] private float dashGap = 0.1f;
+
     [Header("Debug")]
     [Tooltip("Se ativado, mostra logs detalhados sobre a validação do caminho.")]
     [SerializeField] private bool enableDebugLogs = false;
     [Tooltip("Se ativado, mostra gizmos para quinas não atingidas durante o jogo.")]
     [SerializeField] private bool showMissedCornersInGame = false;
+    [Tooltip("Se ativado, colore a linha do jogador em tempo real durante o jogo.")]
+    [SerializeField] private bool realtimeFeedback = false;
 
     private List<Vector3> missedCorners = new List<Vector3>();
+    private LineRenderer signalLineRenderer;
 
     #endregion
 
@@ -59,8 +69,18 @@ public class PathVerifier : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        if (successUI != null) successUI.SetActive(false);
-        if (failureUI != null) failureUI.SetActive(false);
+        if (resultPanel != null) resultPanel.SetActive(false);
+
+        if (signalPath != null)
+            signalLineRenderer = signalPath.GetComponent<LineRenderer>();
+    }
+
+    private void Update()
+    {
+        if (!realtimeFeedback || signalPath == null || correctCorners == null || signalPath.PathPoints.Count < 2)
+            return;
+
+        UpdateRealtimeFeedback();
     }
 
     /// <summary>
@@ -143,13 +163,17 @@ public class PathVerifier : MonoBehaviour
         if (signalPath == null || signalPath.PathPoints.Count < 2)
         {
             Debug.LogError("Caminho do jogador inválido ou não definido!");
-            if (failureUI != null) failureUI.SetActive(true);
+            if (resultPanel != null)
+            {
+                ActivateWithParent(resultPanel);
+                if (continueButton != null) continueButton.SetActive(false);
+                if (retryButton != null) retryButton.SetActive(true);
+            }
             return;
         }
 
         missedCorners.Clear();
-        signalPath.GetComponent<LineRenderer>().enabled = false;
-        // Gabarito já inclui phaseEndX (diagramEndX + slack). Sem necessidade de ajuste dinâmico.
+        signalLineRenderer.enabled = false;
 
         if (enableDebugLogs)
         {
@@ -159,12 +183,13 @@ public class PathVerifier : MonoBehaviour
             Debug.Log($"  Tolerância: {cornerTolerance}");
         }
 
-        // Primeiro avalia quais quinas foram perdidas
         List<bool> cornerChecks = EvaluateCorrectCorners(signalPath.PathPoints);
         bool isPathCorrectOverall = !cornerChecks.Contains(false);
 
-        // Depois desenha o feedback usando a informação de quinas perdidas
-        DrawFeedbackLines(signalPath.PathPoints, cornerChecks);
+        int gabaritoTotal = CountHorizontalGabaritoSegments();
+        DrawFeedbackLines(signalPath.PathPoints, cornerChecks, out int correct, out int total);
+        int coveredSegments = CountCoveredGabaritoSegments(signalPath.PathPoints);
+        ScoreController.Instance?.ReportResult(coveredSegments, gabaritoTotal);
 
         if (enableDebugLogs)
         {
@@ -173,98 +198,187 @@ public class PathVerifier : MonoBehaviour
             Debug.Log($"<color=yellow>[PathVerifier] Resultado: {correctCount}/{totalCount} quinas atingidas</color>");
         }
 
-        if (isPathCorrectOverall)
+        if (resultPanel != null)
         {
-            if (successUI != null)
-            {
-                ActivateWithParent(successUI);
-                if (failureUI != null) failureUI.SetActive(false);
-            }
+            ActivateWithParent(resultPanel);
+            if (continueButton != null) continueButton.SetActive(isPathCorrectOverall);
+            if (retryButton != null) retryButton.SetActive(!isPathCorrectOverall);
         }
-        else
+    }
+
+    /// <summary>
+    /// Conta quantos segmentos do gabarito foram cobertos pelo caminho do jogador.
+    /// Um segmento gabarito[i]→gabarito[i+1] é considerado coberto se seu ponto
+    /// médio está suficientemente próximo do caminho do jogador.
+    /// </summary>
+    private int CountCoveredGabaritoSegments(List<Vector3> playerPath)
+    {
+        int covered = 0;
+        for (int i = 0; i < correctCorners.Count - 1; i++)
         {
-            if (failureUI != null)
-            {
-                ActivateWithParent(failureUI);
-                if (successUI != null) successUI.SetActive(false);
-            }
+            if (Mathf.Abs(correctCorners[i].y - correctCorners[i + 1].y) > 0.1f) continue;
+
+            Vector3 midpoint = (correctCorners[i] + correctCorners[i + 1]) / 2f;
+            Vector3 closest = FindClosestPointOnFullPath(midpoint, playerPath);
+            if (Vector3.Distance(midpoint, closest) <= cornerTolerance)
+                covered++;
         }
+        return covered;
+    }
+
+    private int CountHorizontalGabaritoSegments()
+    {
+        int count = 0;
+        for (int i = 0; i < correctCorners.Count - 1; i++)
+        {
+            if (Mathf.Abs(correctCorners[i].y - correctCorners[i + 1].y) <= 0.1f)
+                count++;
+        }
+        return count;
     }
 
     /// <summary>
     /// Desenha o feedback iterando sobre cada pequeno segmento do caminho do jogador.
     /// Linhas verticais próximas a quinas perdidas são pintadas de vermelho.
     /// </summary>
-    private void DrawFeedbackLines(List<Vector3> playerPath, List<bool> cornerChecks)
+    private void DrawFeedbackLines(List<Vector3> playerPath, List<bool> cornerChecks, out int correctSegments, out int totalSegments)
     {
-        if (linePrefab == null || feedbackLinesParent == null) return;
-        foreach (Transform child in feedbackLinesParent) Destroy(child.gameObject);
+        correctSegments = 0;
+        totalSegments = 0;
 
-        int correctSegments = 0;
-        int incorrectSegments = 0;
+        if (linePrefab == null || feedbackLinesParent == null) return;
+
+        foreach (Transform child in feedbackLinesParent)
+            Destroy(child.gameObject);
+
+        float patternAccumulator = 0f;
+        bool isDrawingDash = true;
 
         for (int i = 0; i < playerPath.Count - 1; i++)
         {
             Vector3 p_start = playerPath[i];
             Vector3 p_end = playerPath[i + 1];
 
-            // Verifica se é linha vertical (transição entre níveis)
-            bool isVerticalLine = Mathf.Abs(p_start.y - p_end.y) > 0.1f;
+            Vector3 closestStart = FindClosestPointOnFullPath(p_start, correctCorners);
+            Vector3 closestEnd = FindClosestPointOnFullPath(p_end, correctCorners);
 
-            bool isSegmentCorrect = true;
+            bool startIsOnPath = Vector3.Distance(p_start, closestStart) <= cornerTolerance;
+            bool endIsOnPath = Vector3.Distance(p_end, closestEnd) <= cornerTolerance;
 
-            if (isVerticalLine)
+            bool isSegmentCorrect = startIsOnPath && endIsOnPath;
+
+            bool isVertical = Mathf.Abs(p_start.y - p_end.y) > 0.1f;
+
+            if (isVertical && isSegmentCorrect)
             {
-                // Para linhas verticais: verifica se algum dos endpoints está próximo de uma quina perdida
-                for (int c = 0; c < correctCorners.Count; c++)
+                bool aligned = false;
+
+                foreach (Vector3 corner in correctCorners)
                 {
-                    if (!cornerChecks[c]) // Quina foi perdida
+                    if (Mathf.Abs(corner.x - p_start.x) <= cornerTolerance &&
+                        Mathf.Abs(corner.x - p_end.x) <= cornerTolerance)
                     {
-                        Vector3 missedCorner = correctCorners[c];
-
-                        // Verifica se a linha vertical passa perto desta quina perdida
-                        // Tanto em X quanto em Y (para garantir que é a linha correta)
-                        float distToStart = Vector3.Distance(p_start, missedCorner);
-                        float distToEnd = Vector3.Distance(p_end, missedCorner);
-
-                        // Se qualquer endpoint da linha está próximo da quina perdida
-                        if (distToStart <= cornerTolerance * 1.5f || distToEnd <= cornerTolerance * 1.5f)
-                        {
-                            isSegmentCorrect = false;
-                            break;
-                        }
+                        aligned = true;
+                        break;
                     }
                 }
+
+                if (!aligned)
+                    isSegmentCorrect = false;
+            }
+
+            totalSegments++;
+            if (isSegmentCorrect) correctSegments++;
+
+            if (isSegmentCorrect)
+            {
+                DrawSolidLine(p_start, p_end, successColor);
+
+                patternAccumulator = 0f;
+                isDrawingDash = true;
             }
             else
             {
-                // Para linhas horizontais: verifica se ambos os pontos estão no caminho correto
-                Vector3 closestToStart = FindClosestPointOnFullPath(p_start, correctCorners);
-                float distStart = Vector3.Distance(p_start, closestToStart);
-                bool startIsOnPath = distStart <= cornerTolerance;
+                DrawDashedLine(p_start, p_end, ref patternAccumulator, ref isDrawingDash);
+            }
+        }
+    }
 
-                Vector3 closestToEnd = FindClosestPointOnFullPath(p_end, correctCorners);
-                float distEnd = Vector3.Distance(p_end, closestToEnd);
-                bool endIsOnPath = distEnd <= cornerTolerance;
+    private void DrawSolidLine(Vector3 start, Vector3 end, Color color)
+    {
+        LineRenderer line = Instantiate(linePrefab, feedbackLinesParent);
+        line.SetPosition(0, start);
+        line.SetPosition(1, end);
+        line.startColor = color;
+        line.endColor = color;
+    }
 
-                isSegmentCorrect = startIsOnPath && endIsOnPath;
+    private void DrawDashedLine(Vector3 start, Vector3 end, ref float accumulator, ref bool isDrawingDash)
+    {
+        float length = Vector3.Distance(start, end);
+        Vector3 direction = (end - start).normalized;
+        float traveled = 0f;
+
+        while (traveled < length - 0.001f)
+        {
+            float target = isDrawingDash ? dashLength : dashGap;
+            float step = Mathf.Min(target - accumulator, length - traveled);
+
+            if (isDrawingDash)
+            {
+                Vector3 subStart = start + direction * traveled;
+                Vector3 subEnd = subStart + direction * step;
+                DrawSolidLine(subStart, subEnd, failureColor);
             }
 
-            if (isSegmentCorrect) correctSegments++;
-            else incorrectSegments++;
+            traveled += step;
+            accumulator += step;
 
-            Color segmentColor = isSegmentCorrect ? successColor : failureColor;
-
-            LineRenderer lineSegment = Instantiate(linePrefab, feedbackLinesParent);
-            lineSegment.SetPosition(0, p_start);
-            lineSegment.SetPosition(1, p_end);
-            lineSegment.startColor = segmentColor;
-            lineSegment.endColor = segmentColor;
+            if (accumulator >= target - 0.001f)
+            {
+                accumulator = 0f;
+                isDrawingDash = !isDrawingDash;
+            }
         }
+    }
 
-        if (enableDebugLogs)
+    /// <summary>
+    /// Atualiza o feedback em tempo real spawnando LineRenderers por segmento do caminho do jogador.
+    /// Cada segmento é colorido de verde (sobre o gabarito) ou vermelho (fora do gabarito),
+    /// sem interpolação — cortes abruptos de cor nos pontos de transição.
+    /// </summary>
+    private void UpdateRealtimeFeedback()
+    {
+        if (linePrefab == null || feedbackLinesParent == null) return;
+
+        foreach (Transform child in feedbackLinesParent)
+            Destroy(child.gameObject);
+
+        var points = signalPath.PathPoints;
+
+        float patternAccumulator = 0f;
+        bool isDrawingDash = true;
+
+        for (int i = 0; i < points.Count - 1; i++)
         {
-            Debug.Log($"  Segmentos: <color=green>{correctSegments} corretos</color> | <color=red>{incorrectSegments} incorretos</color>");
+            Vector3 p_start = points[i];
+            Vector3 p_end = points[i + 1];
+            Vector3 midpoint = (p_start + p_end) / 2f;
+
+            Vector3 closest = FindClosestPointOnFullPath(midpoint, correctCorners);
+            bool onPath = Vector3.Distance(midpoint, closest) <= cornerTolerance;
+
+            if (onPath)
+            {
+                DrawSolidLine(p_start, p_end, successColor);
+
+                patternAccumulator = 0f;
+                isDrawingDash = true;
+            }
+            else
+            {
+                DrawDashedLine(p_start, p_end, ref patternAccumulator, ref isDrawingDash);
+            }
         }
     }
 
@@ -272,14 +386,6 @@ public class PathVerifier : MonoBehaviour
 
     #region Helper Functions
 
-    /// <summary>
-    /// Evaluates if a single corner was hit by the player's path.
-    /// </summary>
-    /// <param name="corner">The corner position to evaluate</param>
-    /// <param name="playerPath">The player's complete path</param>
-    /// <param name="minDistance">Output: minimum distance found</param>
-    /// <param name="closestPoint">Output: closest point on player path</param>
-    /// <returns>True if corner was hit within tolerance</returns>
     private bool EvaluateCornerHit(Vector3 corner, List<Vector3> playerPath, out float minDistance, out Vector3 closestPoint)
     {
         minDistance = float.MaxValue;
@@ -307,23 +413,15 @@ public class PathVerifier : MonoBehaviour
         return wasHit;
     }
 
-    /// <summary>
-    /// Activates the given GameObject and ensures its parent container is active.
-    /// </summary>
     private void ActivateWithParent(GameObject target)
     {
         if (target == null) return;
         Transform parent = target.transform.parent;
         if (parent != null && !parent.gameObject.activeSelf)
-        {
             parent.gameObject.SetActive(true);
-        }
         if (!target.activeSelf) target.SetActive(true);
     }
 
-    /// <summary>
-    /// Avalia se a linha completa do jogador passa perto de cada quina do gabarito.
-    /// </summary>
     private List<bool> EvaluateCorrectCorners(List<Vector3> playerPath)
     {
         var checks = new List<bool>();
@@ -338,23 +436,16 @@ public class PathVerifier : MonoBehaviour
             {
                 missedCorners.Add(correctCorner);
                 if (enableDebugLogs)
-                {
                     Debug.LogWarning($"  <color=red>✗ Quina #{cornerIndex} PERDIDA:</color> Pos={correctCorner} | Distância mínima={minDistance:F2} | Ponto mais próximo={closestPlayerPoint}");
-                }
             }
             else if (enableDebugLogs)
-            {
                 Debug.Log($"  <color=green>✓ Quina #{cornerIndex} OK:</color> Pos={correctCorner} | Distância={minDistance:F2}");
-            }
 
             cornerIndex++;
         }
         return checks;
     }
 
-    /// <summary>
-    /// Finds the closest point on the polyline defined by 'path' to the given target point.
-    /// </summary>
     private Vector3 FindClosestPointOnFullPath(Vector3 targetPoint, List<Vector3> path)
     {
         if (path.Count == 0) return Vector3.zero;
@@ -376,9 +467,6 @@ public class PathVerifier : MonoBehaviour
         return bestPoint;
     }
 
-    /// <summary>
-    /// Returns the closest point on the line segment [lineStart, lineEnd] to the specified point.
-    /// </summary>
     private Vector3 FindClosestPointOnLineSegment(Vector3 point, Vector3 lineStart, Vector3 lineEnd)
     {
         Vector3 lineDirection = lineEnd - lineStart;
@@ -426,13 +514,8 @@ public class PathVerifier : MonoBehaviour
 
     #endregion
 
-
     #region Gabarito Generation
 
-    /// <summary>
-    /// Generate the reference path (correctCorners) using the LevelJsonLoader.
-    /// This method assumes a LevelJsonLoader exists in the scene. If it's missing, an error is logged.
-    /// </summary>
     private void GenerateCorrectPath()
     {
         var loader = UnityEngine.Object.FindFirstObjectByType<LevelJsonLoader>();
@@ -447,13 +530,8 @@ public class PathVerifier : MonoBehaviour
         BuildCorrectCornersFromSignalEvents(events, 0f, false);
     }
 
-    /// <summary>
-    /// Build the correctCorners list from an array of output samples (one per clock tick).
-    /// The initial state is assumed LOW at x=0; the first sample corresponds to x = step.
-    /// </summary>
     public struct SignalEvent
     {
-        // X position (world or tile units) where this sample/event occurs
         public float x;
         public bool value;
 
@@ -464,25 +542,16 @@ public class PathVerifier : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Build the correctCorners list from an ordered list of signal events. Each event defines the
-    /// sampled output level at position X. This is generic and can represent clock-aligned samples
-    /// or asynchronous inputs (preset/clear) — the loader should prepare the event list.
-    /// The initial state is assumed LOW at x=initialX unless initialState is set to true.
-    /// </summary>
     public void BuildCorrectCornersFromSignalEvents(List<SignalEvent> events, float initialX = 0f, bool initialState = false)
     {
         correctCorners = new List<Vector3>();
         bool qState = initialState;
         float startY = qState ? highY : lowY;
 
-        // Always add initial corner
         correctCorners.Add(new Vector3(initialX, startY, 0f));
 
         if (events == null || events.Count == 0)
         {
-            // No events: output is constant throughout the level
-            // Add end corner to show the constant line
             float phaseEndX = (LevelManager.Instance != null) ? LevelManager.Instance.phaseEndX : 0f;
             correctCorners.Add(new Vector3(phaseEndX, startY, 0f));
             return;
@@ -504,7 +573,6 @@ public class PathVerifier : MonoBehaviour
             }
         }
 
-        // Ensure the final horizontal segment is represented up to the level end X
         float endX = (LevelManager.Instance != null) ? LevelManager.Instance.phaseEndX : (events[events.Count - 1].x);
         correctCorners.Add(new Vector3(endX, qState ? highY : lowY, 0f));
 

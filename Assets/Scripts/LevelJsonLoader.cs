@@ -43,6 +43,10 @@ public class LevelJsonLoader : MonoBehaviour
     [Tooltip("Map JSON obstacle 'type' to prefab to spawn")]
     [SerializeField] private List<ObstacleSpawner.ObstaclePrefabEntry> obstaclePrefabs = new List<ObstacleSpawner.ObstaclePrefabEntry>();
 
+    [Header("HUD Labels")]
+    [Tooltip("Optional: SignalLabelRenderer to position HUD labels at signal Y positions")]
+    [SerializeField] private SignalLabelRenderer signalLabelRenderer;
+
     [Header("Debug")]
     [Tooltip("If true, logs the computed output vector (0/1) used by PathVerifier.")]
     [SerializeField] private bool debugLogOutputVector = false;
@@ -69,11 +73,11 @@ public class LevelJsonLoader : MonoBehaviour
     // Per-tile output timeline (async preset/clear immediate; JK at clock edges)
     public bool[] OutputTimeline { get; private set; }
     // Per-tile operation description (e.g., keep, preset_async, clear_async, set_sync, reset_sync, switch_sync, combined)
+    public bool asyncActiveHigh { get; private set; }
     [SerializeField]
     private string[] outputOpsPerTile;
 
     // Async active mode: true = active-high (1), false = active-low (0)
-    private bool asyncActiveHigh = true;
 
     #endregion
 
@@ -162,10 +166,29 @@ public class LevelJsonLoader : MonoBehaviour
     /// </summary>
     private void Awake()
     {
-        var data = LoadLevelData(levelFile);
+        TextAsset jsonAssetToLoad = levelFile;
+        string jsonFileNameFromMenu = MenuManager.LevelToLoadJSON;
+
+        if (!string.IsNullOrEmpty(jsonFileNameFromMenu))
+        {
+            Debug.Log($"[LOADER] Tentando carregar recurso pelo caminho: '{jsonFileNameFromMenu}'");
+
+            jsonAssetToLoad = Resources.Load<TextAsset>("Levels/" + jsonFileNameFromMenu);
+
+            if (jsonAssetToLoad != null)
+                Debug.Log($"[LOADER] SUCESSO: TextAsset '{jsonFileNameFromMenu}' carregado!");
+            else
+                Debug.LogError($"[LOADER] FALHA: Arquivo '{jsonFileNameFromMenu}' não encontrado na pasta Resources. Usando TextAsset do Inspector.");
+        }
+        else
+        {
+            Debug.Log("[LOADER] Variável estática vazia. Usando TextAsset do Inspector (Fallback).");
+        }
+
+        var data = LoadLevelData(jsonAssetToLoad);
 
 #if UNITY_EDITOR
-            if (!ValidateAll(data)) return;
+        if (!ValidateAll(data)) return;
 #endif
 
         // Initialize rendering components
@@ -206,6 +229,7 @@ public class LevelJsonLoader : MonoBehaviour
 
         int asyncActiveMode = (data != null ? data.asyncActive : 1);
         bool asyncActiveHigh = asyncActiveMode == 1;
+        this.asyncActiveHigh = asyncActiveHigh;
 
         GetClockSamplingParameters(out int clockStep, out int _);
         int diagramLen = GetDiagramLength();
@@ -253,6 +277,12 @@ public class LevelJsonLoader : MonoBehaviour
         if (data.obstacles != null && data.obstacles.Count > 0)
         {
             obstacleSpawner.SpawnObstacles(data.obstacles);
+        }
+
+        // Generate HUD signal labels at correct Y positions
+        if (signalLabelRenderer != null)
+        {
+            signalLabelRenderer.GenerateLabels();
         }
     }
 
