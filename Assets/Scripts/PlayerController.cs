@@ -65,6 +65,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionReference flipGravityAction;
     [Tooltip("Reference to the Dash action (Button).")]
     [SerializeField] private InputActionReference dashAction;
+
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip footstepSound;
+    [Tooltip("Variação do som dos passos para não parecer uma metralhadora repetitiva.")]
+    [SerializeField] private float pitchVariation = 0.1f;
+
+
     /// <summary>
     /// Logical gravity inversion state (independent from temporary physics tweaks like gravityScale = 0 during dash).
     /// </summary>
@@ -430,6 +438,25 @@ public class PlayerController : MonoBehaviour
         float target = normalized * Mathf.Max(0f, runAnimSpeedMultiplier);
         target = isRunning ? Mathf.Max(target, minRunAnimSpeed) : 0f;
         animator.SetFloat("speed", target, Mathf.Max(0f, runAnimDampTime), Time.deltaTime);
+    }
+
+    #endregion
+
+    #region Audio
+
+    /// <summary>
+    /// Plays a randomized footstep sound when the player is grounded, ensuring
+    /// an audio source and clip are available. Applies slight pitch variation
+    /// to avoid repetitive sound effects.
+    /// </summary>
+    public void PlayFootstepSound()
+    {
+        if (isGrounded && audioSource != null && footstepSound != null)
+        {
+            audioSource.pitch = Random.Range(1f - pitchVariation, 1f + pitchVariation);
+
+            audioSource.PlayOneShot(footstepSound);
+        }
     }
 
     #endregion
