@@ -97,37 +97,21 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        if (scoreController == null)
-        {
-            scoreController = FindFirstObjectByType<ScoreController>();
-        }
-        if (scoreController == null)
-        {
-            Debug.LogError("⚠️ ERRO CRÍTICO: 'ScoreController' não encontrado! O Timer não funcionará.");
-        }
+        scoreController = GetOrFind(scoreController, "ScoreController não encontrado!");
+        pathVerifier = GetOrFind(pathVerifier, "PathVerifier não encontrado!");
+        cameraController = GetOrFind(cameraController, "CameraController não encontrado!");
+        hintController = GetOrFind(hintController, "HintController não encontrado!");
+    }
 
-        if (pathVerifier == null)
-        {
-            pathVerifier = FindFirstObjectByType<PathVerifier>();
-        }
-        if (pathVerifier == null)
-        {
-            Debug.LogError("⚠️ ERRO CRÍTICO: 'PathVerifier' não encontrado! A validação de caminho falhará.");
-        }
+    private T GetOrFind<T>(T reference, string errorMessage) where T : Object
+    {
+        if (reference == null)
+            reference = FindFirstObjectByType<T>();
 
-        if (cameraController == null)
-        {
-            cameraController = FindFirstObjectByType<CameraController>();
-        }
-        if (cameraController == null)
-        {
-            Debug.LogError("⚠️ ERRO CRÍTICO: 'CameraController' não encontrado! A câmera não seguirá o jogador corretamente ao morrer/vencer.");
-        }
+        if (reference == null)
+            Debug.LogError(errorMessage);
 
-        if (hintController == null)
-        {
-            hintController = FindFirstObjectByType<HintController>();
-        }
+        return reference;
     }
 
     /// <summary>
@@ -144,8 +128,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void Update()
     {
-        CheckWinAndLoseConditions();
         UpdateAnimator();
+        CheckWinAndLoseConditions();
     }
 
     /// <summary>
@@ -231,7 +215,10 @@ public class PlayerController : MonoBehaviour
 
     private void CheckWinAndLoseConditions()
     {
-        if (transform.position.y < fallKillThreshold || transform.position.y > -fallKillThreshold)
+        float limit = Mathf.Abs(fallKillThreshold);
+        float y = transform.position.y;
+
+        if (y < -limit || y > limit)
         {
             PlayerDeath();
         }
@@ -255,13 +242,18 @@ public class PlayerController : MonoBehaviour
 
     #region Movement & Actions
 
+    /// <summary>
+    /// Applies horizontal movement based on player input.
+    /// If the player is currently dashing, overrides movement to maintain constant dash velocity
+    /// and locks vertical position.
+    /// </summary>
     private void HandleMovement()
     {
         if (isDashing)
         {
             rb.linearVelocity = new Vector2(dashDir * dashSpeed, 0f);
             rb.position = new Vector2(rb.position.x, dashLockY);
-            Flip();
+            FlipSprite();
             return;
         }
 
@@ -274,10 +266,15 @@ public class PlayerController : MonoBehaviour
         float newX = Mathf.MoveTowards(currentX, targetX, accel * Time.fixedDeltaTime);
 
         rb.linearVelocity = new Vector2(newX, rb.linearVelocity.y);
-        Flip();
+        FlipSprite();
     }
 
-    private void Flip()
+    /// <summary>
+    /// Updates the sprite orientation based on movement direction and gravity state.
+    /// During a dash, orientation follows the dash direction. Otherwise, it reflects
+    /// the current horizontal input, adjusted for gravity inversion.
+    /// </summary>
+    private void FlipSprite()
     {
         if (isDashing)
         {
@@ -290,6 +287,10 @@ public class PlayerController : MonoBehaviour
         spriteRenderer.flipX = wantsToGoLeft ^ IsGravityInverted;
     }
 
+    /// <summary>
+    /// Processes jump input when the player is grounded, applying an instantaneous
+    /// vertical velocity in the direction opposite to gravity. Triggers the jump animation.
+    /// </summary>
     private void HandleJump()
     {
         if (jumpInput && isGrounded)
@@ -301,6 +302,11 @@ public class PlayerController : MonoBehaviour
         jumpInput = false;
     }
 
+    /// <summary>
+    /// Handles gravity inversion when triggered by input. Flips the gravity scale,
+    /// rotates the player, updates sprite orientation, and toggles the logical gravity state.
+    /// Only allowed when grounded and not dashing.
+    /// </summary>
     private void HandleGravityFlip()
     {
         if (gravityFlipInput && isGrounded && !isDashing)
@@ -314,6 +320,11 @@ public class PlayerController : MonoBehaviour
         gravityFlipInput = false;
     }
 
+    /// <summary>
+    /// Attempts to initiate a dash if the cooldown has elapsed. Determines dash direction
+    /// based on input, current velocity, or facing direction. Temporarily disables gravity,
+    /// locks vertical movement, and applies horizontal dash velocity.
+    /// </summary>
     private void TryStartDash()
     {
         if (Time.time < nextDashTime) return;
@@ -340,6 +351,11 @@ public class PlayerController : MonoBehaviour
         nextDashTime = Time.time + dashCooldown;
     }
 
+    /// <summary>
+    /// Updates the dash state over time. Ends the dash when its duration expires,
+    /// restores previous physics settings, and smoothly blends horizontal velocity
+    /// back toward player-controlled movement using inertia.
+    /// </summary>
     private void HandleDash()
     {
         if (!isDashing) return;
@@ -360,20 +376,26 @@ public class PlayerController : MonoBehaviour
 
     #region Collision & Death
 
+    /// <summary>
+    /// Handles the player's death by stopping the timer, enabling manual camera control
+    /// with a right boundary, evaluating the path up to the death position, and disabling
+    /// the player GameObject.
+    /// </summary>
     private void PlayerDeath()
     {
-        // StopTimer sem verificação nula, pois Awake garante que existe
         scoreController.StopTimer();
 
-        // Camera control sem verificação nula
         cameraController.EnableManualControlWithRightLimit(transform.position.x);
 
-        // Verificação de caminho sem verificação nula
         pathVerifier.FinalizeAndCheckPathUntil(transform.position.x);
 
         gameObject.SetActive(false);
     }
 
+    /// <summary>
+    /// Detects collisions with other objects. If the player collides with an object
+    /// tagged as "Enemy", triggers the death routine.
+    /// </summary>
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Enemy"))
@@ -386,6 +408,11 @@ public class PlayerController : MonoBehaviour
 
     #region Animation
 
+    /// <summary>
+    /// Updates animation parameters based on the player's current state, including
+    /// running, grounded status, falling condition relative to gravity direction,
+    /// and normalized horizontal speed with optional input-based responsiveness.
+    /// </summary>
     private void UpdateAnimator()
     {
         bool isRunning = Mathf.Abs(rb.linearVelocity.x) > 0.1f;
@@ -407,6 +434,10 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
+    /// <summary>
+    /// Draws a wireframe sphere in the editor to visualize the ground check area
+    /// when the GameObject is selected.
+    /// </summary>
     private void OnDrawGizmosSelected()
     {
         if (groundCheckPoint == null) return;
