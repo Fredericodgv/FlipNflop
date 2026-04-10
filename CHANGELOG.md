@@ -1,3 +1,21 @@
+# [0.7.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.6.2...v0.7.0) (2026-04-10)
+
+
+### Bug Fixes
+
+* add sounds on spider animations ([7508fd1](https://github.com/Fredericodgv/FlipNflop/commit/7508fd1dffcc5c69b45e73e21fd21b556c1d997d))
+* Adjust spider animations ([2c9144f](https://github.com/Fredericodgv/FlipNflop/commit/2c9144f9f0a0039c48028989beacf2e69f66fb6e))
+* Improves spider animations ([04f0329](https://github.com/Fredericodgv/FlipNflop/commit/04f0329e159683e1697e77ba23dfcbf3b837327c))
+* Inserts new character sprites ([cd84954](https://github.com/Fredericodgv/FlipNflop/commit/cd849548da24259e966effad1c229b28d151b536))
+* Remove unused player animation controllers and add PlayerLand animation ([75ad73d](https://github.com/Fredericodgv/FlipNflop/commit/75ad73d3089a850cd86c70254477df88c02226f8))
+
+
+### Features
+
+* Add footsteps sounds ([2ed4e05](https://github.com/Fredericodgv/FlipNflop/commit/2ed4e05369f69344bf4a9e831a977a41ab0d8c2d))
+
+
+
 ## [0.6.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.6.1...v0.6.2) (2026-04-07)
 
 
@@ -33,24 +51,6 @@
 
 * fix starting vertical line bug ([15eb2f1](https://github.com/Fredericodgv/FlipNflop/commit/15eb2f1f0d35092eb8519eab9a0bb0cf4feb49ef))
 * LevelManager executs before other scripts ([8ba47d6](https://github.com/Fredericodgv/FlipNflop/commit/8ba47d6ca438205bf8ba12adc868ed04ba7d196a))
-
-
-
-# [0.5.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.4.3...v0.5.0) (2026-03-09)
-
-
-### Bug Fixes
-
-* Adjust end game screen ([0ee9a6f](https://github.com/Fredericodgv/FlipNflop/commit/0ee9a6fda2cc3af2413b1def8dabf92cb2f55af0))
-* Create timer basics ([1f7ddd4](https://github.com/Fredericodgv/FlipNflop/commit/1f7ddd4595d47364dbd22788c8a8c64364375b6c))
-* Enhance panel visibility toggle with state persistence ([c06d25e](https://github.com/Fredericodgv/FlipNflop/commit/c06d25e594d214b28b205c7682c9725bb25808aa))
-* Player controller validation on awake ([620d6fc](https://github.com/Fredericodgv/FlipNflop/commit/620d6fce73592f403a7cd65650fac58f67c19a57))
-* Timer stops ([89c8d22](https://github.com/Fredericodgv/FlipNflop/commit/89c8d225ac807fc87c95036315a07fe001a57046))
-
-
-### Features
-
-* Implements scoring system and feedback in PathVerifier ([3643ad2](https://github.com/Fredericodgv/FlipNflop/commit/3643ad241e9fd70d49b778591666981b3b269f11))
 
 
 
