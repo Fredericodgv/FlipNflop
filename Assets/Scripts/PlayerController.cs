@@ -65,6 +65,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private InputActionReference flipGravityAction;
     [Tooltip("Reference to the Dash action (Button).")]
     [SerializeField] private InputActionReference dashAction;
+
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip footstepSound;
+    [Tooltip("Variação do som dos passos para não parecer uma metralhadora repetitiva.")]
+    [SerializeField] private float pitchVariation = 0.1f;
+
+
     /// <summary>
     /// Logical gravity inversion state (independent from temporary physics tweaks like gravityScale = 0 during dash).
     /// </summary>
@@ -78,6 +86,7 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool jumpInput;
     private bool gravityFlipInput;
+    private bool isFlipping;
     private bool isDashing;
     private float dashEndTime;
     private float nextDashTime;
@@ -276,6 +285,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void FlipSprite()
     {
+        if (isFlipping) return;
+
         if (isDashing)
         {
             spriteRenderer.flipX = (dashDir < 0f) ^ IsGravityInverted;
@@ -309,21 +320,31 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void HandleGravityFlip()
     {
-        if (gravityFlipInput && isGrounded && !isDashing)
+        if (gravityFlipInput && isGrounded && !isDashing && !isFlipping)
         {
+            isFlipping = true;
+
             rb.gravityScale *= -1;
-            transform.Rotate(0f, 0f, 180f);
-            spriteRenderer.flipX = !spriteRenderer.flipX;
             isGravityInvertedState = !isGravityInvertedState;
-            animator.SetTrigger("jump");
+
+            animator.SetTrigger("flip");
         }
         gravityFlipInput = false;
     }
 
     /// <summary>
-    /// Attempts to initiate a dash if the cooldown has elapsed. Determines dash direction
-    /// based on input, current velocity, or facing direction. Temporarily disables gravity,
-    /// locks vertical movement, and applies horizontal dash velocity.
+    /// Executes the actual gravity inversion and rotation. Should be called at the correct frame by an Animation Event in the Flip animation.
+    /// </summary>
+    public void ExecuteFlipVisuals() // Mudei o nome para fazer mais sentido
+    {
+        transform.Rotate(0f, 0f, 180f);
+        spriteRenderer.flipX = !spriteRenderer.flipX;
+
+        isFlipping = false;
+    }
+
+    /// <summary>
+    /// Starts a dash if off cooldown: chooses direction, locks height, and applies horizontal speed.
     /// </summary>
     private void TryStartDash()
     {
@@ -430,6 +451,22 @@ public class PlayerController : MonoBehaviour
         float target = normalized * Mathf.Max(0f, runAnimSpeedMultiplier);
         target = isRunning ? Mathf.Max(target, minRunAnimSpeed) : 0f;
         animator.SetFloat("speed", target, Mathf.Max(0f, runAnimDampTime), Time.deltaTime);
+    }
+
+    #endregion
+
+    #region Audio
+
+    /// <summary>
+    /// Plays a randomized footstep sound when the player is grounded, ensuring
+    /// an audio source and clip are available. Applies slight pitch variation
+    /// to avoid repetitive sound effects.
+    /// </summary>
+    public void PlayFootstepSound()
+    {
+        audioSource.pitch = Random.Range(1f - pitchVariation, 1f + pitchVariation);
+
+        audioSource.PlayOneShot(footstepSound);
     }
 
     #endregion
