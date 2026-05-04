@@ -1,9 +1,11 @@
 {
     "levelName": "fifth_level",
     "levelDescription": "implementa obstáculos mace móveis, ou verticais ou horizontais",
+    "levelID": 50,
     "clockCicles": 8,
     "jSignal": "000111 111100 111000 111110 001111 110001 111000 110001 111111",
     "kSignal": "000111 100011 100001 110000 011111 000111 100111 111100 011111",
+    "assyncActive": 0,
     "floor": "110001 111111 110001 111111 111001 111111 111111 111111 111111 111111 111111 111",
     "ceiling": "111111 100011 111111 100011 111111 110001 111111 111111 111111 111111 111111 111",
     "obstacles": [

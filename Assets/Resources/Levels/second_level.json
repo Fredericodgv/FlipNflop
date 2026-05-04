@@ -1,9 +1,11 @@
 {
     "levelName": "second_level",
     "levelDescription": "implementa mecânica de pular para desviar de buracos",
+    "levelID": 20,
     "clockCicles": 6,
     "jSignal": "000000 000000 011111 100111 111100 000111 111111",
     "kSignal": "000000 011100 011100 000111 111111 100011 100000",
+    "assyncActive": 0,
     "floor": "111100 000111 110001 111111 111111 100001 100001 111111 111111 111",
     "ceiling": "111111 111111 100011 110001 110011 111111 111111 111111 111111 111",
     "obstacles": []
