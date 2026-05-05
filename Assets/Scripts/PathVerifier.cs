@@ -171,7 +171,7 @@ public class PathVerifier : MonoBehaviour
         bool isPathCorrectOverall = !cornerChecks.Contains(false);
 
         int gabaritoTotal = CountHorizontalGabaritoSegments();
-        DrawFeedbackLines(signalPath.PathPoints, cornerChecks, out int correct, out int total);
+        DrawFeedbackLines(signalPath.PathPoints, out int correct, out int total);
         int coveredSegments = CountCoveredGabaritoSegments(signalPath.PathPoints);
         ScoreController.Instance?.ReportResult(coveredSegments, gabaritoTotal);
 
@@ -227,7 +227,7 @@ public class PathVerifier : MonoBehaviour
     /// <summary>
     /// Draws the feedback by iterating over each small segment of the player's path.
     /// </summary>
-    private void DrawFeedbackLines(List<Vector3> playerPath, List<bool> cornerChecks, out int correctSegments, out int totalSegments)
+    private void DrawFeedbackLines(List<Vector3> playerPath, out int correctSegments, out int totalSegments)
     {
         correctSegments = 0;
         totalSegments = 0;
