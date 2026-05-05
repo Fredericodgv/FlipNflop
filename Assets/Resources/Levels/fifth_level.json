@@ -1,16 +1,18 @@
 {
     "levelName": "fifth_level",
     "levelDescription": "implementa obstáculos mace móveis, ou verticais ou horizontais",
-    "levelID": 50,
+    "levelID": "526828642",
+    "levelOrder": 50,
+    "ffType": "JK",
     "clockCicles": 8,
+    "activeClockEdge": "rising",
     "jSignal": "000111 111100 111000 111110 001111 110001 111000 110001 111111",
     "kSignal": "000111 100011 100001 110000 011111 000111 100111 111100 011111",
-    "assyncActive": 0,
     "floor": "110001 111111 110001 111111 111001 111111 111111 111111 111111 111111 111111 111",
     "ceiling": "111111 100011 111111 100011 111111 110001 111111 111111 111111 111111 111111 111",
     "obstacles": [
         {
-            "type": "mace",
+            "obstacleName": "Mace",
             "startX": 8,
             "startY": 1,
             "speed": 2,
@@ -20,7 +22,7 @@
             "clockwise": true
         },
         {
-            "type": "mace",
+            "obstacleName": "Mace",
             "startX": 23,
             "startY": 1,
             "speed": 2,
@@ -30,7 +32,7 @@
             "clockwise": true
         },
         {
-            "type": "mace",
+            "obstacleName": "Mace",
             "startX": 34,
             "startY": 4,
             "speed": 2,
@@ -40,7 +42,7 @@
             "clockwise": true
         },
         {
-            "type": "mace",
+            "obstacleName": "Mace",
             "startX": 43,
             "startY": 4,
             "speed": 2,
@@ -50,7 +52,7 @@
             "clockwise": true
         },
         {
-            "type": "mace",
+            "obstacleName": "Mace",
             "startX": 48,
             "startY": 3,
             "speed": 1,
