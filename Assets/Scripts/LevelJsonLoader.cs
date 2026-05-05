@@ -146,17 +146,6 @@ public class LevelJsonLoader : MonoBehaviour
         return fallback;
     }
 
-    private void ColorRow(Tilemap map, int length, int yRow, int baseX, Color color)
-    {
-        if (map == null || length <= 0) return;
-        for (int i = 0; i < length; i++)
-        {
-            var pos = new Vector3Int(baseX + i, yRow, 0);
-            map.SetTileFlags(pos, TileFlags.None);
-            map.SetColor(pos, color);
-        }
-    }
-
     #endregion
 
     #region Lifecycle

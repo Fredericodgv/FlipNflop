@@ -40,13 +40,4 @@ public class LevelManager : MonoBehaviour
         levelEndX = diagramEndX; // legado aponta para fim lógico somente
     }
 
-    // Você pode adicionar métodos para carregar próximas fases, etc. aqui
-    // Ex:
-    // public void LoadNextLevel()
-    // {
-    //     if (!string.IsNullOrEmpty(nextLevel))
-    //     {
-    //         SceneManager.LoadScene(nextLevel);
-    //     }
-    // }
 }

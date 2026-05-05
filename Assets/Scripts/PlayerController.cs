@@ -335,7 +335,7 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// Executes the actual gravity inversion and rotation. Should be called at the correct frame by an Animation Event in the Flip animation.
     /// </summary>
-    public void ExecuteFlipVisuals() // Mudei o nome para fazer mais sentido
+    public void ExecuteFlipVisuals()
     {
         transform.Rotate(0f, 0f, 180f);
         spriteRenderer.flipX = !spriteRenderer.flipX;
