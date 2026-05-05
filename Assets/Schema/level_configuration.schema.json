@@ -14,8 +14,17 @@
             "description": "Descrição detalhada do nível."
         },
         "levelID": {
-            "type": "integer",
+            "type": "string",
             "description": "ID para identificação de ordenação de fases."
+        },
+        "levelOrder": {
+          	"type": "integer",
+            "description": "Define um número inteiro de encaixe para a ordenação de disposição de fases."
+        },
+       	"ffType": {
+          	"type": "string",
+            "enum": ["JK", "SR", "T", "D"],
+            "description": "Define qual o tipo do flip flop desta fase"
         },
         "clockCicles": {
             "type": "integer",
@@ -27,40 +36,30 @@
             "enum": ["rising", "falling"],
             "description": "Define se o sinal responde à borda de subida ou descida."
         },
-        "j_signal": {
+        "jSignal": {
             "type": "string",
             "pattern": "^[01 ]+$",
             "description": "Sequência binária para o J (sequência de 1s e 0s)."
         },
-        "k_signal": {
+        "kSignal": {
             "type": "string",
             "pattern": "^[01 ]+$",
             "description": "Sequência binária para o K (sequência de 1s e 0s)."
         },
+        "presetSignal": {
+            "type": "string",
+            "pattern": "^[01 ]+$",
+            "description": "Sequência binária para sinal assíncrono Preset (sequência de 1s e 0s)."
+        },
+        "clearSignal": {
+          	"type": "string",
+            "pattern": "^[01 ]+$",
+            "description": "Sequência binária para sinal assíncrono Clear (sequência de 1s e 0s)."
+        },
         "asyncActive": {
-            "type": "integer",
-            "enum": [0, 1],
-            "description": "Define se sinais assíncronos estão ativos (1) ou inativos (0)."
-        },
-        "jSignalColor": {
             "type": "string",
-            "pattern": "^0x[0-9A-Fa-f]{6}$"
-        },
-        "kSignalColor": {
-            "type": "string",
-            "pattern": "^0x[0-9A-Fa-f]{6}$"
-        },
-        "presetSignalColor": {
-            "type": "string",
-            "pattern": "^0x[0-9A-Fa-f]{6}$"
-        },
-        "clearSignalColor": {
-            "type": "string",
-            "pattern": "^0x[0-9A-Fa-f]{6}$"
-        },
-        "clockSignalColor": {
-            "type": "string",
-            "pattern": "^0x[0-9A-Fa-f]{6}$"
+            "enum": ["high", "low"],
+            "description": "Define se sinais assíncronos estão ativos em 1 ou em 0."
         },
         "floor": {
             "type": "string",
@@ -72,7 +71,7 @@
             "pattern": "^[01 ]+$",
             "description": "Representação binária do teto"
         },
-        "obstacle": {
+        "obstacles": {
             "type": "array",
             "description": "Lista de configurações para geração de diferentes obstáculos.",
             "items": {
@@ -83,13 +82,13 @@
                         "description": "Nome/ID do obstáculo a ser gerado.",
                         "enum": [
                             "Rock",
+                            "Mace",
                             "Button",
                             "Wall",
                             "SpikeTrap",
                             "MovingPlatform"
                         ]
                     },
-                    "quantity": { "type": "integer", "const": 1 },
                     "startX": { "type": "number" },
                     "startY": { "type": "number" },
                     "speed": { "type": "number"},
@@ -100,7 +99,6 @@
                 },
                 "required": [
                     "obstacleName",
-                    "quantity",
                     "startX",
                     "startY"
                 ],
@@ -110,29 +108,36 @@
     },
     "required": [
         "levelName",
+      	"levelDescription",
+		"ffType",
         "clockCicles",
-        "j_signal",
-        "k_signal",
-        "assyncActive",
+        "activeClockEdge",
         "floor",
         "ceiling",
-        "obstacle"
+        "obstacles"
     ],
-    "if": {
-        "properties": { "assyncActive": { "const": 1 } }
+    "dependencies": {
+    	"presetSignal": ["asyncActive"],
+        "clearSignal": ["asyncActive"]
     },
-    "then": {
-        "required": [ "presetSignal", "clearSignal" ],
-        "properties": {
-            "presetSignal": { "type": "string", "pattern": "^[01 ]+$" },
-            "clearSignal": { "type": "string", "pattern": "^[01 ]+$" }
+    "allOf": [
+      {
+      	"if": {
+          "properties": { "ffType": { "const": "JK" } }
+        },
+        "then": {
+          "required": ["jSignal", "kSignal"]
         }
-    },
-    "else": {
-        "properties": {
-            "presetSignal": { "type": "null"},
-            "clearSignal": { "type": "null"}
+      },
+      {
+        "if": { "required": ["asyncActive"] },
+        "then": {
+          "anyOf": [
+            { "required": ["presetSignal"] },
+            { "required": ["clearSignal"] }
+          ]
         }
-    },
+      }
+    ],
     "additionalProperties": false
 }
