@@ -408,7 +408,7 @@ public class PlayerController : MonoBehaviour
 
         cameraController.EnableManualControlWithRightLimit(transform.position.x);
 
-        pathVerifier.FinalizeAndCheckPathUntil(transform.position.x);
+        pathVerifier.FinalizeAndCheckPath(transform.position.x);
 
         gameObject.SetActive(false);
     }

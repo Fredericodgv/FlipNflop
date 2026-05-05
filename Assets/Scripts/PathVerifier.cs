@@ -117,39 +117,21 @@ public class PathVerifier : MonoBehaviour
     #region Public Methods
 
     /// <summary>
-    /// Finalizes the player's drawn path up to the level end X and runs the verification routine.
-    /// Called when player finishes the level
-    /// </summary>
-    public void FinalizeAndCheckPath()
-    {
-        if (signalPath != null)
-        {
-            signalPath.FinalizePath(LevelManager.Instance != null ? LevelManager.Instance.phaseEndX : (correctCorners != null && correctCorners.Count > 0 ? correctCorners[correctCorners.Count - 1].x : 0f));
-        }
-        else
-        {
-            Debug.LogError("Referência ao SignalPath não está definida no PathVerifier!");
-            return;
-        }
-        CheckPlayerPath();
-    }
-
-    /// <summary>
     /// Finalizes and evaluates the path until a specific X coordinate (e.g., player's death position).
-    /// Called when player dies before reaching the end of the level, allowing partial feedback on their attempt.
+    /// Called when player dies or finishes the level
     /// </summary>
     /// <param name="endX">The X coordinate limit of the path.</param>
-    public void FinalizeAndCheckPathUntil(float endX)
+    public void FinalizeAndCheckPath(float? endX = null)
     {
-        if (signalPath != null)
-        {
-            signalPath.FinalizePath(endX);
-        }
-        else
+        if (signalPath == null)
         {
             Debug.LogError("Referência ao SignalPath não está definida no PathVerifier!");
             return;
         }
+
+        float finalX = endX ?? LevelManager.Instance.phaseEndX;
+
+        signalPath.FinalizePath(finalX);
         CheckPlayerPath();
     }
 
