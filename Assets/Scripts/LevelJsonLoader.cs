@@ -146,17 +146,6 @@ public class LevelJsonLoader : MonoBehaviour
         return fallback;
     }
 
-    private void ColorRow(Tilemap map, int length, int yRow, int baseX, Color color)
-    {
-        if (map == null || length <= 0) return;
-        for (int i = 0; i < length; i++)
-        {
-            var pos = new Vector3Int(baseX + i, yRow, 0);
-            map.SetTileFlags(pos, TileFlags.None);
-            map.SetColor(pos, color);
-        }
-    }
-
     #endregion
 
     #region Lifecycle
@@ -167,25 +156,19 @@ public class LevelJsonLoader : MonoBehaviour
     private void Awake()
     {
         TextAsset jsonAssetToLoad = levelFile;
-        string jsonFileNameFromMenu = MenuManager.LevelToLoadJSON;
+        string rawJson = null;
 
-        if (!string.IsNullOrEmpty(jsonFileNameFromMenu))
+        if (!string.IsNullOrEmpty(UploadedLevelJson.Content))
         {
-            Debug.Log($"[LOADER] Tentando carregar recurso pelo caminho: '{jsonFileNameFromMenu}'");
-
-            jsonAssetToLoad = Resources.Load<TextAsset>("Levels/" + jsonFileNameFromMenu);
-
-            if (jsonAssetToLoad != null)
-                Debug.Log($"[LOADER] SUCESSO: TextAsset '{jsonFileNameFromMenu}' carregado!");
-            else
-                Debug.LogError($"[LOADER] FALHA: Arquivo '{jsonFileNameFromMenu}' não encontrado na pasta Resources. Usando TextAsset do Inspector.");
+            rawJson = UploadedLevelJson.Content;
+            UploadedLevelJson.Content = null; // limpa após consumir
         }
-        else
+        else if (!string.IsNullOrEmpty(MenuManager.LevelToLoadJSON))
         {
-            Debug.Log("[LOADER] Variável estática vazia. Usando TextAsset do Inspector (Fallback).");
+            jsonAssetToLoad = Resources.Load<TextAsset>("Levels/" + MenuManager.LevelToLoadJSON);
         }
 
-        var data = LoadLevelData(jsonAssetToLoad);
+        var data = rawJson != null ? LoadLevelDataFromString(rawJson) : LoadLevelData(jsonAssetToLoad);
 
 #if UNITY_EDITOR
         if (!ValidateAll(data)) return;
@@ -326,6 +309,16 @@ public class LevelJsonLoader : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogError($"LevelJsonLoader: Error reading JSON: {ex.Message}");
+            return null;
+        }
+    }
+
+    private LevelData LoadLevelDataFromString(string json)
+    {
+        try { return JsonUtility.FromJson<LevelData>(json); }
+        catch (Exception ex)
+        {
+            Debug.LogError($"LevelJsonLoader: erro ao ler JSON do upload: {ex.Message}");
             return null;
         }
     }

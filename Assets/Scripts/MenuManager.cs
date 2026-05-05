@@ -28,6 +28,11 @@ public class MenuManager : MonoBehaviour
         SceneManager.LoadScene(nomeDoLevel);
     }
 
+    public void Upload()
+    {
+        SceneManager.LoadScene("LevelUpload");
+    }
+
     public void AbrirSobre()
     {
         painelMenuInicial.SetActive(false);
