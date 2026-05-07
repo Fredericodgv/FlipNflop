@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Renders vertical dotted lines for clock edges and async preset/clear transitions.
-/// Input is handled externally by HintManager — this script only manages rendering.
-/// </summary>
 public class ClockLineHint : MonoBehaviour
 {
     public enum HintMode
@@ -17,34 +13,29 @@ public class ClockLineHint : MonoBehaviour
     [Header("Line Appearance")]
     [SerializeField] private float lineLength = 10f;
     [SerializeField] private float lineWidth = 0.1f;
-    [SerializeField] private Material dottedLineMaterial;
+
+    [Header("Dashed Line Settings")]
+    [SerializeField] private LineRenderer linePrefab;
+    [SerializeField] private float dashLength = 0.15f;
+    [SerializeField] private float dashGap = 0.1f;
 
     [Header("Clock Lines")]
-    [Tooltip("Fixed clock step (spacing between clock edges).")]
     [SerializeField] private float clockStep = 6f;
-    [Tooltip("Color for clock edge lines.")]
     [SerializeField] private Color clockLineColor = new Color(0f, 0.9f, 1f, 0.6f);
 
     [Header("Hint Mode")]
-    [Tooltip("Current hint display mode (Off, ClockOnly, ClockAndAsync). Default: ClockOnly")]
     [SerializeField] private HintMode hintMode = HintMode.ClockOnly;
 
     [Header("Async Transition Hints")]
-    [Tooltip("Color for async transition hint lines.")]
     [SerializeField] private Color asyncHintColor = new Color(1f, 0.5f, 0f, 0.6f);
-    [Tooltip("Reference to LevelJsonLoader to access preset/clear signals.")]
     [SerializeField] private LevelJsonLoader levelJsonLoader;
 
     [Header("Rendering Optimization")]
-    [Tooltip("Number of extra lines to render beyond visible camera bounds.")]
     [SerializeField] private int bufferLines = 5;
 
     [Header("Gizmos")]
-    [Tooltip("Draw all clock lines as gizmos in Scene view for level design.")]
     [SerializeField] private bool drawClockGizmos = true;
-    [Tooltip("Draw async transition positions as gizmos in Scene view.")]
     [SerializeField] private bool drawAsyncGizmos = true;
-    [Tooltip("Draw index labels every N clock lines (0 = disabled).")]
     [SerializeField] private int labelEveryN = 0;
 
     private Transform cameraTransform;
@@ -62,30 +53,16 @@ public class ClockLineHint : MonoBehaviour
 
     private void Update()
     {
-        bool needsUpdate = false;
+        bool cameraMovedEnough = Mathf.Abs(cameraTransform.position.x - lastCameraX) >= clockStep;
+        bool modeChanged = hintMode != lastHintMode;
 
-        if (Mathf.Abs(cameraTransform.position.x - lastCameraX) >= clockStep)
-        {
-            lastCameraX = cameraTransform.position.x;
-            needsUpdate = true;
-        }
-
-        if (hintMode != lastHintMode)
-        {
-            lastHintMode = hintMode;
-            needsUpdate = true;
-        }
-
-        if (needsUpdate)
-            GenerateVisibleLines();
+        if (cameraMovedEnough) lastCameraX = cameraTransform.position.x;
+        if (modeChanged) lastHintMode = hintMode;
+        if (cameraMovedEnough || modeChanged) GenerateVisibleLines();
     }
 
-    // -------------------------------------------------------------------------
-    // Public API — called by HintManager
-    // -------------------------------------------------------------------------
-
     /// <summary>
-    /// Cycles through hint modes: ClockOnly -> ClockAndAsync (if async exists) -> Off -> ClockOnly.
+    /// Cycles through hint modes: Off -> ClockOnly -> ClockAndAsync (if async signals exist) -> Off.
     /// </summary>
     public void ToggleHintMode()
     {
@@ -102,10 +79,9 @@ public class ClockLineHint : MonoBehaviour
         Debug.Log($"<color=cyan>[ClockLineHint] Hint mode: {hintMode}</color>");
     }
 
-    // -------------------------------------------------------------------------
-    // Line generation
-    // -------------------------------------------------------------------------
-
+    /// <summary>
+    /// Clears and regenerates all visible hint lines based on the current hint mode and camera position.
+    /// </summary>
     private void GenerateVisibleLines()
     {
         ClearAllLines();
@@ -114,13 +90,15 @@ public class ClockLineHint : MonoBehaviour
         float cameraX = cameraTransform.position.x;
         float levelEndX = LevelManager.Instance != null ? LevelManager.Instance.levelEndX : 100f;
 
-        if (hintMode == HintMode.ClockOnly || hintMode == HintMode.ClockAndAsync)
-            GenerateClockLines(cameraX, levelEndX);
+        GenerateClockLines(cameraX, levelEndX);
 
         if (hintMode == HintMode.ClockAndAsync)
             GenerateAsyncHintLines(cameraX, levelEndX);
     }
 
+    /// <summary>
+    /// Generates dashed vertical lines at each clock edge within the visible range.
+    /// </summary>
     private void GenerateClockLines(float cameraX, float levelEndX)
     {
         float halfSpan = bufferLines * clockStep;
@@ -133,10 +111,13 @@ public class ClockLineHint : MonoBehaviour
         {
             float xPos = i * clockStep;
             if (xPos > levelEndX) break;
-            CreateLine(xPos, clockLineColor, $"ClockLine_{i}");
+            CreateDashedLine(xPos, clockLineColor, $"ClockLine_{i}");
         }
     }
 
+    /// <summary>
+    /// Generates dashed vertical lines at async preset/clear transition positions within the visible range.
+    /// </summary>
     private void GenerateAsyncHintLines(float cameraX, float levelEndX)
     {
         if (levelJsonLoader == null) return;
@@ -166,30 +147,70 @@ public class ClockLineHint : MonoBehaviour
             {
                 string label = presetTransition && clearTransition ? "Preset+Clear"
                              : presetTransition ? "Preset" : "Clear";
-                CreateLine(xPos, asyncHintColor, $"AsyncHint_{i}_{label}");
+                CreateDashedLine(xPos, asyncHintColor, $"AsyncHint_{i}_{label}");
             }
         }
     }
 
-    private void CreateLine(float xPos, Color color, string name)
+    /// <summary>
+    /// Creates a dashed vertical line at the given X position by spawning multiple solid dash segments under a shared parent.
+    /// </summary>
+    private void CreateDashedLine(float xPos, Color color, string name)
     {
-        GameObject lineObj = new GameObject(name);
-        lineObj.transform.SetParent(transform);
+        GameObject lineRoot = new GameObject(name);
+        lineRoot.transform.SetParent(transform);
+        activeLines.Add(lineRoot);
 
-        LineRenderer lr = lineObj.AddComponent<LineRenderer>();
-        lr.material = dottedLineMaterial;
-        lr.textureMode = LineTextureMode.Tile;
+        Vector3 start = new Vector3(xPos, -lineLength / 2f, 0);
+        Vector3 end = new Vector3(xPos, lineLength / 2f, 0);
+
+        float length = Vector3.Distance(start, end);
+        Vector3 direction = (end - start).normalized;
+        float traveled = 0f;
+        float accumulator = 0f;
+        bool isDrawingDash = true;
+
+        while (traveled < length - 0.001f)
+        {
+            float target = isDrawingDash ? dashLength : dashGap;
+            float step = Mathf.Min(target - accumulator, length - traveled);
+
+            if (isDrawingDash)
+            {
+                Vector3 segStart = start + direction * traveled;
+                Vector3 segEnd = segStart + direction * step;
+                DrawDashSegment(segStart, segEnd, color, lineRoot.transform);
+            }
+
+            traveled += step;
+            accumulator += step;
+
+            if (accumulator >= target - 0.001f)
+            {
+                accumulator = 0f;
+                isDrawingDash = !isDrawingDash;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Instantiates a single solid LineRenderer segment between two points.
+    /// </summary>
+    private void DrawDashSegment(Vector3 start, Vector3 end, Color color, Transform parent)
+    {
+        LineRenderer lr = Instantiate(linePrefab, parent);
         lr.positionCount = 2;
         lr.startWidth = lineWidth;
         lr.endWidth = lineWidth;
         lr.startColor = color;
         lr.endColor = color;
-        lr.SetPosition(0, new Vector3(xPos, -lineLength / 2f, 0));
-        lr.SetPosition(1, new Vector3(xPos, lineLength / 2f, 0));
-
-        activeLines.Add(lineObj);
+        lr.SetPosition(0, start);
+        lr.SetPosition(1, end);
     }
 
+    /// <summary>
+    /// Destroys all currently active hint line GameObjects.
+    /// </summary>
     private void ClearAllLines()
     {
         foreach (var line in activeLines)
@@ -197,6 +218,9 @@ public class ClockLineHint : MonoBehaviour
         activeLines.Clear();
     }
 
+    /// <summary>
+    /// Returns true if any preset or clear signal contains at least one transition.
+    /// </summary>
     private bool HasAsyncSignals()
     {
         if (levelJsonLoader == null) return false;
@@ -215,16 +239,15 @@ public class ClockLineHint : MonoBehaviour
         return false;
     }
 
-    // -------------------------------------------------------------------------
-    // Gizmos
-    // -------------------------------------------------------------------------
-
     private void OnDrawGizmos()
     {
         DrawClockLineGizmos();
         DrawAsyncHintGizmos();
     }
 
+    /// <summary>
+    /// Draws clock edge lines in the Scene view for level design reference.
+    /// </summary>
     private void DrawClockLineGizmos()
     {
         if (!drawClockGizmos) return;
@@ -250,6 +273,9 @@ public class ClockLineHint : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Draws async transition positions in the Scene view for level design reference.
+    /// </summary>
     private void DrawAsyncHintGizmos()
     {
         if (!drawAsyncGizmos || levelJsonLoader == null) return;

@@ -407,7 +407,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lineLength: 30
   lineWidth: 0.1
-  dottedLineMaterial: {fileID: 2100000, guid: e73a58f6e2794ae7b1b7e50b7fb811b0, type: 2}
+  linePrefab: {fileID: 3090148692481908950, guid: f6794afdb432aaa46b21434cb386774a, type: 3}
+  dashLength: 0.3
+  dashGap: 0.2
   clockStep: 6
   clockLineColor: {r: 0, g: 0.9, b: 1, a: 0.6}
   hintMode: 1

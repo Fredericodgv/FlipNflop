@@ -3,7 +3,6 @@ using UnityEngine.SceneManagement;
 
 public class LevelManager : MonoBehaviour
 {
-    // --- Lógica do Singleton ---
     public static LevelManager Instance { get; private set; }
 
     [Header("Configurações da Fase")]
@@ -13,10 +12,10 @@ public class LevelManager : MonoBehaviour
     public float phaseSlackTiles = 1f;
     [Tooltip("Extensão jogável total (diagramEndX + phaseSlackTiles). Use nas verificações de fim de fase.")]
     public float phaseEndX = 26f;
-    [Tooltip("Valor legado: representa o fim lógico do diagrama (sem slack). Usado por sistemas que não precisam da folga.")]
-    public float levelEndX = 25f; // agora igual a diagramEndX; phaseEndX mantém a folga separada
+    [Tooltip("Valor legado: representa o fim lógico do diagrama (sem slack). Usado por sistemas relacionaod ao diagrama")]
+    public float levelEndX = 25f;
     [Tooltip("Passo do clock em X (distância entre linhas de clock / amostragem).")]
-    public float clockStepX = 6f; // Centralizado aqui para uso global
+    public float clockStepX = 6f;
 
     [Header("Navegação")]
     [SerializeField] private string nextLevel;
@@ -25,7 +24,6 @@ public class LevelManager : MonoBehaviour
 
     private void Awake()
     {
-        // Garante que apenas uma instância do LevelManager exista
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -35,9 +33,8 @@ public class LevelManager : MonoBehaviour
             Instance = this;
         }
 
-        // Garante coerência inicial entre diagramEndX e phaseEndX
         phaseEndX = diagramEndX + phaseSlackTiles;
-        levelEndX = diagramEndX; // legado aponta para fim lógico somente
+        levelEndX = diagramEndX;
     }
 
 }

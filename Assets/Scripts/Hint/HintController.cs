@@ -4,12 +4,6 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Owns all hint-related input actions and delegates to the appropriate hint components.
 /// Remove hint input handling from PlayerController and assign it here instead.
-///
-/// INTEGRATION:
-///   1. Add this component to the HintManager GameObject in the scene.
-///   2. Assign clockLineHint and operationHint references in the Inspector.
-///   3. Assign the two input action references from your Input Action Asset.
-///   4. Remove toggleHintsAction and hintController references from PlayerController.
 /// </summary>
 public class HintController : MonoBehaviour
 {
@@ -24,10 +18,9 @@ public class HintController : MonoBehaviour
     [Tooltip("Action that triggers the operation hint (J/K/Op labels).")]
     [SerializeField] private InputActionReference showOperationHintAction;
 
-    // -------------------------------------------------------------------------
-    // Input registration
-    // -------------------------------------------------------------------------
-
+    /// <summary>
+    /// Subscribes to input actions on enable and unsubscribes on disable.
+    /// </summary>
     private void OnEnable()
     {
         if (toggleClockLinesAction != null)
@@ -43,6 +36,9 @@ public class HintController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Unsubscribes from input actions to prevent memory leaks and unintended behavior when the object is disabled.
+    /// </summary>
     private void OnDisable()
     {
         if (toggleClockLinesAction != null)
@@ -58,16 +54,18 @@ public class HintController : MonoBehaviour
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Handlers
-    // -------------------------------------------------------------------------
-
+    /// <summary>
+    /// Toggles the clock line hint mode
+    /// </summary>
     private void OnToggleClockLines(InputAction.CallbackContext ctx)
     {
         if (clockLineHint != null)
             clockLineHint.ToggleHintMode();
     }
 
+    /// <summary>
+    /// Shows the operation hint (J/K/Op labels) 
+    /// </summary>
     private void OnShowOperationHint(InputAction.CallbackContext ctx)
     {
         if (operationHint != null)

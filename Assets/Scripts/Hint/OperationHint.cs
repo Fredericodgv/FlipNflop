@@ -64,23 +64,14 @@ public class OperationHint : MonoBehaviour
     [Tooltip("How many seconds the hint stays visible before auto-hiding.")]
     [SerializeField] private float hintDuration = 3f;
 
-    // -------------------------------------------------------------------------
-    // Runtime
-    // -------------------------------------------------------------------------
-
     private GameObject labelsRoot;
     private Coroutine hideCoroutine;
 
-    // -------------------------------------------------------------------------
-    // Lifecycle
-    // -------------------------------------------------------------------------
-
     private void OnDestroy() => ClearLabels();
 
-    // -------------------------------------------------------------------------
-    // Public API — called by HintManager
-    // -------------------------------------------------------------------------
-
+    /// <summary>
+    /// Main method to show the operation hint. Calculates the next clock edge, retrieves signal values, determines the operation, and spawns labels accordingly.
+    /// </summary>
     public void ShowHint()
     {
         if (player == null || levelJsonLoader == null || inputTilemap == null)
@@ -135,10 +126,9 @@ public class OperationHint : MonoBehaviour
         hideCoroutine = StartCoroutine(AutoHide());
     }
 
-    // -------------------------------------------------------------------------
-    // Label spawning
-    // -------------------------------------------------------------------------
-
+    /// <summary>
+    /// Spawns a single label with the specified text, position, font size, and color under the given parent transform.
+    /// </summary>
     private void SpawnLabel(Transform parent, string text, float x, float y, float fontSize, Color color)
     {
         var obj = new GameObject($"Label_{text}");
@@ -155,10 +145,9 @@ public class OperationHint : MonoBehaviour
             tmp.font = labelFont;
     }
 
-    // -------------------------------------------------------------------------
-    // Operation resolution
-    // -------------------------------------------------------------------------
-
+    /// <summary>
+    /// Resolves the operation based on the current signal states and level configuration.
+    /// </summary>
     private string ResolveOperation(bool j, bool k, bool preset, bool clear,
                                      bool hasPreset, bool hasClear, bool asyncActiveHigh)
     {
@@ -173,16 +162,18 @@ public class OperationHint : MonoBehaviour
         return "Hold";
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
+    /// <summary>
+    /// Converts a tile row index to a world Y position using the input tilemap's cell layout. Assumes the label should be centered on the tile row.
+    /// </summary>
     private float TileRowToWorldY(int tileRow)
     {
         Vector3 worldPos = inputTilemap.CellToWorld(new Vector3Int(0, tileRow, 0));
         return worldPos.y + inputTilemap.cellSize.y / 2f;
     }
 
+    /// <summary>
+    /// Safely retrieves the signal value at the specified index, returning false if the index is out of bounds or the signal array is null.
+    /// </summary>
     private static bool GetSignalAt(bool[] signal, int index)
     {
         if (signal == null || index < 0 || index >= signal.Length) return false;

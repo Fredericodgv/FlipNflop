@@ -40,8 +40,6 @@ public class MaceController : MonoBehaviour
 
     void Start()
     {
-        // Initialize state from current transform position. If ApplyObstacleData was called
-        // before Start, startPos will already have been set accordingly.
         startPos = transform.position;
 
         Direction startDir = GetStartDirection(startCorner, turning);
@@ -52,17 +50,14 @@ public class MaceController : MonoBehaviour
         float dx = Mathf.Max(0f, horizontalDistance);
         float dy = Mathf.Max(0f, verticalDistance);
 
-        // Compute bottom-left from the chosen corner and dimensions
         Vector3 bl = CornerToBottomLeft(startPos, dx, dy, startCorner);
         minX = bl.x; minY = bl.y; maxX = bl.x + dx; maxY = bl.y + dy;
 
-        // Ensure transform is placed exactly at the configured start corner
         transform.position = startPos;
     }
 
     void Update()
     {
-        // Nothing to do if there is no path or speed is zero
         if ((horizontalDistance <= 0f && verticalDistance <= 0f) || speed <= 0f)
             return;
 
@@ -70,7 +65,6 @@ public class MaceController : MonoBehaviour
         Vector3 pos = transform.position;
         float step = speed * Time.deltaTime;
 
-        // Move along the active axis toward the current target corner
         switch (currentDirection)
         {
             case Direction.Up:
@@ -85,7 +79,6 @@ public class MaceController : MonoBehaviour
 
         transform.position = pos;
 
-        // Handle corner transitions; allow up to 4 immediate transitions to cover degenerate edges
         int safety = 0;
         while (safety++ < 4)
         {

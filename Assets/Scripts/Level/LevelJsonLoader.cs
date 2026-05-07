@@ -77,7 +77,6 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField]
     private string[] outputOpsPerTile;
 
-    // Async active mode: true = active-high (1), false = active-low (0)
 
     #endregion
 
