@@ -21,7 +21,10 @@ public class UploadMenuManager : MonoBehaviour
 #endif
     }
 
-    // Chamado pelo JS via SendMessage
+    /// <summary>
+    /// Callback method for receiving the uploaded JSON content from JavaScript. Validates the content and either shows an error feedback or stores the content for loading in the next scene.
+    /// </summary>
+    /// <param name="jsonContent"></param>
     public void OnJSONReceived(string jsonContent)
     {
         if (string.IsNullOrWhiteSpace(jsonContent))
