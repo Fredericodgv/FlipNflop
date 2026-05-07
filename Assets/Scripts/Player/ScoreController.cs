@@ -1,26 +1,9 @@
 using UnityEngine;
 using TMPro;
 
-/// <summary>
-/// Owns the in-game timer and computes the final score.
-///
-/// Formula:
-///   score = max(0, round(accuracyRatio * maxScore) - floor(elapsedTime))
-///
-/// Where accuracyRatio = correctSegments / totalSegments (provided by PathVerifier).
-/// Each elapsed second deducts 1 point from the accuracy-based maximum.
-/// maxScore is configurable in the Inspector (default: 1000).
-///
-/// INTEGRATION:
-///   1. Add this component to a GameObject in each level scene.
-///   2. Assign timerText and scoreText in the Inspector.
-///   3. In PathVerifier.DrawFeedbackLines(), call:
-///        ScoreController.Instance?.ReportResult(correctSegments, totalSegments);
-/// </summary>
 public class ScoreController : MonoBehaviour
 {
     public static ScoreController Instance { get; private set; }
-
     [Header("In-Game UI")]
     [Tooltip("TMP label showing the running timer during gameplay.")]
     public TextMeshProUGUI timerText;
@@ -31,17 +14,9 @@ public class ScoreController : MonoBehaviour
     [Header("Score Settings")]
     [Tooltip("Maximum possible score (achieved with 100% accuracy in 0 seconds).")]
     [SerializeField] private int maxScore = 1000;
-
-    // -------------------------------------------------------------------------
-    // Runtime state
-    // -------------------------------------------------------------------------
-
     private float elapsedTime;
     private bool isRunning;
 
-    // -------------------------------------------------------------------------
-    // Lifecycle
-    // -------------------------------------------------------------------------
 
     private void Awake()
     {
@@ -62,10 +37,6 @@ public class ScoreController : MonoBehaviour
         UpdateTimerUI();
     }
 
-    // -------------------------------------------------------------------------
-    // Timer
-    // -------------------------------------------------------------------------
-
     public void StartTimer()
     {
         elapsedTime = 0f;
@@ -82,10 +53,6 @@ public class ScoreController : MonoBehaviour
         int s = Mathf.FloorToInt(elapsedTime % 60f);
         timerText.text = $"{m:00}:{s:00}";
     }
-
-    // -------------------------------------------------------------------------
-    // Score — called by PathVerifier
-    // -------------------------------------------------------------------------
 
     /// <summary>
     /// Stops the timer, computes and displays the final score.
@@ -108,11 +75,8 @@ public class ScoreController : MonoBehaviour
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Formula
-    // -------------------------------------------------------------------------
-
     /// <summary>
+    /// Calculates de final score
     /// score = max(0, round(accuracyRatio * maxScore) - floor(elapsedSeconds))
     /// </summary>
     private int ComputeScore(int correct, int total, float seconds)
