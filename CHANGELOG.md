@@ -1,3 +1,13 @@
+## [0.7.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.7.0...v0.7.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* adjust player animation ([35f9369](https://github.com/Fredericodgv/FlipNflop/commit/35f93692785c070bdb5778888601cc185b93d839))
+* Suport to uploaded levels ([e3d6176](https://github.com/Fredericodgv/FlipNflop/commit/e3d617603655c1efc1a0885a12584629c51a0da4))
+
+
+
 # [0.7.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.6.2...v0.7.0) (2026-04-10)
 
 
@@ -41,16 +51,6 @@
 ### Features
 
 * Hints working ([6d6cde2](https://github.com/Fredericodgv/FlipNflop/commit/6d6cde22f321755333b8ef1fe5787100cb837959))
-
-
-
-## [0.5.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.5.0...v0.5.1) (2026-03-17)
-
-
-### Bug Fixes
-
-* fix starting vertical line bug ([15eb2f1](https://github.com/Fredericodgv/FlipNflop/commit/15eb2f1f0d35092eb8519eab9a0bb0cf4feb49ef))
-* LevelManager executs before other scripts ([8ba47d6](https://github.com/Fredericodgv/FlipNflop/commit/8ba47d6ca438205bf8ba12adc868ed04ba7d196a))
 
 
 
