@@ -36,7 +36,7 @@ A lógica do jogo está concentrada na pasta `Assets/Scripts`, seguindo uma estr
 
 Para manter este README limpo, detalhes técnicos específicos e histórico foram movidos para páginas dedicadas:
 
-* 📖 [**Guia de Versionamento**](docs/versionamento.md): Padrões de commits e regras para branches.
+* 📖 [**Guia de Versionamento**](docs/Versionamento.md): Padrões de commits e regras para branches.
 * 📜 [**Changelog**](CHANGELOG.md): Histórico detalhado de todas as versões e alterações.
 
 ---
