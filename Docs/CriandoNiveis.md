@@ -77,3 +77,42 @@ Veja como configurar um obstáculo com movimento:
 * **Distância do Movimento**: Quanto ele vai patrulhar para os lados (**`horizontalDistance`**) e para cima/baixo (**`verticalDistance`**).
 * **`starterCorner`**: De qual canto ele começa a se mover (`"bottom-left"`, `"bottom-right"`, `"top-left"`, `"top-right"`).
 * **`clockwise`**: Escreva `true` para ele girar no sentido horário, ou `false` para o sentido anti-horário.
+
+---
+
+## ☝️ Adicionando Lógica Assíncrona
+
+Caso deseje acrescentar sinais assíncronos, como Preset e Clear, adicione os seguintes elementos ao `.json`, conforme o exemplo:
+
+```json
+{
+    "levelName": "nivel_exemplo",
+    "levelDescription": "Fase de teste ensinando o Flip-Flop JK",
+    "levelID": "102030",
+    "levelOrder": 10,
+    "ffType": "JK",
+    "clockCicles": 6,
+    "activeClockEdge": "rising",
+    "jSignal": "000000 000111 111000 000000 001111 111111 111111",
+    "kSignal": "000000 000000 000011 111111 111111 100011 111111",
+
+    "asyncActive": "high",
+    "presetSignal": "000000 000000 000000 000000 001111 111111 111111",
+    "clearSignal": "000000 000000 000000 111000 000000 000000 000000",
+
+    "floor":   "111111 111111 111111 111111 111111 111111 111111 111111 111111 111",
+    "ceiling": "111111 111111 111111 111111 111111 111111 111111 111111 111111 111",
+    "obstacles": []
+}
+```
+
+---
+
+## 📌 O que preencher em cada campo?
+
+### 1. Ativação de Sinais Assíncronos
+* **`asyncActive`**: Qual valor dos sinais assíncronos altera a saída do flip-flop (`"high"` para ativo em `1`, `"low"` para ativo em `0`)
+
+### 2. Desenhando os Sinais
+Similar ao preenchimento dos sinais `J` e `K`, uma sequência numérica de `0` e `1`:
+* **Sinais (`presetSignal`, `clearSignal`...)**: Representam o valor da entrada em cada pedacinho do tempo. `0` é sinal baixo, `1` é sinal alto.
