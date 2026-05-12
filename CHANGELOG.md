@@ -1,3 +1,12 @@
+## [0.7.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.7.1...v0.7.2) (2026-05-12)
+
+
+### Bug Fixes
+
+* Update menu with upload and "about" button ([8e04237](https://github.com/Fredericodgv/FlipNflop/commit/8e042377ac18e87c455c9ecc0d6d58d7ecf33adb))
+
+
+
 ## [0.7.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.7.0...v0.7.1) (2026-05-07)
 
 
@@ -42,15 +51,6 @@
 ### Bug Fixes
 
 * fix operation hints ([f2522ac](https://github.com/Fredericodgv/FlipNflop/commit/f2522acde2fb72d3150b09750e036232282f29b5))
-
-
-
-# [0.6.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.5.1...v0.6.0) (2026-03-17)
-
-
-### Features
-
-* Hints working ([6d6cde2](https://github.com/Fredericodgv/FlipNflop/commit/6d6cde22f321755333b8ef1fe5787100cb837959))
 
 
 
