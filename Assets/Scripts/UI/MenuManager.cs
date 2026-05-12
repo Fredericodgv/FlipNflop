@@ -9,6 +9,7 @@ public class MenuManager : MonoBehaviour
 {
     [SerializeField] private GameObject painelMenuInicial;
     [SerializeField] private GameObject painelSobre;
+    [SerializeField] private GameObject painelLevelSelect;
     [Header("Referências de HUD")]
     [Tooltip("Painel de sucesso (por exemplo: SuccessPanel / successUI). Será ocultado pelo HideHUD, enquanto o botão de esconder permanecerá visível se atribuído.")]
     [SerializeField] private GameObject successPanel;
@@ -64,6 +65,19 @@ public class MenuManager : MonoBehaviour
     public void Restart()
     {
         SceneManager.LoadScene(levelAtual);
+    }
+
+    public void AbrirSelecaoDeNiveis()
+    {
+        painelMenuInicial.SetActive(false);
+        painelLevelSelect.SetActive(true);
+    }
+
+    // Método para o botão "Voltar" da tela de seleção de níveis:
+    public void FecharSelecaoDeNiveis()
+    {
+        painelLevelSelect.SetActive(false);
+        painelMenuInicial.SetActive(true);
     }
 
     #region Hide HUD Button
