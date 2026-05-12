@@ -127,6 +127,12 @@
         },
         "then": {
           "required": ["jSignal", "kSignal"]
+        },
+        "else": {
+            "properties": {
+                "jSignal": false,
+                "kSignal": false
+            }
         }
       },
       {
