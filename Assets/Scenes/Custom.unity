@@ -10976,7 +10976,7 @@ GameObject:
   - component: {fileID: 1289131808}
   - component: {fileID: 1289131809}
   m_Layer: 5
-  m_Name: MenuManager
+  m_Name: HUDManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11011,19 +11011,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1289131807}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 743c0101a76258447a2a029f2bfe1b2a, type: 3}
+  m_Script: {fileID: 11500000, guid: 0667e2135ea526842a4a981af5307451, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  painelMenuInicial: {fileID: 0}
-  painelSobre: {fileID: 0}
-  successPanel: {fileID: 0}
-  failurePanel: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::HUDController
+  menuSceneName: MenuWEB
+  nextLevelSceneName: 
+  currentLevelSceneName: Custom
   hideButtonName: HideButton
-  menu: MenuWEB
-  nomeDoLevel: LevelSelection
-  nextLevel: 
-  levelAtual: Custom
-  customLevelName: Custom
 --- !u!1 &1302137577
 GameObject:
   m_ObjectHideFlags: 0
@@ -17111,6 +17105,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1289131809}
+    - target: {fileID: 935151070881775155, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: HUDController, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 3295021648855423613, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_Camera
       value: 
@@ -17119,6 +17117,14 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1289131809}
+    - target: {fileID: 4172281789529658480, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: LoadMenuPrincipal
+      objectReference: {fileID: 0}
+    - target: {fileID: 4172281789529658480, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: HUDController, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 4585487842548421115, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_SizeDelta.x
       value: 520
@@ -17143,6 +17149,14 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1289131809}
+    - target: {fileID: 4888913397207640753, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: NextLevel
+      objectReference: {fileID: 0}
+    - target: {fileID: 4888913397207640753, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: HUDController, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 6210031652739718279, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -100
@@ -17239,6 +17253,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1289131809}
+    - target: {fileID: 8736962561788805886, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: HUDController, Assembly-CSharp
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
