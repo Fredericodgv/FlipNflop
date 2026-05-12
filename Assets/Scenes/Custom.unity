@@ -1752,7 +1752,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &278653049
 Transform:
   m_ObjectHideFlags: 0
@@ -8618,7 +8618,7 @@ MonoBehaviour:
   obstacleYRelativeToFloor: 1
   obstaclesParent: {fileID: 278653049}
   obstaclePrefabs:
-  - type: mace
+  - obstacleName: Mace
     prefab: {fileID: 8158824412335418091, guid: 41ede49513207b54c9ff4fac5e27d732, type: 3}
   signalLabelRenderer: {fileID: 1317532320}
   debugLogOutputVector: 0

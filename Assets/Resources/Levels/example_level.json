@@ -14,7 +14,7 @@
     "ceiling": "111111 111111 111111 111111 111000 011111 111111",
     "obstacles": [
         {
-            "type": "mace",
+            "obstacleName": "Mace",
             "startX": 10,
             "startY": 1,
             "speed": 2,
@@ -24,7 +24,7 @@
             "clockwise": true
         },
         {
-            "type": "mace",
+            "obstacleName": "Mace",
             "startX": 25,
             "startY": 3,
             "speed": 3,

@@ -49,10 +49,10 @@ public class ObstacleSpawner
     /// </summary>
     private void SpawnSingleObstacle(ObstacleData obstacle)
     {
-        var prefab = ResolveObstaclePrefab(obstacle.type);
+        var prefab = ResolveObstaclePrefab(obstacle.obstacleName);
         if (prefab == null)
         {
-            Debug.LogWarning($"ObstacleSpawner: No prefab mapped for obstacle type='{obstacle.type}'.");
+            Debug.LogWarning($"ObstacleSpawner: No prefab mapped for obstacle type='{obstacle.obstacleName}'.");
             return;
         }
 
@@ -74,7 +74,7 @@ public class ObstacleSpawner
 
         foreach (var entry in obstaclePrefabs)
         {
-            if (entry != null && entry.prefab != null && entry.type == type)
+            if (entry != null && entry.prefab != null && entry.obstacleName == type)
             {
                 return entry.prefab;
             }
@@ -122,7 +122,7 @@ public class ObstacleSpawner
     [Serializable]
     public class ObstacleData
     {
-        public string type;
+        public string obstacleName;
         public int startX;
         public int startY;
         public float speed;
@@ -138,7 +138,7 @@ public class ObstacleSpawner
     [Serializable]
     public class ObstaclePrefabEntry
     {
-        public string type;
+        public string obstacleName;
         public GameObject prefab;
     }
 
