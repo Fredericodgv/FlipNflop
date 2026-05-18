@@ -50,9 +50,15 @@ public class LevelJsonLoader : MonoBehaviour
 
     #endregion
 
-    #region Components
+    #region Components & Cache
     private TilemapRenderer tilemapRenderer;
     private ObstacleSpawner obstacleSpawner;
+
+    // Cacheados no RenderLevel para uso no ApplySignalColors
+    private int _cachedLevelLength;
+    private int _cachedJ_Y;
+    private int _cachedK_Y;
+    private int _cachedClock_Y;
     #endregion
 
     #region Parsed Signals
@@ -66,7 +72,18 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField] private string[] outputOpsPerTile;
     #endregion
 
-    #region Lifecycle
+    #region Lifecycle & Events
+
+    private void OnEnable()
+    {
+        // Inscreve no evento da branch develop para mudar cores em tempo real
+        SignalColorManager.OnColorsChanged += ApplySignalColors;
+    }
+
+    private void OnDisable()
+    {
+        SignalColorManager.OnColorsChanged -= ApplySignalColors;
+    }
 
     private void Awake()
     {
@@ -148,8 +165,6 @@ public class LevelJsonLoader : MonoBehaviour
 
     private void LoadSignals(LevelData data)
     {
-        // Olha que maravilha! Como o LevelData já fez o Parse com o Newtonsoft, 
-        // nós apenas copiamos as arrays diretas para cá!
         ParsedJSignal = data.JSignal;
         ParsedKSignal = data.KSignal;
         ParsedPresetSignal = data.PresetSignal;
@@ -181,23 +196,33 @@ public class LevelJsonLoader : MonoBehaviour
         int clearY = 6;
         int clockY = 4;
 
-        // As cores já vem prontas do data!
-        tilemapRenderer.RenderDiagram(ParsedJSignal, jY, data.JSignalColor);
-        tilemapRenderer.RenderDiagram(ParsedKSignal, kY, data.KSignalColor);
-        if (ParsedPresetSignal != null) tilemapRenderer.RenderDiagram(ParsedPresetSignal, presetY, data.PresetSignalColor);
-        if (ParsedClearSignal != null) tilemapRenderer.RenderDiagram(ParsedClearSignal, clearY, data.ClearSignalColor);
+        // Verifica se o SignalColorManager (develop) existe, senão usa a cor do JSON (Refactor)
+        Color jColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorJ : data.JSignalColor;
+        Color kColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorK : data.KSignalColor;
+        Color presetColor = data.PresetSignalColor;
+        Color clearColor = data.ClearSignalColor;
+        Color clockColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorCLK : data.ClockSignalColor;
+
+        tilemapRenderer.RenderDiagram(ParsedJSignal, jY, jColor);
+        tilemapRenderer.RenderDiagram(ParsedKSignal, kY, kColor);
+        if (ParsedPresetSignal != null) tilemapRenderer.RenderDiagram(ParsedPresetSignal, presetY, presetColor);
+        if (ParsedClearSignal != null) tilemapRenderer.RenderDiagram(ParsedClearSignal, clearY, clearColor);
 
         GetClockSamplingParameters(out int clockStep, out _);
         int levelLength = LevelManager.Instance != null
             ? Mathf.RoundToInt(LevelManager.Instance.levelEndX)
             : 6 * data.ClockCycles;
 
-        bool risingEdge = string.Equals(data.ActiveClockEdge, "rising", StringComparison.OrdinalIgnoreCase);
+        // Atualiza o cache para uso futuro pelo ApplySignalColors
+        _cachedLevelLength = levelLength + clockStep;
+        _cachedJ_Y = jY;
+        _cachedK_Y = kY;
+        _cachedClock_Y = clockY;
 
-        // Chamando a função separada da nossa classe SignalUtils
+        bool risingEdge = string.Equals(data.ActiveClockEdge, "rising", StringComparison.OrdinalIgnoreCase);
         var clockPattern = BuildClockPattern(levelLength, clockStep, risingEdge);
 
-        tilemapRenderer.RenderClock(clockPattern, clockY, data.ClockSignalColor);
+        tilemapRenderer.RenderClock(clockPattern, clockY, clockColor);
         tilemapRenderer.RenderTerrain(data.Floor, data.Ceiling, floorYRow, ceilingYRow, 3);
         tilemapRenderer.CompleteStaticScenery(floorYRow, ceilingYRow);
 
@@ -205,6 +230,40 @@ public class LevelJsonLoader : MonoBehaviour
             obstacleSpawner.SpawnObstacles(data.Obstacles);
 
         signalLabelRenderer?.GenerateLabels();
+    }
+
+    #endregion
+
+    #region Real-time Color Update (from develop)
+
+    /// <summary>
+    /// Reapplies signal line colors to tilemaps when user changes
+    /// the colors in the menu. Called via the SignalColorManager.OnColorsChanged event.
+    /// </summary>
+    private void ApplySignalColors()
+    {
+        if (tilemapRenderer == null) return;
+        if (SignalColorManager.Instance == null) return;
+        if (_cachedLevelLength <= 0) return;
+
+        Color jColor = SignalColorManager.Instance.ColorJ;
+        Color kColor = SignalColorManager.Instance.ColorK;
+        Color clkColor = SignalColorManager.Instance.ColorCLK;
+
+        ColorRow(inputTilemap, _cachedLevelLength, _cachedJ_Y, startX, jColor);
+        ColorRow(inputTilemap, _cachedLevelLength, _cachedK_Y, startX, kColor);
+        ColorRow(clockTilemap, _cachedLevelLength, _cachedClock_Y, startX, clkColor);
+    }
+
+    private void ColorRow(Tilemap map, int length, int yRow, int baseX, Color color)
+    {
+        if (map == null || length <= 0) return;
+        for (int i = 0; i < length; i++)
+        {
+            var pos = new Vector3Int(baseX + i, yRow, 0);
+            map.SetTileFlags(pos, TileFlags.None);
+            map.SetColor(pos, color);
+        }
     }
 
     #endregion
@@ -298,6 +357,28 @@ public class LevelJsonLoader : MonoBehaviour
         debugOutputVector = sb.ToString();
     }
 
+    /// <summary>
+    /// Builds clock signal pattern.
+    /// Falling edge: 000111 (transition 1→0)
+    /// Rising edge: 111000 (transition 0→1)
+    /// </summary>
+    public static int[] BuildClockPattern(int totalLength, int step, bool risingEdge = false)
+    {
+        if (totalLength <= 0 || step <= 0) return null;
+
+        int half = step / 2;
+        int a = risingEdge ? 1 : 0;
+        int b = risingEdge ? 0 : 1;
+        var period = new int[step];
+
+        for (int i = 0; i < half; i++) period[i] = a;
+        for (int i = half; i < step; i++) period[i] = b;
+
+        var arr = new int[totalLength + step];
+        for (int i = 0; i < arr.Length; i++) arr[i] = period[i % step];
+        return arr;
+    }
+
     #endregion
 
     #region Context Menu Debug
@@ -336,27 +417,4 @@ public class LevelJsonLoader : MonoBehaviour
     }
 
     #endregion
-
-    /// <summary>
-    /// Builds clock signal pattern.
-    /// Falling edge: 000111 (transition 1→0)
-    /// Rising edge: 111000 (transition 0→1)
-    /// </summary>
-    public static int[] BuildClockPattern(int totalLength, int step, bool risingEdge = false)
-    {
-        if (totalLength <= 0 || step <= 0) return null;
-
-        int half = step / 2;
-        int a = risingEdge ? 1 : 0;
-        int b = risingEdge ? 0 : 1;
-        var period = new int[step];
-
-        for (int i = 0; i < half; i++) period[i] = a;
-        for (int i = half; i < step; i++) period[i] = b;
-
-        var arr = new int[totalLength + step];
-        for (int i = 0; i < arr.Length; i++) arr[i] = period[i % step];
-        return arr;
-    }
 }
-
