@@ -614,6 +614,9 @@ public class ConfigMenuManager : MonoBehaviour
 
     #region Restaurar Padrões (Geral)
 
+    /// <summary>
+    /// Restore all default patterns
+    /// </summary>
     public void RestoreDefault()
     {
         if (inputActionAsset != null) inputActionAsset.RemoveAllBindingOverrides();
