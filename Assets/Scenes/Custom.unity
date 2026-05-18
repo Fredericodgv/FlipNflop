@@ -12228,7 +12228,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 840250287}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a71dc7a52a26f04397d25145844be5f, type: 3}
+  m_Script: {fileID: 11500000, guid: 99aa8a9843a163e4ba7ac8757166262b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SignalColorManager
 --- !u!1 &840739373
@@ -13997,7 +13997,7 @@ AudioSource:
   m_GameObject: {fileID: 1038978082}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 2270570153496111657, guid: 7eba59e97ec17504cb3734e0ea2c6253, type: 2}
+  OutputAudioMixerGroup: {fileID: 6747959652058802606, guid: 7eba59e97ec17504cb3734e0ea2c6253, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 1462aefce03314a4aa1917e3440164f6, type: 3}
   m_PlayOnAwake: 0
@@ -14094,7 +14094,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1038978082}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 264f0a2645f58ee4eba779ddb81834ca, type: 3}
+  m_Script: {fileID: 11500000, guid: 06e09f1195119c243829547b9bf1d560, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   audioMixer: {fileID: 24100000, guid: 7eba59e97ec17504cb3734e0ea2c6253, type: 2}
@@ -14290,7 +14290,7 @@ GameObject:
   - component: {fileID: 1056905966}
   - component: {fileID: 1056905965}
   m_Layer: 0
-  m_Name: backgorund
+  m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14305,7 +14305,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1056905964}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d11b21b2ee6b60149928d53757cb8b0d, type: 3}
+  m_Script: {fileID: 11500000, guid: 1f377de6ef4eaae49a205be6bb79c47c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollower
   followX: 1
@@ -14355,8 +14355,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 449380579
-  m_SortingLayer: 0
+  m_SortingLayerID: -945844431
+  m_SortingLayer: -2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: a19fe71b306fc4045b7c66c6583ce46f, type: 3}
   m_Color: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 0.6392157}
@@ -25870,7 +25870,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2015285866}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d11b21b2ee6b60149928d53757cb8b0d, type: 3}
+  m_Script: {fileID: 11500000, guid: 1f377de6ef4eaae49a205be6bb79c47c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollower
   followX: 1
@@ -25920,8 +25920,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 824868983
-  m_SortingLayer: 0
+  m_SortingLayerID: 84184503
+  m_SortingLayer: -1
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 01cf775add0b5714e9d3fd1fb8b35c80, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
