@@ -62,6 +62,12 @@ public class LevelJsonLoader : MonoBehaviour
     private TilemapRenderer tilemapRenderer;
     private ObstacleSpawner obstacleSpawner;
 
+    // Cacheados no Awake para uso no ApplySignalColors
+    private int _cachedLevelLength;
+    private int _cachedJ_Y;
+    private int _cachedK_Y;
+    private int _cachedClock_Y;
+
     #endregion
 
     #region Parsed Signals
@@ -145,9 +151,49 @@ public class LevelJsonLoader : MonoBehaviour
         return fallback;
     }
 
+    private void ColorRow(Tilemap map, int length, int yRow, int baseX, Color color)
+    {
+        if (map == null || length <= 0) return;
+        for (int i = 0; i < length; i++)
+        {
+            var pos = new Vector3Int(baseX + i, yRow, 0);
+            map.SetTileFlags(pos, TileFlags.None);
+            map.SetColor(pos, color);
+        }
+    }
+
     #endregion
 
     #region Lifecycle
+
+    private void OnEnable()
+    {
+        SignalColorManager.OnColorsChanged += ApplySignalColors;
+    }
+
+    private void OnDisable()
+    {
+        SignalColorManager.OnColorsChanged -= ApplySignalColors;
+    }
+
+    /// <summary>
+    /// Reapplies signal line colors to tilemaps when user changes
+    /// the colors in the menu. Called via the SignalColorManager.OnColorsChanged event.
+    /// </summary>
+    private void ApplySignalColors()
+    {
+        if (tilemapRenderer == null) return;
+        if (SignalColorManager.Instance == null) return;
+        if (_cachedLevelLength <= 0) return;
+
+        Color jColor   = SignalColorManager.Instance.ColorJ;
+        Color kColor   = SignalColorManager.Instance.ColorK;
+        Color clkColor = SignalColorManager.Instance.ColorCLK;
+
+        ColorRow(inputTilemap, _cachedLevelLength, _cachedJ_Y,     startX, jColor);
+        ColorRow(inputTilemap, _cachedLevelLength, _cachedK_Y,     startX, kColor);
+        ColorRow(clockTilemap, _cachedLevelLength, _cachedClock_Y, startX, clkColor);
+    }
 
     /// <summary>
     /// Initializes tilemaps from the provided JSON and updates LevelManager settings.
@@ -225,11 +271,17 @@ public class LevelJsonLoader : MonoBehaviour
 
         tilemapRenderer.ClearAllTilemaps();
 
-        Color jColor = ParseColor(data?.jSignalColor, Color.white);
-        Color kColor = ParseColor(data?.kSignalColor, Color.white);
+        Color jColor = SignalColorManager.Instance != null
+            ? SignalColorManager.Instance.ColorJ
+            : ParseColor(data?.jSignalColor, Color.white);
+        Color kColor = SignalColorManager.Instance != null
+            ? SignalColorManager.Instance.ColorK
+            : ParseColor(data?.kSignalColor, Color.white);
         Color presetColor = ParseColor(data?.presetSignalColor, Color.white);
         Color clearColor = ParseColor(data?.clearSignalColor, Color.white);
-        Color clockColor = ParseColor(data?.clockSignalColor, Color.white);
+        Color clockColor = SignalColorManager.Instance != null
+            ? SignalColorManager.Instance.ColorCLK
+            : ParseColor(data?.clockSignalColor, Color.white);
 
         // Calculate Y positions: J=12, Clock=4, others distributed between
         bool hasAsync = (presetSignal != null || clearSignal != null);
@@ -248,6 +300,11 @@ public class LevelJsonLoader : MonoBehaviour
 
         int levelLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : (6 * data.clockCicles));
 
+        _cachedLevelLength = levelLength + clockStep;
+        _cachedJ_Y         = j_Y;
+        _cachedK_Y         = k_Y;
+        _cachedClock_Y     = clock_Y;
+        
         // Parse active clock edge ("rising" or "falling")
         bool isRisingEdge = data.activeClockEdge != null && data.activeClockEdge.ToLower() == "rising";
         var clockPattern = BuildClockPattern(levelLength, clockStep, isRisingEdge);
