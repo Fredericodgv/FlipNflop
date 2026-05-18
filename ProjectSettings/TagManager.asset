@@ -39,6 +39,12 @@ TagManager:
   - 
   - Time
   m_SortingLayers:
+  - name: Background
+    uniqueID: 3349122865
+    locked: 0
+  - name: Contrast
+    uniqueID: 84184503
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
