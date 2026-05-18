@@ -1,3 +1,12 @@
+# [0.8.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.7.2...v0.8.0) (2026-05-18)
+
+
+### Features
+
+* menu config restructured ([0ec3eb2](https://github.com/Fredericodgv/FlipNflop/commit/0ec3eb231e65eba5572ab5706a735382e4f71647))
+
+
+
 ## [0.7.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.7.1...v0.7.2) (2026-05-12)
 
 
@@ -42,15 +51,6 @@
 
 * adjust timer and score ([bf9ed72](https://github.com/Fredericodgv/FlipNflop/commit/bf9ed72481d3ba8c3c69b5d9b8e32020c03e9053))
 * replace solid error feedback with dashed lines ([0e4e1b5](https://github.com/Fredericodgv/FlipNflop/commit/0e4e1b523e14895243c4962b490550d1ede49956))
-
-
-
-## [0.6.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.6.0...v0.6.1) (2026-03-17)
-
-
-### Bug Fixes
-
-* fix operation hints ([f2522ac](https://github.com/Fredericodgv/FlipNflop/commit/f2522acde2fb72d3150b09750e036232282f29b5))
 
 
 
