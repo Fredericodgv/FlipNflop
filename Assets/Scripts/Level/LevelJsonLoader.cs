@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 /// <summary>
 /// Loads level JSON, configures scene, renders diagrams/terrain, and spawns obstacles.
@@ -10,19 +12,18 @@ using UnityEngine.Tilemaps;
 public class LevelJsonLoader : MonoBehaviour
 {
     #region Fields
+
     [Header("Tilemaps")]
     [SerializeField] private Tilemap inputTilemap;
     [SerializeField] private Tilemap terrainTilemap;
     [SerializeField] private Tilemap clockTilemap;
 
     [Header("Level JSON")]
-    [Tooltip("JSON containing jSignal, kSignal, floor, ceiling, levelTiles and clockTiles")]
     [SerializeField] private TextAsset levelFile;
 
     [Header("Tiles - Diagrams")]
-    [Tooltip("Tiles for 3-bit neighborhood patterns (prev,curr,next) as binary index: 0=000,1=001,2=010,3=011,4=100,5=101,6=110,7=111")]
+    [Tooltip("Tiles for 3-bit neighborhood patterns (prev,curr,next) as binary index: 0=000..7=111")]
     [SerializeField] private TileBase[] diagramTiles = new TileBase[8];
-
 
     [Header("Tiles - Terrain")]
     [SerializeField] private TileBase floorTile;
@@ -36,24 +37,17 @@ public class LevelJsonLoader : MonoBehaviour
     [SerializeField] private int ceilingYRow = 12;
 
     [Header("Obstacles")]
-    [Tooltip("If true, obstacle startTileY is relative to floorYRow; otherwise it's absolute tile Y.")]
+    [Tooltip("If true, obstacle startTileY is relative to floorYRow; otherwise absolute tile Y.")]
     [SerializeField] private bool obstacleYRelativeToFloor = true;
-    [Tooltip("Parent transform for spawned obstacles (optional)")]
     [SerializeField] private Transform obstaclesParent;
-    [Tooltip("Map JSON obstacle 'type' to prefab to spawn")]
     [SerializeField] private List<ObstacleSpawner.ObstaclePrefabEntry> obstaclePrefabs = new List<ObstacleSpawner.ObstaclePrefabEntry>();
 
     [Header("HUD Labels")]
-    [Tooltip("Optional: SignalLabelRenderer to position HUD labels at signal Y positions")]
     [SerializeField] private SignalLabelRenderer signalLabelRenderer;
 
     [Header("Debug")]
-    [Tooltip("If true, logs the computed output vector (0/1) used by PathVerifier.")]
     [SerializeField] private bool debugLogOutputVector = false;
-    [Tooltip("String view of the computed output vector (0/1). Read-only, for inspector visualization.")]
-    [SerializeField]
-    [TextArea]
-    private string debugOutputVector;
+    [SerializeField][TextArea] private string debugOutputVector;
 
     #endregion
 
@@ -70,49 +64,267 @@ public class LevelJsonLoader : MonoBehaviour
     public bool[] ParsedKSignal { get; private set; }
     public bool[] ParsedPresetSignal { get; private set; }
     public bool[] ParsedClearSignal { get; private set; }
-    // Per-tile output timeline (async preset/clear immediate; JK at clock edges)
     public bool[] OutputTimeline { get; private set; }
-    // Per-tile operation description (e.g., keep, preset_async, clear_async, set_sync, reset_sync, switch_sync, combined)
     public bool asyncActiveHigh { get; private set; }
-    [SerializeField]
-    private string[] outputOpsPerTile;
 
+    [SerializeField] private string[] outputOpsPerTile;
 
     #endregion
 
-    #region Output Computation
+    #region Data Class
+
     /// <summary>
-    /// Computes output events from parsed signals using FlipFlopSimulator.
+    /// Represents the deserialized level JSON. JsonProperty maps camelCase JSON keys
+    /// to readable C# names and also handles typos in existing JSON (e.g. "clockCicles").
     /// </summary>
+    private class LevelData
+    {
+        [JsonProperty("levelName")]
+        public string LevelName { get; set; }
+
+        // Aceita tanto "clockCycles" (correto) quanto "clockCicles" (legado com erro de digitação)
+        [JsonProperty("clockCycles")]
+        public int ClockCycles { get; set; }
+
+        [JsonProperty("clockCicles")]   // fallback para JSONs antigos
+        private int ClockCiclesLegacy { set => ClockCycles = ClockCycles > 0 ? ClockCycles : value; }
+
+        [JsonProperty("asyncActive")]
+        public int AsyncActive { get; set; } = 1;
+
+        [JsonProperty("activeClockEdge")]
+        public string ActiveClockEdge { get; set; } = "falling";
+
+        [JsonProperty("jSignal")]
+        public string JSignal { get; set; }
+
+        [JsonProperty("kSignal")]
+        public string KSignal { get; set; }
+
+        [JsonProperty("presetSignal")]
+        public string PresetSignal { get; set; }
+
+        [JsonProperty("clearSignal")]
+        public string ClearSignal { get; set; }
+
+        [JsonProperty("jSignalColor")]
+        public string JSignalColor { get; set; }
+
+        [JsonProperty("kSignalColor")]
+        public string KSignalColor { get; set; }
+
+        [JsonProperty("presetSignalColor")]
+        public string PresetSignalColor { get; set; }
+
+        [JsonProperty("clearSignalColor")]
+        public string ClearSignalColor { get; set; }
+
+        [JsonProperty("clockSignalColor")]
+        public string ClockSignalColor { get; set; }
+
+        [JsonProperty("floor")]
+        public string Floor { get; set; }
+
+        [JsonProperty("ceiling")]
+        public string Ceiling { get; set; }
+
+        [JsonProperty("obstacles")]
+        public List<ObstacleSpawner.ObstacleData> Obstacles { get; set; }
+    }
+
+    #endregion
+
+    #region Lifecycle
+
+    private void Awake()
+    {
+        string json = ResolveJsonSource();
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            Debug.LogError("LevelJsonLoader: nenhuma fonte de JSON disponível.");
+            return;
+        }
+
+        LevelData data = ParseJson(json);
+        if (data == null) return;
+
+#if UNITY_EDITOR
+        if (!ValidateAll(data)) return;
+#endif
+
+        InitComponents();
+        ApplyLevelConfig(data);
+        LoadSignals(data);
+        RenderLevel(data);
+    }
+
+    #endregion
+
+    #region Initialization Helpers
+
+    /// <summary>
+    /// Resolves JSON string from: uploaded content → Resources → Inspector asset.
+    /// </summary>
+    private string ResolveJsonSource()
+    {
+        if (!string.IsNullOrEmpty(UploadedLevelJson.Content))
+        {
+            string content = UploadedLevelJson.Content;
+            UploadedLevelJson.Content = null;
+            return content;
+        }
+
+        if (!string.IsNullOrEmpty(MenuManager.LevelToLoadJSON))
+        {
+            var asset = Resources.Load<TextAsset>("Levels/" + MenuManager.LevelToLoadJSON);
+            if (asset != null) return asset.text;
+            Debug.LogError($"LevelJsonLoader: arquivo '{MenuManager.LevelToLoadJSON}' não encontrado em Resources/Levels/.");
+        }
+
+        if (levelFile != null && !string.IsNullOrWhiteSpace(levelFile.text))
+            return levelFile.text;
+
+        return null;
+    }
+
+    private LevelData ParseJson(string json)
+    {
+        try
+        {
+            var settings = new JsonSerializerSettings
+            {
+                MissingMemberHandling = MissingMemberHandling.Ignore,
+                NullValueHandling = NullValueHandling.Ignore,
+            };
+            return JsonConvert.DeserializeObject<LevelData>(json, settings);
+        }
+        catch (JsonException ex)
+        {
+            Debug.LogError($"LevelJsonLoader: erro ao parsear JSON — {ex.Message}");
+            return null;
+        }
+    }
+
+    private void InitComponents()
+    {
+        tilemapRenderer = new TilemapRenderer(
+            inputTilemap, terrainTilemap, clockTilemap,
+            diagramTiles, floorTile, ceilingTile, wallTile,
+            flipCeilingY, startX);
+
+        obstacleSpawner = new ObstacleSpawner(
+            obstaclesParent, obstaclePrefabs, terrainTilemap,
+            startX, floorYRow, obstacleYRelativeToFloor);
+    }
+
+    private void LoadSignals(LevelData data)
+    {
+        ParsedJSignal = ParseSignalString(data.JSignal);
+        ParsedKSignal = ParseSignalString(data.KSignal);
+        ParsedPresetSignal = ParseSignalString(data.PresetSignal);
+        ParsedClearSignal = ParseSignalString(data.ClearSignal);
+
+        asyncActiveHigh = data.AsyncActive != 0;
+
+        GetClockSamplingParameters(out int clockStep, out _);
+        int diagramLen = GetDiagramLength();
+
+        OutputTimeline = FlipFlopSimulator.SimulateJK(
+            ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal,
+            clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
+
+        UpdateDebugOutputVectorString();
+
+        if (debugLogOutputVector)
+            Debug.Log($"LevelJsonLoader: Output timeline ({OutputTimeline?.Length ?? 0}): {debugOutputVector}");
+    }
+
+    private void RenderLevel(LevelData data)
+    {
+        tilemapRenderer.ClearAllTilemaps();
+
+        Color jColor = ParseColor(data.JSignalColor, Color.white);
+        Color kColor = ParseColor(data.KSignalColor, Color.white);
+        Color presetColor = ParseColor(data.PresetSignalColor, Color.white);
+        Color clearColor = ParseColor(data.ClearSignalColor, Color.white);
+        Color clockColor = ParseColor(data.ClockSignalColor, Color.white);
+
+        bool hasAsync = ParsedPresetSignal != null || ParsedClearSignal != null;
+        int jY = 12;
+        int kY = hasAsync ? 10 : 8;
+        int presetY = 8;
+        int clearY = 6;
+        int clockY = 4;
+
+        tilemapRenderer.RenderDiagram(ParsedJSignal, jY, jColor);
+        tilemapRenderer.RenderDiagram(ParsedKSignal, kY, kColor);
+        if (ParsedPresetSignal != null) tilemapRenderer.RenderDiagram(ParsedPresetSignal, presetY, presetColor);
+        if (ParsedClearSignal != null) tilemapRenderer.RenderDiagram(ParsedClearSignal, clearY, clearColor);
+
+        GetClockSamplingParameters(out int clockStep, out _);
+        int levelLength = LevelManager.Instance != null
+            ? Mathf.RoundToInt(LevelManager.Instance.levelEndX)
+            : 6 * data.ClockCycles;
+
+        bool risingEdge = string.Equals(data.ActiveClockEdge, "rising", StringComparison.OrdinalIgnoreCase);
+        var clockPattern = BuildClockPattern(levelLength, clockStep, risingEdge);
+
+        tilemapRenderer.RenderClock(clockPattern, clockY, clockColor);
+        tilemapRenderer.RenderTerrain(ParseSignalString(data.Floor), ParseSignalString(data.Ceiling), floorYRow, ceilingYRow, 3);
+        tilemapRenderer.CompleteStaticScenery(floorYRow, ceilingYRow);
+
+        if (data.Obstacles?.Count > 0)
+            obstacleSpawner.SpawnObstacles(data.Obstacles);
+
+        signalLabelRenderer?.GenerateLabels();
+    }
+
+    #endregion
+
+    #region Public API
+
     public List<PathVerifier.SignalEvent> ComputeOutputEventsFromParsedSignals()
     {
         int diagramLen = GetDiagramLength();
         if (diagramLen <= 0) return null;
 
-        GetClockSamplingParameters(out int step, out int _);
-
-        // Use consolidated method (discards timeline and ops, we only need events)
-        FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal,
+        GetClockSamplingParameters(out int step, out _);
+        FlipFlopSimulator.SimulateJK(
+            ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal,
             step, diagramLen, out _, out var events, asyncActiveHigh);
 
-        // Convert FlipFlopSimulator.SignalEvent to PathVerifier.SignalEvent
         var pathEvents = new List<PathVerifier.SignalEvent>();
         if (events != null)
-        {
             foreach (var evt in events)
-            {
                 pathEvents.Add(new PathVerifier.SignalEvent(evt.x, evt.value));
-            }
-        }
+
         return pathEvents;
     }
 
     #endregion
 
+    #region Clock Pattern
+
+    public static int[] BuildClockPattern(int totalLength, int step, bool risingEdge = false)
+    {
+        if (totalLength <= 0 || step <= 0) return null;
+
+        int half = step / 2;
+        int a = risingEdge ? 1 : 0;
+        int b = risingEdge ? 0 : 1;
+        var period = new int[step];
+        for (int i = 0; i < half; i++) period[i] = a;
+        for (int i = half; i < step; i++) period[i] = b;
+
+        var arr = new int[totalLength + step];
+        for (int i = 0; i < arr.Length; i++) arr[i] = period[i % step];
+        return arr;
+    }
+
+    #endregion
+
     #region Helpers
-    /// <summary>
-    /// Gets clock step/startOffset (first edge at X=step).
-    /// </summary>
+
     private void GetClockSamplingParameters(out int step, out int startOffset)
     {
         float stepF = (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
@@ -122,314 +334,30 @@ public class LevelJsonLoader : MonoBehaviour
         startOffset = step;
     }
 
-    /// <summary>
-    /// Gets diagram length from LevelManager or signal arrays.
-    /// </summary>
     private int GetDiagramLength()
     {
-        int diagramLen = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.diagramEndX : 0f);
-        if (diagramLen <= 0)
-        {
-            diagramLen = FlipFlopSimulator.MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
-        }
-        return diagramLen;
+        int len = LevelManager.Instance != null
+            ? Mathf.RoundToInt(LevelManager.Instance.diagramEndX)
+            : 0;
+        return len > 0
+            ? len
+            : FlipFlopSimulator.MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
     }
 
     private static Color ParseColor(string hex, Color fallback)
     {
         if (string.IsNullOrWhiteSpace(hex)) return fallback;
         string s = hex.Trim();
-        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) s = "#" + s.Substring(2);
+        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) s = "#" + s[2..];
         else if (!s.StartsWith("#")) s = "#" + s;
-        if (ColorUtility.TryParseHtmlString(s, out var c)) return c;
-        return fallback;
-    }
-
-    #endregion
-
-    #region Lifecycle
-
-    /// <summary>
-    /// Initializes tilemaps from the provided JSON and updates LevelManager settings.
-    /// </summary>
-    private void Awake()
-    {
-        TextAsset jsonAssetToLoad = levelFile;
-        string rawJson = null;
-
-        if (!string.IsNullOrEmpty(UploadedLevelJson.Content))
-        {
-            rawJson = UploadedLevelJson.Content;
-            UploadedLevelJson.Content = null; // limpa após consumir
-        }
-        else if (!string.IsNullOrEmpty(MenuManager.LevelToLoadJSON))
-        {
-            jsonAssetToLoad = Resources.Load<TextAsset>("Levels/" + MenuManager.LevelToLoadJSON);
-        }
-
-        var data = rawJson != null ? LoadLevelDataFromString(rawJson) : LoadLevelData(jsonAssetToLoad);
-
-#if UNITY_EDITOR
-        if (!ValidateAll(data)) return;
-#endif
-
-        // Initialize rendering components
-        tilemapRenderer = new TilemapRenderer(
-            inputTilemap,
-            terrainTilemap,
-            clockTilemap,
-            diagramTiles,
-            floorTile,
-            ceilingTile,
-            wallTile,
-            flipCeilingY,
-            startX);
-
-        obstacleSpawner = new ObstacleSpawner(
-            obstaclesParent,
-            obstaclePrefabs,
-            terrainTilemap,
-            startX,
-            floorYRow,
-            obstacleYRelativeToFloor);
-
-        ApplyLevelConfig(data);
-
-        var jSignal = ParseInputString(data.jSignal);
-        var kSignal = ParseInputString(data.kSignal);
-        var presetSignal = ParseInputString(data.presetSignal);
-        var clearSignal = ParseInputString(data.clearSignal);
-
-        // Store parsed signals without modification (visual diagram shows JSON as-is)
-        this.ParsedJSignal = jSignal;
-        this.ParsedKSignal = kSignal;
-        this.ParsedPresetSignal = presetSignal;
-        this.ParsedClearSignal = clearSignal;
-
-        var floorBand = ParseInputString(data.floor);
-        var ceilingBand = ParseInputString(data.ceiling);
-
-        int asyncActiveMode = (data != null ? data.asyncActive : 1);
-        bool asyncActiveHigh = asyncActiveMode == 1;
-        this.asyncActiveHigh = asyncActiveHigh;
-
-        GetClockSamplingParameters(out int clockStep, out int _);
-        int diagramLen = GetDiagramLength();
-        this.OutputTimeline = FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
-        this.asyncActiveHigh = asyncActiveHigh;
-        UpdateDebugOutputVectorString();
-        if (debugLogOutputVector)
-        {
-            Debug.Log($"LevelJsonLoader: Output timeline ({(OutputTimeline != null ? OutputTimeline.Length : 0)}): {debugOutputVector}");
-        }
-
-        tilemapRenderer.ClearAllTilemaps();
-
-        Color jColor = ParseColor(data?.jSignalColor, Color.white);
-        Color kColor = ParseColor(data?.kSignalColor, Color.white);
-        Color presetColor = ParseColor(data?.presetSignalColor, Color.white);
-        Color clearColor = ParseColor(data?.clearSignalColor, Color.white);
-        Color clockColor = ParseColor(data?.clockSignalColor, Color.white);
-
-        // Calculate Y positions: J=12, Clock=4, others distributed between
-        bool hasAsync = (presetSignal != null || clearSignal != null);
-        int j_Y = 12;
-        int k_Y = hasAsync ? 10 : 8;
-        int preset_Y = 8;
-        int clear_Y = 6;
-        int clock_Y = 4;
-
-        tilemapRenderer.RenderDiagram(jSignal, j_Y, jColor);
-        tilemapRenderer.RenderDiagram(kSignal, k_Y, kColor);
-        if (presetSignal != null)
-            tilemapRenderer.RenderDiagram(presetSignal, preset_Y, presetColor);
-        if (clearSignal != null)
-            tilemapRenderer.RenderDiagram(clearSignal, clear_Y, clearColor);
-
-        int levelLength = Mathf.RoundToInt(LevelManager.Instance != null ? LevelManager.Instance.levelEndX : (6 * data.clockCicles));
-
-        // Parse active clock edge ("rising" or "falling")
-        bool isRisingEdge = data.activeClockEdge != null && data.activeClockEdge.ToLower() == "rising";
-        var clockPattern = BuildClockPattern(levelLength, clockStep, isRisingEdge);
-        tilemapRenderer.RenderClock(clockPattern, clock_Y, clockColor);
-        tilemapRenderer.RenderTerrain(floorBand, ceilingBand, floorYRow, ceilingYRow, 3);
-
-        tilemapRenderer.CompleteStaticScenery(floorYRow, ceilingYRow);
-
-        if (data.obstacles != null && data.obstacles.Count > 0)
-        {
-            obstacleSpawner.SpawnObstacles(data.obstacles);
-        }
-
-        // Generate HUD signal labels at correct Y positions
-        if (signalLabelRenderer != null)
-        {
-            signalLabelRenderer.GenerateLabels();
-        }
-    }
-
-    #endregion
-
-    #region Clock Pattern
-
-    /// <summary>
-    /// Builds clock signal pattern.
-    /// Falling edge: 000111 (transition 1→0)
-    /// Rising edge: 111000 (transition 0→1)
-    /// </summary>
-    public static int[] BuildClockPattern(int totalLength, int step, bool risingEdge = false)
-    {
-        if (totalLength <= 0 || step <= 0) return null;
-        var arr = new int[totalLength + step];
-        int half = step / 2;
-        var period = new int[step];
-        int a = risingEdge ? 1 : 0;
-        int b = risingEdge ? 0 : 1;
-        for (int i = 0; i < half; i++) period[i] = a;
-        for (int i = half; i < step; i++) period[i] = b;
-        for (int i = 0; i < totalLength + step; i++) arr[i] = period[i % step];
-        return arr;
-    }
-
-    #endregion
-
-    #region JSON & Config
-    private LevelData LoadLevelData(TextAsset jsonAsset)
-    {
-        if (jsonAsset == null || string.IsNullOrWhiteSpace(jsonAsset.text))
-        {
-            Debug.LogError("LevelJsonLoader: JSON asset is empty or missing.");
-            return null;
-        }
-        try
-        {
-            return JsonUtility.FromJson<LevelData>(jsonAsset.text);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"LevelJsonLoader: Error reading JSON: {ex.Message}");
-            return null;
-        }
-    }
-
-    private LevelData LoadLevelDataFromString(string json)
-    {
-        try { return JsonUtility.FromJson<LevelData>(json); }
-        catch (Exception ex)
-        {
-            Debug.LogError($"LevelJsonLoader: erro ao ler JSON do upload: {ex.Message}");
-            return null;
-        }
-    }
-
-    [ContextMenu("Log Output Vector (0/1)")]
-    private void LogOutputVectorContext()
-    {
-        if (OutputTimeline == null)
-        {
-            GetClockSamplingParameters(out int clockStep, out int _);
-            int diagramLen = GetDiagramLength();
-            OutputTimeline = FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
-            UpdateDebugOutputVectorString();
-        }
-        Debug.Log($"LevelJsonLoader: Output timeline ({(OutputTimeline != null ? OutputTimeline.Length : 0)}): {debugOutputVector}");
-    }
-
-    [ContextMenu("Log Output Ops")]
-    private void LogOutputOpsContext()
-    {
-        if (outputOpsPerTile == null || OutputTimeline == null)
-        {
-            GetClockSamplingParameters(out int clockStep, out int _);
-            int diagramLen = GetDiagramLength();
-            OutputTimeline = FlipFlopSimulator.SimulateJK(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal, clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
-            UpdateDebugOutputVectorString();
-        }
-        var sb = new StringBuilder(outputOpsPerTile.Length * 6);
-        for (int i = 0; i < outputOpsPerTile.Length; i++)
-        {
-            sb.Append(outputOpsPerTile[i]);
-            if (i < outputOpsPerTile.Length - 1) sb.Append(' ');
-        }
-        Debug.Log($"LevelJsonLoader: Ops per tile ({outputOpsPerTile.Length}): {sb}");
-    }
-
-    private void UpdateDebugOutputVectorString()
-    {
-        if (OutputTimeline == null)
-        {
-            debugOutputVector = "(null)";
-            return;
-        }
-        var sb = new StringBuilder(OutputTimeline.Length);
-        for (int i = 0; i < OutputTimeline.Length; i++) sb.Append(OutputTimeline[i] ? '1' : '0');
-        debugOutputVector = sb.ToString();
+        return ColorUtility.TryParseHtmlString(s, out var c) ? c : fallback;
     }
 
     /// <summary>
-    /// Basic validations for scene refs and JSON presence.
+    /// Converts a string of '0' and '1' characters into a bool array.
+    /// Returns null if the string is null/empty or contains no valid bits.
     /// </summary>
-    private bool ValidateAll(LevelData data)
-    {
-        if (data == null)
-        {
-            Debug.LogError("LevelJsonLoader: LevelData is null (JSON parsing failed).");
-            return false;
-        }
-        if (inputTilemap == null || terrainTilemap == null || clockTilemap == null)
-        {
-            Debug.LogError("LevelJsonLoader: One or more required Tilemap references are missing (input/terrain/clock).");
-            return false;
-        }
-        if (diagramTiles == null || diagramTiles.Length < 8)
-        {
-            Debug.LogError("LevelJsonLoader: diagramTiles must have 8 entries (indices 0..7 for 000..111).");
-            return false;
-        }
-        for (int i = 0; i < 8; i++)
-        {
-            if (diagramTiles[i] == null)
-            {
-                Debug.LogError($"LevelJsonLoader: diagramTiles[{i}] is not assigned. Expected mapping 0=000,1=001,2=010,3=011,4=100,5=101,6=110,7=111.");
-                return false;
-            }
-        }
-        if (floorTile == null || ceilingTile == null)
-        {
-            Debug.LogError("LevelJsonLoader: Floor or ceiling tile is not assigned.");
-            return false;
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Sets fixed clock step (6) and derived lengths from level data.
-    /// </summary>
-    private void ApplyLevelConfig(LevelData data)
-    {
-        if (LevelManager.Instance != null)
-        {
-            if (data.clockCicles <= 0)
-            {
-                Debug.LogWarning($"LevelJsonLoader: Invalid clockCicles={data.clockCicles}. Using default value of 10.");
-                data.clockCicles = 10;
-            }
-
-            int step = 6;
-            LevelManager.Instance.clockStepX = step;
-            LevelManager.Instance.diagramEndX = data.clockCicles * step;
-            LevelManager.Instance.phaseEndX = LevelManager.Instance.diagramEndX + LevelManager.Instance.phaseSlackTiles;
-            LevelManager.Instance.levelEndX = LevelManager.Instance.diagramEndX; // legado permanece no fim lógico
-        }
-    }
-
-
-
-    #endregion
-
-    #region Clock Patternion
-    private bool[] ParseInputString(string data)
+    private static bool[] ParseSignalString(string data)
     {
         if (string.IsNullOrEmpty(data)) return null;
         var list = new List<bool>(data.Length);
@@ -441,29 +369,87 @@ public class LevelJsonLoader : MonoBehaviour
         return list.Count > 0 ? list.ToArray() : null;
     }
 
+    private void ApplyLevelConfig(LevelData data)
+    {
+        if (LevelManager.Instance == null) return;
+
+        if (data.ClockCycles <= 0)
+        {
+            Debug.LogWarning($"LevelJsonLoader: clockCycles={data.ClockCycles} inválido. Usando 10.");
+            data.ClockCycles = 10;
+        }
+
+        const int step = 6;
+        LevelManager.Instance.clockStepX = step;
+        LevelManager.Instance.diagramEndX = data.ClockCycles * step;
+        LevelManager.Instance.phaseEndX = LevelManager.Instance.diagramEndX + LevelManager.Instance.phaseSlackTiles;
+        LevelManager.Instance.levelEndX = LevelManager.Instance.diagramEndX;
+    }
+
+    private bool ValidateAll(LevelData data)
+    {
+        if (data == null)
+        { Debug.LogError("LevelJsonLoader: LevelData nulo (falha no parse do JSON)."); return false; }
+
+        if (inputTilemap == null || terrainTilemap == null || clockTilemap == null)
+        { Debug.LogError("LevelJsonLoader: uma ou mais referências de Tilemap ausentes."); return false; }
+
+        if (diagramTiles == null || diagramTiles.Length < 8)
+        { Debug.LogError("LevelJsonLoader: diagramTiles precisa de 8 entradas (0..7)."); return false; }
+
+        for (int i = 0; i < 8; i++)
+            if (diagramTiles[i] == null)
+            { Debug.LogError($"LevelJsonLoader: diagramTiles[{i}] não atribuído."); return false; }
+
+        if (floorTile == null || ceilingTile == null)
+        { Debug.LogError("LevelJsonLoader: floorTile ou ceilingTile não atribuído."); return false; }
+
+        return true;
+    }
+
+    private void UpdateDebugOutputVectorString()
+    {
+        if (OutputTimeline == null) { debugOutputVector = "(null)"; return; }
+        var sb = new StringBuilder(OutputTimeline.Length);
+        foreach (bool b in OutputTimeline) sb.Append(b ? '1' : '0');
+        debugOutputVector = sb.ToString();
+    }
+
     #endregion
 
-    #region Data Classes
+    #region Context Menu Debug
 
-    [Serializable]
-    private class LevelData
+    [ContextMenu("Log Output Vector (0/1)")]
+    private void LogOutputVectorContext()
     {
-        public string levelName;
-        public int clockCicles;
-        public int asyncActive = 1;
-        public string activeClockEdge = "falling"; // "rising" or "falling"
-        public string jSignal;
-        public string kSignal;
-        public string presetSignal;
-        public string clearSignal;
-        public string jSignalColor;
-        public string kSignalColor;
-        public string presetSignalColor;
-        public string clearSignalColor;
-        public string clockSignalColor;
-        public string floor;
-        public string ceiling;
-        public List<ObstacleSpawner.ObstacleData> obstacles;
+        if (OutputTimeline == null)
+        {
+            GetClockSamplingParameters(out int clockStep, out _);
+            OutputTimeline = FlipFlopSimulator.SimulateJK(
+                ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal,
+                clockStep, GetDiagramLength(), out outputOpsPerTile, out _, asyncActiveHigh);
+            UpdateDebugOutputVectorString();
+        }
+        Debug.Log($"LevelJsonLoader: Output timeline ({OutputTimeline?.Length ?? 0}): {debugOutputVector}");
+    }
+
+    [ContextMenu("Log Output Ops")]
+    private void LogOutputOpsContext()
+    {
+        if (outputOpsPerTile == null)
+        {
+            GetClockSamplingParameters(out int clockStep, out _);
+            OutputTimeline = FlipFlopSimulator.SimulateJK(
+                ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal,
+                clockStep, GetDiagramLength(), out outputOpsPerTile, out _, asyncActiveHigh);
+        }
+        var sb = new StringBuilder(outputOpsPerTile.Length * 6);
+        for (int i = 0; i < outputOpsPerTile.Length; i++)
+        {
+            if (i > 0) sb.Append(' ');
+            sb.Append(outputOpsPerTile[i]);
+        }
+        Debug.Log($"LevelJsonLoader: Ops per tile ({outputOpsPerTile.Length}): {sb}");
     }
 
     #endregion
