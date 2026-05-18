@@ -4,7 +4,6 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 /// <summary>
 /// Loads level JSON, configures scene, renders diagrams/terrain, and spawns obstacles.
@@ -52,14 +51,11 @@ public class LevelJsonLoader : MonoBehaviour
     #endregion
 
     #region Components
-
     private TilemapRenderer tilemapRenderer;
     private ObstacleSpawner obstacleSpawner;
-
     #endregion
 
     #region Parsed Signals
-
     public bool[] ParsedJSignal { get; private set; }
     public bool[] ParsedKSignal { get; private set; }
     public bool[] ParsedPresetSignal { get; private set; }
@@ -68,70 +64,6 @@ public class LevelJsonLoader : MonoBehaviour
     public bool asyncActiveHigh { get; private set; }
 
     [SerializeField] private string[] outputOpsPerTile;
-
-    #endregion
-
-    #region Data Class
-
-    /// <summary>
-    /// Represents the deserialized level JSON. JsonProperty maps camelCase JSON keys
-    /// to readable C# names and also handles typos in existing JSON (e.g. "clockCicles").
-    /// </summary>
-    private class LevelData
-    {
-        [JsonProperty("levelName")]
-        public string LevelName { get; set; }
-
-        // Aceita tanto "clockCycles" (correto) quanto "clockCicles" (legado com erro de digitação)
-        [JsonProperty("clockCycles")]
-        public int ClockCycles { get; set; }
-
-        [JsonProperty("clockCicles")]   // fallback para JSONs antigos
-        private int ClockCiclesLegacy { set => ClockCycles = ClockCycles > 0 ? ClockCycles : value; }
-
-        [JsonProperty("asyncActive")]
-        public int AsyncActive { get; set; } = 1;
-
-        [JsonProperty("activeClockEdge")]
-        public string ActiveClockEdge { get; set; } = "falling";
-
-        [JsonProperty("jSignal")]
-        public string JSignal { get; set; }
-
-        [JsonProperty("kSignal")]
-        public string KSignal { get; set; }
-
-        [JsonProperty("presetSignal")]
-        public string PresetSignal { get; set; }
-
-        [JsonProperty("clearSignal")]
-        public string ClearSignal { get; set; }
-
-        [JsonProperty("jSignalColor")]
-        public string JSignalColor { get; set; }
-
-        [JsonProperty("kSignalColor")]
-        public string KSignalColor { get; set; }
-
-        [JsonProperty("presetSignalColor")]
-        public string PresetSignalColor { get; set; }
-
-        [JsonProperty("clearSignalColor")]
-        public string ClearSignalColor { get; set; }
-
-        [JsonProperty("clockSignalColor")]
-        public string ClockSignalColor { get; set; }
-
-        [JsonProperty("floor")]
-        public string Floor { get; set; }
-
-        [JsonProperty("ceiling")]
-        public string Ceiling { get; set; }
-
-        [JsonProperty("obstacles")]
-        public List<ObstacleSpawner.ObstacleData> Obstacles { get; set; }
-    }
-
     #endregion
 
     #region Lifecycle
@@ -162,9 +94,6 @@ public class LevelJsonLoader : MonoBehaviour
 
     #region Initialization Helpers
 
-    /// <summary>
-    /// Resolves JSON string from: uploaded content → Resources → Inspector asset.
-    /// </summary>
     private string ResolveJsonSource()
     {
         if (!string.IsNullOrEmpty(UploadedLevelJson.Content))
@@ -219,10 +148,12 @@ public class LevelJsonLoader : MonoBehaviour
 
     private void LoadSignals(LevelData data)
     {
-        ParsedJSignal = ParseSignalString(data.JSignal);
-        ParsedKSignal = ParseSignalString(data.KSignal);
-        ParsedPresetSignal = ParseSignalString(data.PresetSignal);
-        ParsedClearSignal = ParseSignalString(data.ClearSignal);
+        // Olha que maravilha! Como o LevelData já fez o Parse com o Newtonsoft, 
+        // nós apenas copiamos as arrays diretas para cá!
+        ParsedJSignal = data.JSignal;
+        ParsedKSignal = data.KSignal;
+        ParsedPresetSignal = data.PresetSignal;
+        ParsedClearSignal = data.ClearSignal;
 
         asyncActiveHigh = data.AsyncActive != 0;
 
@@ -243,12 +174,6 @@ public class LevelJsonLoader : MonoBehaviour
     {
         tilemapRenderer.ClearAllTilemaps();
 
-        Color jColor = ParseColor(data.JSignalColor, Color.white);
-        Color kColor = ParseColor(data.KSignalColor, Color.white);
-        Color presetColor = ParseColor(data.PresetSignalColor, Color.white);
-        Color clearColor = ParseColor(data.ClearSignalColor, Color.white);
-        Color clockColor = ParseColor(data.ClockSignalColor, Color.white);
-
         bool hasAsync = ParsedPresetSignal != null || ParsedClearSignal != null;
         int jY = 12;
         int kY = hasAsync ? 10 : 8;
@@ -256,10 +181,11 @@ public class LevelJsonLoader : MonoBehaviour
         int clearY = 6;
         int clockY = 4;
 
-        tilemapRenderer.RenderDiagram(ParsedJSignal, jY, jColor);
-        tilemapRenderer.RenderDiagram(ParsedKSignal, kY, kColor);
-        if (ParsedPresetSignal != null) tilemapRenderer.RenderDiagram(ParsedPresetSignal, presetY, presetColor);
-        if (ParsedClearSignal != null) tilemapRenderer.RenderDiagram(ParsedClearSignal, clearY, clearColor);
+        // As cores já vem prontas do data!
+        tilemapRenderer.RenderDiagram(ParsedJSignal, jY, data.JSignalColor);
+        tilemapRenderer.RenderDiagram(ParsedKSignal, kY, data.KSignalColor);
+        if (ParsedPresetSignal != null) tilemapRenderer.RenderDiagram(ParsedPresetSignal, presetY, data.PresetSignalColor);
+        if (ParsedClearSignal != null) tilemapRenderer.RenderDiagram(ParsedClearSignal, clearY, data.ClearSignalColor);
 
         GetClockSamplingParameters(out int clockStep, out _);
         int levelLength = LevelManager.Instance != null
@@ -267,10 +193,12 @@ public class LevelJsonLoader : MonoBehaviour
             : 6 * data.ClockCycles;
 
         bool risingEdge = string.Equals(data.ActiveClockEdge, "rising", StringComparison.OrdinalIgnoreCase);
+
+        // Chamando a função separada da nossa classe SignalUtils
         var clockPattern = BuildClockPattern(levelLength, clockStep, risingEdge);
 
-        tilemapRenderer.RenderClock(clockPattern, clockY, clockColor);
-        tilemapRenderer.RenderTerrain(ParseSignalString(data.Floor), ParseSignalString(data.Ceiling), floorYRow, ceilingYRow, 3);
+        tilemapRenderer.RenderClock(clockPattern, clockY, data.ClockSignalColor);
+        tilemapRenderer.RenderTerrain(data.Floor, data.Ceiling, floorYRow, ceilingYRow, 3);
         tilemapRenderer.CompleteStaticScenery(floorYRow, ceilingYRow);
 
         if (data.Obstacles?.Count > 0)
@@ -303,27 +231,7 @@ public class LevelJsonLoader : MonoBehaviour
 
     #endregion
 
-    #region Clock Pattern
-
-    public static int[] BuildClockPattern(int totalLength, int step, bool risingEdge = false)
-    {
-        if (totalLength <= 0 || step <= 0) return null;
-
-        int half = step / 2;
-        int a = risingEdge ? 1 : 0;
-        int b = risingEdge ? 0 : 1;
-        var period = new int[step];
-        for (int i = 0; i < half; i++) period[i] = a;
-        for (int i = half; i < step; i++) period[i] = b;
-
-        var arr = new int[totalLength + step];
-        for (int i = 0; i < arr.Length; i++) arr[i] = period[i % step];
-        return arr;
-    }
-
-    #endregion
-
-    #region Helpers
+    #region Helpers & Validations
 
     private void GetClockSamplingParameters(out int step, out int startOffset)
     {
@@ -342,31 +250,6 @@ public class LevelJsonLoader : MonoBehaviour
         return len > 0
             ? len
             : FlipFlopSimulator.MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
-    }
-
-    private static Color ParseColor(string hex, Color fallback)
-    {
-        if (string.IsNullOrWhiteSpace(hex)) return fallback;
-        string s = hex.Trim();
-        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) s = "#" + s[2..];
-        else if (!s.StartsWith("#")) s = "#" + s;
-        return ColorUtility.TryParseHtmlString(s, out var c) ? c : fallback;
-    }
-
-    /// <summary>
-    /// Converts a string of '0' and '1' characters into a bool array.
-    /// Returns null if the string is null/empty or contains no valid bits.
-    /// </summary>
-    private static bool[] ParseSignalString(string data)
-    {
-        if (string.IsNullOrEmpty(data)) return null;
-        var list = new List<bool>(data.Length);
-        foreach (char c in data)
-        {
-            if (c == '1') list.Add(true);
-            else if (c == '0') list.Add(false);
-        }
-        return list.Count > 0 ? list.ToArray() : null;
     }
 
     private void ApplyLevelConfig(LevelData data)
@@ -453,4 +336,27 @@ public class LevelJsonLoader : MonoBehaviour
     }
 
     #endregion
+
+    /// <summary>
+    /// Builds clock signal pattern.
+    /// Falling edge: 000111 (transition 1→0)
+    /// Rising edge: 111000 (transition 0→1)
+    /// </summary>
+    public static int[] BuildClockPattern(int totalLength, int step, bool risingEdge = false)
+    {
+        if (totalLength <= 0 || step <= 0) return null;
+
+        int half = step / 2;
+        int a = risingEdge ? 1 : 0;
+        int b = risingEdge ? 0 : 1;
+        var period = new int[step];
+
+        for (int i = 0; i < half; i++) period[i] = a;
+        for (int i = half; i < step; i++) period[i] = b;
+
+        var arr = new int[totalLength + step];
+        for (int i = 0; i < arr.Length; i++) arr[i] = period[i % step];
+        return arr;
+    }
 }
+
