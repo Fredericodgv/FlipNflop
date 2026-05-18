@@ -11922,7 +11922,7 @@ AudioSource:
   m_GameObject: {fileID: 810242240}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 3501274568049484695, guid: 7eba59e97ec17504cb3734e0ea2c6253, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -28094,6 +28094,10 @@ PrefabInstance:
     - target: {fileID: 4172281789529658480, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: HUDController, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4184767544947978882, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4585487842548421115, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_SizeDelta.x
