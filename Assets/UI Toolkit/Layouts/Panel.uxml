@@ -1,0 +1,16 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/Panel.uss?fileID=7433441132597879392&amp;guid=5b6ccb061d6f6e54b939846c701d8098&amp;type=3#Panel"/>
+    <ui:VisualElement name="VisualElement" style="flex-grow: 1;">
+        <ui:VisualElement name="Background" style="flex-grow: 1; top: 0; right: 0; bottom: 0; left: 0; background-image: url(&quot;project://database/Assets/Arts/quadro.png?fileID=2800000&amp;guid=593b06859c25338459ec621d23c34393&amp;type=3#quadro&quot;);">
+            <ui:VisualElement name="PanelMain" style="flex-grow: 1; position: absolute; top: 0; left: 0; bottom: 0; right: 0; flex-direction: column; flex-wrap: nowrap; flex-basis: auto; align-items: center; justify-content: center; align-content: flex-start; align-self: auto;">
+                <ui:Label text="Menu" name="Menu" class="menu-title"/>
+                <ui:Button text="Continuar" name="Continue" class="menu-button"/>
+                <ui:Button text="Recomeçar" name="Retry" class="menu-button"/>
+                <ui:Button text="Opções" name="Options" class="menu-button"/>
+                <ui:Button text="Sair" name="Exit" class="menu-button"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="PanelOptions" style="flex-grow: 1; display: none;"/>
+            <ui:VisualElement name="PanelVideo" style="flex-grow: 1; display: none;"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
