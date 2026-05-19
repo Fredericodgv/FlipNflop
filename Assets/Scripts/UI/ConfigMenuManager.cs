@@ -44,6 +44,13 @@ public class ConfigMenuManager : MonoBehaviour
     public static ConfigMenuManager Instance { get; private set; }
     public bool IsMenuOpen => mainConfigMenu != null && mainConfigMenu.activeSelf;
 
+    [Header("Navegação por Controle/Teclado")]
+    [Tooltip("PlayerInput do jogador para trocar Action Map ao abrir/fechar menu")]
+    [SerializeField] private PlayerInput playerInput;
+
+    [Tooltip("Primeiro elemento selecionado em cada painel (mesma ordem: main, options, color, audio, video, controls)")]
+    [SerializeField] private GameObject[] firstSelectedPerPanel;
+
     #region Inicialização
 
     private void Awake()
@@ -87,7 +94,37 @@ public class ConfigMenuManager : MonoBehaviour
         audioPanel.SetActive(false);
         videoPanel.SetActive(false);
         controlsPanel.SetActive(false);
-        if (page != null) page.SetActive(true);
+
+        if (page != null)
+        {
+            page.SetActive(true);
+            SetFirstSelected(page);
+        }
+    }
+
+    private void SetFirstSelected(GameObject activePage)
+    {
+        GameObject[] panels = { mainPanel, optionsPanel, colorPanel, audioPanel, videoPanel, controlsPanel };
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] == activePage && firstSelectedPerPanel != null
+                && i < firstSelectedPerPanel.Length)
+            {
+                var selected = firstSelectedPerPanel[i];
+                if (selected != null)
+                    UnityEngine.EventSystems.EventSystem.current
+                        .SetSelectedGameObject(selected);
+                return;
+            }
+        }
+    }
+
+    private System.Collections.IEnumerator SelectNextFrame(GameObject target)
+    {
+        yield return null; // espera um frame o mouse terminar
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+        yield return null;
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(target);
     }
 
     public void OpenMenuConfig()
@@ -95,6 +132,7 @@ public class ConfigMenuManager : MonoBehaviour
         Time.timeScale = 0f;
         mainConfigMenu.SetActive(true);
         buttonConfig.SetActive(false);
+        DisablePlayerInput();
         ShowPage(mainPanel);
     }
 
@@ -136,17 +174,21 @@ public class ConfigMenuManager : MonoBehaviour
         Time.timeScale = 1f;
         mainConfigMenu.SetActive(false);
         buttonConfig.SetActive(true);
+        EnablePlayerInput();
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void RestartLevel()
     {
         Time.timeScale = 1f;
+        EnablePlayerInput();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void BackInitialMenu()
     {
         Time.timeScale = 1f;
+        EnablePlayerInput();
         SceneManager.LoadScene(nomeMenuInicial);
     }
 
@@ -537,6 +579,9 @@ public class ConfigMenuManager : MonoBehaviour
     {
         if (entryIndex < 0 || entryIndex >= rebindEntries.Length) return;
         if (_currentRebindOp != null) return;
+        // Tira o foco do EventSystem para o input system não conflitar
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+
         var entry  = rebindEntries[entryIndex];
         var action = entry.actionReference?.action;
         if (action == null) return;
@@ -562,6 +607,7 @@ public class ConfigMenuManager : MonoBehaviour
         ResolveConflicts(entry, newPath);
         entry.actionReference.action.Enable();
         SaveBindings(); UpdateAllKeyTexts(); SetAllRebindButtonsInteractable(true);
+        SetFirstSelected(controlsPanel); // restaura foco no painel de controles
     }
 
     private void OnRebindCanceled(RebindEntry entry, InputActionRebindingExtensions.RebindingOperation op)
@@ -569,6 +615,7 @@ public class ConfigMenuManager : MonoBehaviour
         op.Dispose(); _currentRebindOp = null;
         entry.actionReference.action.Enable();
         UpdateAllKeyTexts(); SetAllRebindButtonsInteractable(true);
+        SetFirstSelected(controlsPanel);
     }
 
     private void ResolveConflicts(RebindEntry changedEntry, string newPath)
@@ -647,4 +694,14 @@ public class ConfigMenuManager : MonoBehaviour
     }
 
     #endregion
+
+    private void DisablePlayerInput()
+    {
+        playerInput?.actions.FindActionMap("Player")?.Disable();
+    }
+
+    private void EnablePlayerInput()
+    {
+        playerInput?.actions.FindActionMap("Player")?.Enable();
+    }
 }
