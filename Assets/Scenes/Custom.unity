@@ -13563,6 +13563,7 @@ MonoBehaviour:
   - {fileID: 162616430}
   - {fileID: 2090309254}
   - {fileID: 2070422402}
+  pauseAction: {fileID: -8216907823368514188, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
   dropdownPaleta: {fileID: 849669142}
   swatchesJ:
   - {fileID: 1164738521}

@@ -51,6 +51,9 @@ public class ConfigMenuManager : MonoBehaviour
     [Tooltip("Primeiro elemento selecionado em cada painel (mesma ordem: main, options, color, audio, video, controls)")]
     [SerializeField] private GameObject[] firstSelectedPerPanel;
 
+    [Header("Pause — Toggle Menu")]
+    [SerializeField] private InputActionReference pauseAction;
+
     #region Inicialização
 
     private void Awake()
@@ -59,6 +62,12 @@ public class ConfigMenuManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            if (pauseAction?.action != null)
+            {
+                pauseAction.action.performed += OnPausePerformed;
+                pauseAction.action.Enable();
+            }
         }
         else
         {
@@ -71,6 +80,15 @@ public class ConfigMenuManager : MonoBehaviour
     {
         if (mainConfigMenu != null) mainConfigMenu.SetActive(false);
         if (buttonConfig != null)   buttonConfig.SetActive(true);
+
+        // SetActive(false) acima desativou este objeto e cancelou a subscrição
+        // Reativa explicitamente a action de pause
+        if (pauseAction?.action != null)
+        {
+            pauseAction.action.performed -= OnPausePerformed; // evita subscrição dupla
+            pauseAction.action.performed += OnPausePerformed;
+            pauseAction.action.Enable();
+        }
 
         InitRebindButtons();
         InitAudioSliders();
@@ -163,6 +181,14 @@ public class ConfigMenuManager : MonoBehaviour
     {
         UpdateAllKeyTexts();
         ShowPage(controlsPanel);
+    }
+
+    private void OnPausePerformed(InputAction.CallbackContext ctx)
+    {
+        if (IsMenuOpen)
+            ContinueGame();
+        else
+            OpenMenuConfig();
     }
 
     #endregion
@@ -581,6 +607,7 @@ public class ConfigMenuManager : MonoBehaviour
         if (_currentRebindOp != null) return;
         // Tira o foco do EventSystem para o input system não conflitar
         UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+        pauseAction?.action.Disable();
 
         var entry  = rebindEntries[entryIndex];
         var action = entry.actionReference?.action;
@@ -608,6 +635,7 @@ public class ConfigMenuManager : MonoBehaviour
         entry.actionReference.action.Enable();
         SaveBindings(); UpdateAllKeyTexts(); SetAllRebindButtonsInteractable(true);
         SetFirstSelected(controlsPanel); // restaura foco no painel de controles
+        pauseAction?.action.Enable();
     }
 
     private void OnRebindCanceled(RebindEntry entry, InputActionRebindingExtensions.RebindingOperation op)
@@ -616,6 +644,7 @@ public class ConfigMenuManager : MonoBehaviour
         entry.actionReference.action.Enable();
         UpdateAllKeyTexts(); SetAllRebindButtonsInteractable(true);
         SetFirstSelected(controlsPanel);
+        pauseAction?.action.Enable();
     }
 
     private void ResolveConflicts(RebindEntry changedEntry, string newPath)
