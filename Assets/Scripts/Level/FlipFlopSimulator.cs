@@ -88,6 +88,11 @@ public static class FlipFlopSimulator
 
             string asyncToken;
 
+            if (hasPreset && hasClear)
+            {
+                throw new InvalidOperationException($"Fase com entradas inválidas: Preset e Clear assíncronos não podem estar ativos simultaneamente (Erro no Tile {i}).");
+            }
+
             if (hasPreset || hasClear)
             {
                 q = hasClear ? false : true;
@@ -162,8 +167,7 @@ public static class FlipFlopSimulator
 
                 if (s && r)
                 {
-                    if (invalidStateToZero) q = false;
-                    syncToken = "invalid_sr";
+                    throw new InvalidOperationException($"Fase com entradas inválidas: Set (S) e Reset (R) não podem estar ativos simultaneamente (Erro no Tile {i - 1}).");
                 }
                 else if (s)
                 {

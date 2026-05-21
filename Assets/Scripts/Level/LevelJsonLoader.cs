@@ -175,9 +175,19 @@ public class LevelJsonLoader : MonoBehaviour
         GetClockSamplingParameters(out int clockStep, out _);
         int diagramLen = GetDiagramLength();
 
-        OutputTimeline = FlipFlopSimulator.SimulateJK(
-            ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal,
-            clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
+        try
+        {
+            OutputTimeline = FlipFlopSimulator.SimulateJK(
+                ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal,
+                clockStep, diagramLen, out outputOpsPerTile, out _, asyncActiveHigh);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Debug.LogError($"LevelJsonLoader: erro ao simular flip-flop — {ex.Message}");
+            OutputTimeline = null;
+            outputOpsPerTile = null;
+            return;
+        }
 
         UpdateDebugOutputVectorString();
 
