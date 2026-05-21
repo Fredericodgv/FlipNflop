@@ -1,3 +1,12 @@
+## [0.8.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.8.0...v0.8.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* add error handling for invalid flip-flop states in simulation ([ef4cc59](https://github.com/Fredericodgv/FlipNflop/commit/ef4cc59db8c5facb7999a381b52437d57a5c3b64))
+
+
+
 # [0.8.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.7.2...v0.8.0) (2026-05-18)
 
 
@@ -41,16 +50,6 @@
 ### Features
 
 * Add footsteps sounds ([2ed4e05](https://github.com/Fredericodgv/FlipNflop/commit/2ed4e05369f69344bf4a9e831a977a41ab0d8c2d))
-
-
-
-## [0.6.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.6.1...v0.6.2) (2026-04-07)
-
-
-### Bug Fixes
-
-* adjust timer and score ([bf9ed72](https://github.com/Fredericodgv/FlipNflop/commit/bf9ed72481d3ba8c3c69b5d9b8e32020c03e9053))
-* replace solid error feedback with dashed lines ([0e4e1b5](https://github.com/Fredericodgv/FlipNflop/commit/0e4e1b523e14895243c4962b490550d1ede49956))
 
 
 

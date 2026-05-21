@@ -251,7 +251,7 @@ public class ClockLineHint : MonoBehaviour
     private void DrawClockLineGizmos()
     {
         if (!drawClockGizmos) return;
-        LevelManager lm = Application.isPlaying ? LevelManager.Instance : FindFirstObjectByType<LevelManager>();
+        LevelManager lm = Application.isPlaying ? LevelManager.Instance : FindAnyObjectByType<LevelManager>();
         if (lm == null || clockStep <= 0f) return;
 
         int count = Mathf.FloorToInt(lm.levelEndX / clockStep);
