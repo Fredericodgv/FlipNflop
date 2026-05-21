@@ -115,7 +115,7 @@ public class PlayerController : MonoBehaviour
     private T GetOrFind<T>(T reference, string errorMessage) where T : Object
     {
         if (reference == null)
-            reference = FindFirstObjectByType<T>();
+            reference = FindAnyObjectByType<T>();
 
         if (reference == null)
             Debug.LogError(errorMessage);
