@@ -21698,15 +21698,10 @@ MonoBehaviour:
   presetLabelSprite: {fileID: 21300000, guid: 341fafd9c58a45d4c9d44738eb9b0047, type: 3}
   clearLabelSprite: {fileID: 21300000, guid: 341fafd9c58a45d4c9d44738eb9b0047, type: 3}
   clockLabelSprite: {fileID: 21300000, guid: 341fafd9c58a45d4c9d44738eb9b0047, type: 3}
-  jLabelY: 70
-  kLabelY: 290
-  presetLabelY: 300
-  clearLabelY: 400
-  clockLabelY: 510
   xOffset: 0
   labelSizePixels: 390
-  updateInRealTime: 0
   labelScale: 0.25
+  updateInRealTime: 0
   levelJsonLoader: {fileID: 992803105}
   inputTilemap: {fileID: 1489212623}
   mainCamera: {fileID: 519420031}
