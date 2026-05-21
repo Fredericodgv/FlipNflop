@@ -239,7 +239,12 @@ public class LevelJsonLoader : MonoBehaviour
         if (data.Obstacles?.Count > 0)
             obstacleSpawner.SpawnObstacles(data.Obstacles);
 
-        signalLabelRenderer?.GenerateLabels();
+        if (signalLabelRenderer != null)
+        {
+            signalLabelRenderer.GenerateLabels(jY, kY, presetY, clearY, clockY,
+                                               ParsedPresetSignal != null,
+                                               ParsedClearSignal != null);
+        }
     }
 
     #endregion
