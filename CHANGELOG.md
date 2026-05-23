@@ -1,3 +1,12 @@
+# [0.9.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.8.2...v0.9.0) (2026-05-23)
+
+
+### Features
+
+* Remake main menu using Unity UIToolkit ([fb2dd41](https://github.com/Fredericodgv/FlipNflop/commit/fb2dd4116245d14191f7fdd56f0c01ea21057fda))
+
+
+
 ## [0.8.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.8.1...v0.8.2) (2026-05-21)
 
 
@@ -32,16 +41,6 @@
 ### Bug Fixes
 
 * Update menu with upload and "about" button ([8e04237](https://github.com/Fredericodgv/FlipNflop/commit/8e042377ac18e87c455c9ecc0d6d58d7ecf33adb))
-
-
-
-## [0.7.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.7.0...v0.7.1) (2026-05-07)
-
-
-### Bug Fixes
-
-* adjust player animation ([35f9369](https://github.com/Fredericodgv/FlipNflop/commit/35f93692785c070bdb5778888601cc185b93d839))
-* Suport to uploaded levels ([e3d6176](https://github.com/Fredericodgv/FlipNflop/commit/e3d617603655c1efc1a0885a12584629c51a0da4))
 
 
 
