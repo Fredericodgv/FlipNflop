@@ -1,0 +1,65 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/MainMenu.uss?fileID=7433441132597879392&amp;guid=914addff2ff73d644a3f7eeeebd54bb4&amp;type=3#MainMenu"/>
+    <ui:VisualElement name="MainMenu" style="flex-grow: 1; position: absolute; visibility: visible; top: 1px; left: 1px; bottom: 1px; right: 1px; flex-direction: column; justify-content: center; align-self: auto; align-content: flex-start; align-items: center; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; margin-left: 10px; padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px; font-size: 32px; display: flex;">
+        <ui:Button text="Jogar" name="PlayButton" class="menu-button" style="-unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;);"/>
+        <ui:Button text="Upload" name="UploadButton" class="menu-button" style="-unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;);"/>
+        <ui:Button text="Tutorial" name="TutorialButton" class="menu-button" style="-unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;);"/>
+        <ui:Button text="Configurações" name="SettingsButton" class="menu-button" style="-unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;);"/>
+        <ui:Button text="Créditos" name="AboutButton" class="menu-button" style="-unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;); flex-direction: column;"/>
+    </ui:VisualElement>
+    <ui:VisualElement name="About" style="flex-grow: 1; position: absolute; visibility: visible; top: 1px; right: 1px; bottom: 1px; left: 1px; display: none;">
+        <ui:Label text="Sobre o Jogo" name="Title" style="align-items: auto; justify-content: flex-start; align-self: center; font-size: 36px; -unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;); color: rgb(255, 255, 255);"/>
+        <ui:VisualElement name="Credits" style="flex-grow: 1; flex-direction: column; justify-content: flex-start; align-items: center; align-self: center;">
+            <ui:Label text="Um Jogo Educacional Digital para a pratica de diagramas de tempo de flip-flops" class="about-text"/>
+            <ui:Label text="Frederico Dôndici" class="about-text"/>
+            <ui:Label text="João Vitor Fernandes" class="about-text"/>
+            <ui:Label text="Pedro Crawford" class="about-text"/>
+        </ui:VisualElement>
+        <ui:Button text="Voltar" name="BackButton" style="height: 65px; width: 175px; position: absolute; top: 595px; left: 19px; display: flex;"/>
+    </ui:VisualElement>
+    <ui:VisualElement name="LevelSelect" style="flex-grow: 1; position: absolute; top: 1px; left: 1px; bottom: 1px; right: 1px; visibility: visible; display: none;">
+        <ui:Label text="Selecione a fase" name="Title" style="align-items: auto; justify-content: flex-start; align-self: center; font-size: 36px; -unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;); color: rgb(255, 255, 255);"/>
+        <ui:VisualElement name="LevelGrid" style="flex-grow: 1; flex-wrap: wrap; align-self: center; align-content: center; justify-content: center; max-width: 500px; max-height: 500px; flex-direction: row;">
+            <ui:Button text="1" name="Level1" class="level-button"/>
+            <ui:Button text="2&#10;" name="Level2" class="level-button"/>
+            <ui:Button text="3" name="Level3" class="level-button"/>
+            <ui:Button text="4" name="Level4" class="level-button"/>
+            <ui:Button text="5" name="Level5" class="level-button"/>
+            <ui:Button text="6" name="Level6" class="level-button"/>
+            <ui:Button text="7" name="Level7" class="level-button"/>
+            <ui:Button text="8" name="Level8" class="level-button"/>
+            <ui:Button text="9" name="Level9" class="level-button"/>
+        </ui:VisualElement>
+        <ui:Button text="Voltar" name="BackButton" style="height: 65px; width: 175px; position: absolute; top: 595px; left: 19px;"/>
+    </ui:VisualElement>
+    <ui:VisualElement name="Tutorial" style="flex-grow: 1; position: absolute; visibility: visible; top: 1px; right: 1px; bottom: 1px; left: 1px; display: none;">
+        <ui:Label text="Como Jogar" name="Title" style="align-items: auto; justify-content: flex-start; align-self: center; font-size: 36px; -unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;); color: rgb(255, 255, 255);"/>
+        <ui:ScrollView name="ScrollView" style="flex-grow: 1; margin-left: 64px; width: auto; margin-bottom: 128px; background-color: rgba(0, 0, 0, 0.384);">
+            <ui:VisualElement name="Moviment" style="flex-grow: 1; flex-direction: row-reverse; margin-bottom: 20px;">
+                <ui:VisualElement name="Image" style="flex-grow: 1; height: 150px;"/>
+                <ui:Label name="Text" style="width: 60%; white-space: normal; font-size: 24px; color: rgb(255, 255, 255);">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(650081370112)"/>
+                    </Bindings>
+                </ui:Label>
+            </ui:VisualElement>
+            <ui:VisualElement name="Jump" style="flex-grow: 1; flex-direction: row-reverse; margin-bottom: 20px;">
+                <ui:VisualElement name="Image" style="flex-grow: 1; height: 150px;"/>
+                <ui:Label name="Text" style="width: 60%; white-space: normal; font-size: 24px; color: rgb(255, 255, 255);">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(682767581184)"/>
+                    </Bindings>
+                </ui:Label>
+            </ui:VisualElement>
+            <ui:VisualElement name="Dash" style="flex-grow: 1; flex-direction: row-reverse; margin-bottom: 20px;">
+                <ui:VisualElement name="Image" style="flex-grow: 1; height: 150px;"/>
+                <ui:Label name="Text" style="width: 60%; white-space: normal; font-size: 24px; color: rgb(255, 255, 255);">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(698110345216)"/>
+                    </Bindings>
+                </ui:Label>
+            </ui:VisualElement>
+        </ui:ScrollView>
+        <ui:Button text="Voltar" name="BackButton" style="height: 65px; width: 175px; position: absolute; top: 595px; left: 19px; display: flex;"/>
+    </ui:VisualElement>
+</ui:UXML>
