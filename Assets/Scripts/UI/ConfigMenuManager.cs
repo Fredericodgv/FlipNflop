@@ -79,7 +79,7 @@ public class ConfigMenuManager : MonoBehaviour
     private void Start()
     {
         if (mainConfigMenu != null) mainConfigMenu.SetActive(false);
-        if (buttonConfig != null)   buttonConfig.SetActive(true);
+        if (buttonConfig != null) buttonConfig.SetActive(true);
 
         // SetActive(false) acima desativou este objeto e cancelou a subscrição
         // Reativa explicitamente a action de pause
@@ -154,9 +154,9 @@ public class ConfigMenuManager : MonoBehaviour
         ShowPage(mainPanel);
     }
 
-    public void BackToMain()    => ShowPage(mainPanel);
+    public void BackToMain() => ShowPage(mainPanel);
     public void BackToOptions() => ShowPage(optionsPanel);
-    public void OpenOptions()   => ShowPage(optionsPanel);
+    public void OpenOptions() => ShowPage(optionsPanel);
 
     public void OpenOptionsGame()
     {
@@ -326,8 +326,8 @@ public class ConfigMenuManager : MonoBehaviour
     private void InitSwatches()
     {
         if (SignalColorManager.Instance == null) return;
-        RegisterSwatchGroup(swatchesJ,   "J");
-        RegisterSwatchGroup(swatchesK,   "K");
+        RegisterSwatchGroup(swatchesJ, "J");
+        RegisterSwatchGroup(swatchesK, "K");
         RegisterSwatchGroup(swatchesCLK, "CLK");
         PaintSwatchButtons(swatchesJ);
         PaintSwatchButtons(swatchesK);
@@ -366,11 +366,11 @@ public class ConfigMenuManager : MonoBehaviour
     private void SyncSwatchSelection()
     {
         if (SignalColorManager.Instance == null) return;
-        UpdateSwatchOutlines(swatchesJ,   SignalColorManager.Instance.IndexJ);
-        UpdateSwatchOutlines(swatchesK,   SignalColorManager.Instance.IndexK);
+        UpdateSwatchOutlines(swatchesJ, SignalColorManager.Instance.IndexJ);
+        UpdateSwatchOutlines(swatchesK, SignalColorManager.Instance.IndexK);
         UpdateSwatchOutlines(swatchesCLK, SignalColorManager.Instance.IndexCLK);
-        if (previewJ   != null) previewJ.color   = SignalColorManager.Instance.ColorJ;
-        if (previewK   != null) previewK.color   = SignalColorManager.Instance.ColorK;
+        if (previewJ != null) previewJ.color = SignalColorManager.Instance.ColorJ;
+        if (previewK != null) previewK.color = SignalColorManager.Instance.ColorK;
         if (previewCLK != null) previewCLK.color = SignalColorManager.Instance.ColorCLK;
     }
 
@@ -394,8 +394,8 @@ public class ConfigMenuManager : MonoBehaviour
     {
         if (inputHex != null)
             inputHex.onEndEdit.AddListener(OnHexInputChanged);
-        if (btnCustomJ   != null) { btnCustomJ.onClick.RemoveAllListeners();   btnCustomJ.onClick.AddListener(()   => OpenRGBOverlay("J"));   }
-        if (btnCustomK   != null) { btnCustomK.onClick.RemoveAllListeners();   btnCustomK.onClick.AddListener(()   => OpenRGBOverlay("K"));   }
+        if (btnCustomJ != null) { btnCustomJ.onClick.RemoveAllListeners(); btnCustomJ.onClick.AddListener(() => OpenRGBOverlay("J")); }
+        if (btnCustomK != null) { btnCustomK.onClick.RemoveAllListeners(); btnCustomK.onClick.AddListener(() => OpenRGBOverlay("K")); }
         if (btnCustomCLK != null) { btnCustomCLK.onClick.RemoveAllListeners(); btnCustomCLK.onClick.AddListener(() => OpenRGBOverlay("CLK")); }
 
         // Configura range dos sliders
@@ -422,10 +422,10 @@ public class ConfigMenuManager : MonoBehaviour
         // Pré-carrega a cor atual do sinal
         Color current = signal switch
         {
-            "J"   => SignalColorManager.Instance?.ColorJ   ?? Color.white,
-            "K"   => SignalColorManager.Instance?.ColorK   ?? Color.white,
+            "J" => SignalColorManager.Instance?.ColorJ ?? Color.white,
+            "K" => SignalColorManager.Instance?.ColorK ?? Color.white,
             "CLK" => SignalColorManager.Instance?.ColorCLK ?? Color.white,
-            _     => Color.white
+            _ => Color.white
         };
 
         sliderR?.SetValueWithoutNotify(Mathf.RoundToInt(current.r * 255f));
@@ -511,7 +511,7 @@ public class ConfigMenuManager : MonoBehaviour
     {
         if (AudioManager.Instance == null) return;
         if (sliderMaster != null) { sliderMaster.SetValueWithoutNotify(AudioManager.Instance.GetMasterVolume()); sliderMaster.onValueChanged.AddListener(val => AudioManager.Instance.SetMasterVolume(val)); }
-        if (sliderSons   != null) { sliderSons.SetValueWithoutNotify(AudioManager.Instance.GetSFXVolume());     sliderSons.onValueChanged.AddListener(val => AudioManager.Instance.SetSFXVolume(val));     }
+        if (sliderSons != null) { sliderSons.SetValueWithoutNotify(AudioManager.Instance.GetSFXVolume()); sliderSons.onValueChanged.AddListener(val => AudioManager.Instance.SetSFXVolume(val)); }
         if (sliderMusica != null) { sliderMusica.SetValueWithoutNotify(AudioManager.Instance.GetMusicVolume()); sliderMusica.onValueChanged.AddListener(val => AudioManager.Instance.SetMusicVolume(val)); }
     }
 
@@ -542,8 +542,8 @@ public class ConfigMenuManager : MonoBehaviour
     private void InitVideoSettings()
     {
         if (sliderContrast == null) return;
-        sliderContrast.minValue     = -1f;
-        sliderContrast.maxValue     =  1f;
+        sliderContrast.minValue = -1f;
+        sliderContrast.maxValue = 1f;
         sliderContrast.wholeNumbers = false;
 
         float saved = PlayerPrefs.GetFloat(CONTRAST_SAVE_KEY, 0f);
@@ -609,7 +609,7 @@ public class ConfigMenuManager : MonoBehaviour
         UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
         pauseAction?.action.Disable();
 
-        var entry  = rebindEntries[entryIndex];
+        var entry = rebindEntries[entryIndex];
         var action = entry.actionReference?.action;
         if (action == null) return;
         action.Disable();
@@ -623,7 +623,7 @@ public class ConfigMenuManager : MonoBehaviour
             .WithCancelingThrough("<Keyboard>/escape")
             .OnMatchWaitForAnother(0.1f)
             .OnComplete(op => OnRebindComplete(entry, op))
-            .OnCancel(op   => OnRebindCanceled(entry, op))
+            .OnCancel(op => OnRebindCanceled(entry, op))
             .Start();
     }
 
