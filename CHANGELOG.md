@@ -1,3 +1,13 @@
+## [0.9.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.9.0...v0.9.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* Update MainMenu layout to display buttons correctly ([fc95458](https://github.com/Fredericodgv/FlipNflop/commit/fc95458be54bd65486ecef4d3d37e06f26560089))
+* Update tutorial texts ([39c2a67](https://github.com/Fredericodgv/FlipNflop/commit/39c2a677249aacb09715ddb55a0e38f231ebcb4d))
+
+
+
 # [0.9.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.8.2...v0.9.0) (2026-05-23)
 
 
@@ -32,15 +42,6 @@
 ### Features
 
 * menu config restructured ([0ec3eb2](https://github.com/Fredericodgv/FlipNflop/commit/0ec3eb231e65eba5572ab5706a735382e4f71647))
-
-
-
-## [0.7.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.7.1...v0.7.2) (2026-05-12)
-
-
-### Bug Fixes
-
-* Update menu with upload and "about" button ([8e04237](https://github.com/Fredericodgv/FlipNflop/commit/8e042377ac18e87c455c9ecc0d6d58d7ecf33adb))
 
 
 
