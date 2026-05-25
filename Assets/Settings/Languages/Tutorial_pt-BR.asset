@@ -19,24 +19,26 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 682767581184
-    m_Localized: "Use a Barra de Espa\xE7o para pular. O pulo permite tirar temporariamente
-      a personagem da plataforma para transpor os obst\xE1culos presentes no caminho,
-      sem alterar o n\xEDvel l\xF3gico da linha sendo desenhada."
+    m_Localized: "Use Espa\xE7o para pular. Permite desviar de obst\xE1culos no ch\xE3o
+      sem alterar o n\xEDvel l\xF3gico da linha desenhada."
     m_Metadata:
       m_Items: []
   - m_Id: 698110345216
-    m_Localized: "Pressione a tecla Shift para arrancar. Essa a\xE7\xE3o permite
-      impulsionar rapidamente o movimento da personagem (dash), conferindo agilidade
-      e facilitando a supera\xE7\xE3o dos obst\xE1culos no cen\xE1rio."
+    m_Localized: "Use Shift para arrancar (dash). Um impulso r\xE1pido que garante
+      agilidade para ultrapassar pedras e perigos."
     m_Metadata:
       m_Items: []
   - m_Id: 650081370112
-    m_Localized: "Use as teclas A e D (ou setas \u2190 e \u2192) para controlar a
-      personagem. O deslocamento para a direita representa o avan\xE7o do tempo no
-      contexto do diagrama, desenhando gradualmente a linha da sa\xEDda de acordo
-      com o caminho percorrido. O deslocamento para a esquerda representa o retrocesso
-      no tempo, permitindo apagar a linha de sa\xEDda desenhada para corrigir eventuais
-      erros no diagrama."
+    m_Localized: "Use A / D (ou setas) para mover. Andar para a direita avan\xE7a
+      o tempo e desenha a sa\xEDda. Andar para a esquerda retrocede, apagando a linha
+      para corrigir erros."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 596200044527616
+    m_Localized: "O seu objetivo \xE9 construir corretamente o diagrama de tempo
+      para o sinal de sa\xEDda do circuito. Analise os sinais de entrada e as transi\xE7\xF5es
+      do clock para guiar a personagem, desenhando a linha de sa\xEDda adequada ao
+      alternar entre as plataformas que representam os n\xEDveis l\xF3gicos 0 e 1."
     m_Metadata:
       m_Items: []
   references:

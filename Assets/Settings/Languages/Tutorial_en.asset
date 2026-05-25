@@ -19,23 +19,25 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 682767581184
-    m_Localized: Use the Spacebar to jump. Jumping allows you to temporarily lift
-      the character off the platform to overcome obstacles in the path, without altering
-      the logic level of the line being drawn.
+    m_Localized: Use Space to jump. Allows you to dodge ground obstacles without
+      changing the logic level of the drawn line.
     m_Metadata:
       m_Items: []
   - m_Id: 698110345216
-    m_Localized: Press the Shift key to dash. This action allows you to quickly boost
-      the character's movement, providing agility and making it easier to overcome
-      obstacles in the level.
+    m_Localized: Use Shift to dash. A quick boost of speed that grants agility to
+      overcome stones and hazards.
     m_Metadata:
       m_Items: []
   - m_Id: 650081370112
-    m_Localized: "Use the A and D keys (or \u2190 and \u2192 arrows) to control the
-      character. Moving right represents the passage of time in the diagram's context,
-      gradually drawing the output line according to the path taken. Moving left
-      represents rewinding time, allowing you to erase the drawn output line to correct
-      any errors in the diagram."
+    m_Localized: Use A / D (or arrows) to move. Moving right advances time and draws
+      the output. Moving left rewinds, erasing the line to fix mistakes.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 596200044527616
+    m_Localized: Your objective is to correctly construct the timing diagram for
+      the circuit's output signal. Analyze the input signals and clock transitions
+      to guide the character, drawing the appropriate output line by switching between
+      platforms that represent logic levels 0 and 1.
     m_Metadata:
       m_Items: []
   references:
