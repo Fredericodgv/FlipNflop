@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1335d71b210ede741858eb8a611103b6
+    m_Address: Assets/Settings/Languages/GameHUD Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bcdba3d027686d241b4c3261971aa0ab
     m_Address: Assets/Settings/Languages/Tutorial Shared Data.asset
     m_ReadOnly: 1

@@ -1,736 +1,718 @@
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using TMPro;
-using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UIElements;
+using UnityEngine.Localization.Settings;
 
-[System.Serializable]
-public class RebindEntry
+[RequireComponent(typeof(UIDocument))]
+public class ConfigManager : MonoBehaviour
 {
-    public string label;
-    public InputActionReference actionReference;
-    public int bindingIndex;
-    public TMP_Text displayText;
-    public Button rebindButton;
-}
+    private const string ContrastSaveKey = "ContrastValue";
 
-public class ConfigMenuManager : MonoBehaviour
-{
-    [Header("Painel Principal do Menu de Configurações")]
-    [SerializeField] private GameObject mainConfigMenu;
+    private enum SignalType
+    {
+        J,
+        K,
+        CLK
+    }
 
-    [Header("Páginas")]
-    [SerializeField] private GameObject mainPanel;
-    [SerializeField] private GameObject optionsPanel;
-    [SerializeField] private GameObject colorPanel;
-    [SerializeField] private GameObject audioPanel;
-    [SerializeField] private GameObject videoPanel;
-    [SerializeField] private GameObject controlsPanel;
+    [Header("Vídeo")]
+    [Tooltip("Overlay usado para aplicar contraste visual.")]
+    [SerializeField] private SpriteRenderer contrastOverlaySprite;
 
-    [Header("Referências")]
-    [SerializeField] private GameObject buttonConfig;
-    [SerializeField] private string nomeMenuInicial;
+    private UIDocument uiDocument;
+    private VisualElement root;
 
-    [Header("Controles — Input Action Asset")]
-    [SerializeField] private InputActionAsset inputActionAsset;
+    // Navegação
+    private Button btnTabColors;
+    private Button btnTabAudio;
+    private Button btnTabVideo;
+    private Button btnTabControls;
+    private Button btnBack;
 
-    [Header("Entradas de Rebind")]
-    [SerializeField] private RebindEntry[] rebindEntries;
+    private VisualElement panelColor;
+    private VisualElement panelAudio;
+    private VisualElement panelVideo;
+    private VisualElement panelControls;
 
-    private InputActionRebindingExtensions.RebindingOperation _currentRebindOp;
-    private const string BINDINGS_SAVE_KEY = "ControlBindings";
+    private readonly List<VisualElement> panels = new();
 
-    public static ConfigMenuManager Instance { get; private set; }
-    public bool IsMenuOpen => mainConfigMenu != null && mainConfigMenu.activeSelf;
+    // Áudio
+    private Slider sliderMaster;
+    private Slider sliderSons;
+    private Slider sliderMusica;
 
-    [Header("Navegação por Controle/Teclado")]
-    [Tooltip("PlayerInput do jogador para trocar Action Map ao abrir/fechar menu")]
-    [SerializeField] private PlayerInput playerInput;
+    // Vídeo
+    private Slider sliderContrast;
+    private Button btnResetContrast;
+    private Button btnToggleLanguage;
 
-    [Tooltip("Primeiro elemento selecionado em cada painel (mesma ordem: main, options, color, audio, video, controls)")]
-    [SerializeField] private GameObject[] firstSelectedPerPanel;
+    // Cores
+    private DropdownField dropdownPaleta;
 
-    [Header("Pause — Toggle Menu")]
-    [SerializeField] private InputActionReference pauseAction;
+    private VisualElement previewJ;
+    private VisualElement previewK;
+    private VisualElement previewCLK;
 
-    #region Inicialização
+    private VisualElement containerSwatchesJ;
+    private VisualElement containerSwatchesK;
+    private VisualElement containerSwatchesCLK;
 
+    private Button btnCustomJ;
+    private Button btnCustomK;
+    private Button btnCustomCLK;
+
+    // RGB Overlay
+    private VisualElement rgbOverlay;
+    private Label rgbTitle;
+    private VisualElement rgbPreview;
+
+    private TextField inputHex;
+
+    private Slider sliderR;
+    private Slider sliderG;
+    private Slider sliderB;
+
+    private Button btnConfirmRGB;
+    private Button btnCancelRGB;
+
+    private SignalType activeCustomSignal = SignalType.J;
+
+    private readonly List<Button> swatchesJ = new();
+    private readonly List<Button> swatchesK = new();
+    private readonly List<Button> swatchesCLK = new();
+
+    /// <summary>
+    /// Inicializa referências obrigatórias.
+    /// </summary>
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+        uiDocument = GetComponent<UIDocument>();
+    }
 
-            if (pauseAction?.action != null)
-            {
-                pauseAction.action.performed += OnPausePerformed;
-                pauseAction.action.Enable();
-            }
-        }
-        else
-        {
-            Destroy(gameObject);
+    /// <summary>
+    /// Busca elementos da UI e registra callbacks.
+    /// </summary>
+    private void OnEnable()
+    {
+        if (uiDocument == null)
             return;
-        }
-    }
 
-    private void Start()
-    {
-        if (mainConfigMenu != null) mainConfigMenu.SetActive(false);
-        if (buttonConfig != null) buttonConfig.SetActive(true);
+        root = uiDocument.rootVisualElement;
 
-        // SetActive(false) acima desativou este objeto e cancelou a subscrição
-        // Reativa explicitamente a action de pause
-        if (pauseAction?.action != null)
-        {
-            pauseAction.action.performed -= OnPausePerformed; // evita subscrição dupla
-            pauseAction.action.performed += OnPausePerformed;
-            pauseAction.action.Enable();
-        }
+        CacheUIElements();
+        RegisterCallbacks();
 
-        InitRebindButtons();
         InitAudioSliders();
-        InitDropdownPaleta();
-        InitSwatches();
-        InitCustomColorButtons();
         InitVideoSettings();
-        LoadBindings();
-        ShowPage(mainPanel);
+        InitColorSettings();
+
+        ShowTab(panelVideo);
     }
 
-    #endregion
-
-    #region Navegação entre Painéis
-
-    private void ShowPage(GameObject page)
+    /// <summary>
+    /// Remove callbacks registrados.
+    /// </summary>
+    private void OnDisable()
     {
-        mainPanel.SetActive(false);
-        optionsPanel.SetActive(false);
-        colorPanel.SetActive(false);
-        audioPanel.SetActive(false);
-        videoPanel.SetActive(false);
-        controlsPanel.SetActive(false);
+        UnregisterCallbacks();
+    }
 
-        if (page != null)
+    /// <summary>
+    /// Busca todos os elementos da interface.
+    /// </summary>
+    private void CacheUIElements()
+    {
+        // Navegação
+        btnTabColors = root.Q<Button>("BtnTabColors");
+        btnTabAudio = root.Q<Button>("BtnTabAudio");
+        btnTabVideo = root.Q<Button>("BtnTabVideo");
+        btnTabControls = root.Q<Button>("BtnTabControls");
+        btnBack = root.Q<Button>("BtnBack");
+
+        panelColor = root.Q<VisualElement>("PanelColor");
+        panelAudio = root.Q<VisualElement>("PanelAudio");
+        panelVideo = root.Q<VisualElement>("PanelVideo");
+        panelControls = root.Q<VisualElement>("PanelControls");
+
+        panels.Clear();
+        panels.Add(panelColor);
+        panels.Add(panelAudio);
+        panels.Add(panelVideo);
+        panels.Add(panelControls);
+
+        // Áudio
+        sliderMaster = root.Q<Slider>("SliderMaster");
+        sliderSons = root.Q<Slider>("SliderSons");
+        sliderMusica = root.Q<Slider>("SliderMusica");
+
+        // Vídeo
+        sliderContrast = root.Q<Slider>("SliderContrast");
+        btnResetContrast = root.Q<Button>("BtnResetContrast");
+        btnToggleLanguage = root.Q<Button>("BtnToggleLanguage");
+
+        // Cores
+        dropdownPaleta = root.Q<DropdownField>("DropdownPaleta");
+
+        previewJ = root.Q<VisualElement>("PreviewJ");
+        previewK = root.Q<VisualElement>("PreviewK");
+        previewCLK = root.Q<VisualElement>("PreviewCLK");
+
+        containerSwatchesJ = root.Q<VisualElement>("ContainerSwatchesJ");
+        containerSwatchesK = root.Q<VisualElement>("ContainerSwatchesK");
+        containerSwatchesCLK = root.Q<VisualElement>("ContainerSwatchesCLK");
+
+        btnCustomJ = root.Q<Button>("BtnCustomJ");
+        btnCustomK = root.Q<Button>("BtnCustomK");
+        btnCustomCLK = root.Q<Button>("BtnCustomCLK");
+
+        // RGB
+        rgbOverlay = root.Q<VisualElement>("RGBOverlay");
+        rgbTitle = root.Q<Label>("RGBTitle");
+        rgbPreview = root.Q<VisualElement>("RGBPreview");
+
+        inputHex = root.Q<TextField>("InputHex");
+
+        sliderR = root.Q<Slider>("SliderR");
+        sliderG = root.Q<Slider>("SliderG");
+        sliderB = root.Q<Slider>("SliderB");
+
+        btnConfirmRGB = root.Q<Button>("BtnConfirmRGB");
+        btnCancelRGB = root.Q<Button>("BtnCancelRGB");
+    }
+
+    /// <summary>
+    /// Registra callbacks da interface.
+    /// </summary>
+    private void RegisterCallbacks()
+    {
+        if (btnTabColors != null)
+            btnTabColors.clicked += ShowColorsTab;
+
+        if (btnTabAudio != null)
+            btnTabAudio.clicked += ShowAudioTab;
+
+        if (btnTabVideo != null)
+            btnTabVideo.clicked += ShowVideoTab;
+
+        if (btnTabControls != null)
+            btnTabControls.clicked += ShowControlsTab;
+
+        if (btnBack != null)
+            btnBack.clicked += OnBackClicked;
+
+        if (btnResetContrast != null)
+            btnResetContrast.clicked += ResetContrast;
+
+        if (btnToggleLanguage != null)
+            btnToggleLanguage.clicked += ToggleLanguage;
+
+        if (btnCustomJ != null)
+            btnCustomJ.clicked += OpenCustomJ;
+
+        if (btnCustomK != null)
+            btnCustomK.clicked += OpenCustomK;
+
+        if (btnCustomCLK != null)
+            btnCustomCLK.clicked += OpenCustomCLK;
+
+        if (btnConfirmRGB != null)
+            btnConfirmRGB.clicked += ConfirmRGBColor;
+
+        if (btnCancelRGB != null)
+            btnCancelRGB.clicked += CloseRGBOverlay;
+
+        sliderR?.RegisterValueChangedCallback(OnRGBSliderChanged);
+        sliderG?.RegisterValueChangedCallback(OnRGBSliderChanged);
+        sliderB?.RegisterValueChangedCallback(OnRGBSliderChanged);
+
+        inputHex?.RegisterValueChangedCallback(OnHexInputChanged);
+    }
+
+    /// <summary>
+    /// Remove callbacks registrados.
+    /// </summary>
+    private void UnregisterCallbacks()
+    {
+        if (btnTabColors != null)
+            btnTabColors.clicked -= ShowColorsTab;
+
+        if (btnTabAudio != null)
+            btnTabAudio.clicked -= ShowAudioTab;
+
+        if (btnTabVideo != null)
+            btnTabVideo.clicked -= ShowVideoTab;
+
+        if (btnTabControls != null)
+            btnTabControls.clicked -= ShowControlsTab;
+
+        if (btnBack != null)
+            btnBack.clicked -= OnBackClicked;
+
+        if (btnResetContrast != null)
+            btnResetContrast.clicked -= ResetContrast;
+
+        if (btnToggleLanguage != null)
+            btnToggleLanguage.clicked -= ToggleLanguage;
+
+        if (btnCustomJ != null)
+            btnCustomJ.clicked -= OpenCustomJ;
+
+        if (btnCustomK != null)
+            btnCustomK.clicked -= OpenCustomK;
+
+        if (btnCustomCLK != null)
+            btnCustomCLK.clicked -= OpenCustomCLK;
+
+        if (btnConfirmRGB != null)
+            btnConfirmRGB.clicked -= ConfirmRGBColor;
+
+        if (btnCancelRGB != null)
+            btnCancelRGB.clicked -= CloseRGBOverlay;
+
+        sliderMaster?.UnregisterValueChangedCallback(OnMasterVolumeChanged);
+        sliderSons?.UnregisterValueChangedCallback(OnSFXVolumeChanged);
+        sliderMusica?.UnregisterValueChangedCallback(OnMusicVolumeChanged);
+
+        sliderContrast?.UnregisterValueChangedCallback(OnContrastChanged);
+
+        sliderR?.UnregisterValueChangedCallback(OnRGBSliderChanged);
+        sliderG?.UnregisterValueChangedCallback(OnRGBSliderChanged);
+        sliderB?.UnregisterValueChangedCallback(OnRGBSliderChanged);
+
+        inputHex?.UnregisterValueChangedCallback(OnHexInputChanged);
+    }
+
+    /// <summary>
+    /// Exibe a aba de cores.
+    /// </summary>
+    private void ShowColorsTab() => ShowTab(panelColor);
+
+    /// <summary>
+    /// Exibe a aba de áudio.
+    /// </summary>
+    private void ShowAudioTab() => ShowTab(panelAudio);
+
+    /// <summary>
+    /// Exibe a aba de vídeo.
+    /// </summary>
+    private void ShowVideoTab() => ShowTab(panelVideo);
+
+    /// <summary>
+    /// Exibe a aba de controles.
+    /// </summary>
+    private void ShowControlsTab() => ShowTab(panelControls);
+
+    /// <summary>
+    /// Exibe apenas o painel informado.
+    /// </summary>
+    private void ShowTab(VisualElement activePanel)
+    {
+        foreach (var panel in panels)
         {
-            page.SetActive(true);
-            SetFirstSelected(page);
+            if (panel != null)
+                panel.style.display = DisplayStyle.None;
+        }
+
+        if (activePanel != null)
+            activePanel.style.display = DisplayStyle.Flex;
+    }
+
+    /// <summary>
+    /// Retorna ao menu principal.
+    /// </summary>
+    private void OnBackClicked()
+    {
+        var panelOptions = root.Q<VisualElement>("PanelOptions");
+        var panelMain = root.Q<VisualElement>("PanelMain");
+
+        if (panelOptions != null)
+            panelOptions.style.display = DisplayStyle.None;
+
+        if (panelMain != null)
+            panelMain.style.display = DisplayStyle.Flex;
+
+        root.Q<Button>("Options")?.Focus();
+    }
+
+    /// <summary>
+    /// Inicializa configurações de áudio.
+    /// </summary>
+    private void InitAudioSliders()
+    {
+        if (AudioManager.Instance == null)
+            return;
+
+        if (sliderMaster != null)
+        {
+            sliderMaster.SetValueWithoutNotify(AudioManager.Instance.GetMasterVolume());
+            sliderMaster.RegisterValueChangedCallback(OnMasterVolumeChanged);
+        }
+
+        if (sliderSons != null)
+        {
+            sliderSons.SetValueWithoutNotify(AudioManager.Instance.GetSFXVolume());
+            sliderSons.RegisterValueChangedCallback(OnSFXVolumeChanged);
+        }
+
+        if (sliderMusica != null)
+        {
+            sliderMusica.SetValueWithoutNotify(AudioManager.Instance.GetMusicVolume());
+            sliderMusica.RegisterValueChangedCallback(OnMusicVolumeChanged);
         }
     }
 
-    private void SetFirstSelected(GameObject activePage)
+    /// <summary>
+    /// Atualiza volume master.
+    /// </summary>
+    private void OnMasterVolumeChanged(ChangeEvent<float> evt)
     {
-        GameObject[] panels = { mainPanel, optionsPanel, colorPanel, audioPanel, videoPanel, controlsPanel };
-        for (int i = 0; i < panels.Length; i++)
+        AudioManager.Instance?.SetMasterVolume(evt.newValue);
+    }
+
+    /// <summary>
+    /// Atualiza volume dos efeitos.
+    /// </summary>
+    private void OnSFXVolumeChanged(ChangeEvent<float> evt)
+    {
+        AudioManager.Instance?.SetSFXVolume(evt.newValue);
+    }
+
+    /// <summary>
+    /// Atualiza volume da música.
+    /// </summary>
+    private void OnMusicVolumeChanged(ChangeEvent<float> evt)
+    {
+        AudioManager.Instance?.SetMusicVolume(evt.newValue);
+    }
+
+    /// <summary>
+    /// Inicializa configurações de vídeo.
+    /// </summary>
+    private void InitVideoSettings()
+    {
+        if (sliderContrast == null)
+            return;
+
+        float savedContrast = PlayerPrefs.GetFloat(ContrastSaveKey, 0f);
+
+        sliderContrast.SetValueWithoutNotify(savedContrast);
+        ApplyContrast(savedContrast);
+
+        sliderContrast.RegisterValueChangedCallback(OnContrastChanged);
+    }
+
+    /// <summary>
+    /// Atualiza contraste da tela.
+    /// </summary>
+    private void OnContrastChanged(ChangeEvent<float> evt)
+    {
+        ApplyContrast(evt.newValue);
+    }
+
+    /// <summary>
+    /// Aplica o contraste visual.
+    /// </summary>
+    private void ApplyContrast(float value)
+    {
+        if (contrastOverlaySprite == null)
+            return;
+
+        Color overlayColor = value switch
         {
-            if (panels[i] == activePage && firstSelectedPerPanel != null
-                && i < firstSelectedPerPanel.Length)
+            > 0f => new Color(1f, 1f, 1f, value),
+            < 0f => new Color(0f, 0f, 0f, -value),
+            _ => Color.clear
+        };
+
+        contrastOverlaySprite.color = overlayColor;
+
+        PlayerPrefs.SetFloat(ContrastSaveKey, value);
+    }
+
+    /// <summary>
+    /// Reseta o contraste.
+    /// </summary>
+    private void ResetContrast()
+    {
+        if (sliderContrast != null)
+            sliderContrast.value = 0f;
+    }
+
+    /// <summary>
+    /// Alterna para o próximo idioma disponível.
+    /// </summary>
+    private void ToggleLanguage()
+    {
+        var locales = LocalizationSettings.AvailableLocales.Locales;
+
+        int currentIndex = locales.IndexOf(LocalizationSettings.SelectedLocale);
+        int nextIndex = (currentIndex + 1) % locales.Count;
+
+        LocalizationSettings.SelectedLocale = locales[nextIndex];
+    }
+
+    /// <summary>
+    /// Inicializa configurações de cores.
+    /// </summary>
+    private void InitColorSettings()
+    {
+        if (SignalColorManager.Instance == null)
+            return;
+
+        if (dropdownPaleta != null)
+        {
+            dropdownPaleta.choices = new List<string>(SignalColorManager.PaletteNames);
+
+            dropdownPaleta.RegisterValueChangedCallback(evt =>
             {
-                var selected = firstSelectedPerPanel[i];
-                if (selected != null)
-                    UnityEngine.EventSystems.EventSystem.current
-                        .SetSelectedGameObject(selected);
-                return;
-            }
+                int index = dropdownPaleta.choices.IndexOf(evt.newValue);
+
+                SignalColorManager.Instance.ApplyPalette(index);
+
+                SyncColorUI();
+            });
+        }
+
+        GenerateSwatches(containerSwatchesJ, swatchesJ, SignalType.J);
+        GenerateSwatches(containerSwatchesK, swatchesK, SignalType.K);
+        GenerateSwatches(containerSwatchesCLK, swatchesCLK, SignalType.CLK);
+
+        SyncColorUI();
+    }
+
+    /// <summary>
+    /// Gera botões de cores pré-definidas.
+    /// </summary>
+    private void GenerateSwatches(
+        VisualElement container,
+        List<Button> swatches,
+        SignalType signalType)
+    {
+        if (container == null)
+            return;
+
+        container.Clear();
+        swatches.Clear();
+
+        for (int i = 0; i < SignalColorManager.PresetColors.Length; i++)
+        {
+            int colorIndex = i;
+            Color color = SignalColorManager.PresetColors[i];
+
+            Button swatch = new();
+
+            swatch.style.width = 30;
+            swatch.style.height = 30;
+
+            swatch.style.marginRight = 5;
+            swatch.style.marginBottom = 5;
+
+            swatch.style.backgroundColor = color;
+
+            swatch.style.borderTopWidth = 2;
+            swatch.style.borderBottomWidth = 2;
+            swatch.style.borderLeftWidth = 2;
+            swatch.style.borderRightWidth = 2;
+
+            swatch.clicked += () =>
+            {
+                SignalColorManager.Instance.SetAndNotify(
+                    signalType.ToString(),
+                    colorIndex);
+
+                SyncColorUI();
+            };
+
+            container.Add(swatch);
+            swatches.Add(swatch);
         }
     }
 
-    private System.Collections.IEnumerator SelectNextFrame(GameObject target)
+    /// <summary>
+    /// Atualiza a interface de cores.
+    /// </summary>
+    private void SyncColorUI()
     {
-        yield return null; // espera um frame o mouse terminar
-        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
-        yield return null;
-        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(target);
-    }
+        if (SignalColorManager.Instance == null)
+            return;
 
-    public void OpenMenuConfig()
-    {
-        Time.timeScale = 0f;
-        mainConfigMenu.SetActive(true);
-        buttonConfig.SetActive(false);
-        DisablePlayerInput();
-        ShowPage(mainPanel);
-    }
+        previewJ.style.backgroundColor = SignalColorManager.Instance.ColorJ;
+        previewK.style.backgroundColor = SignalColorManager.Instance.ColorK;
+        previewCLK.style.backgroundColor = SignalColorManager.Instance.ColorCLK;
 
-    public void BackToMain() => ShowPage(mainPanel);
-    public void BackToOptions() => ShowPage(optionsPanel);
-    public void OpenOptions() => ShowPage(optionsPanel);
+        UpdateSwatchBorders(swatchesJ, SignalColorManager.Instance.IndexJ);
+        UpdateSwatchBorders(swatchesK, SignalColorManager.Instance.IndexK);
+        UpdateSwatchBorders(swatchesCLK, SignalColorManager.Instance.IndexCLK);
 
-    public void OpenOptionsGame()
-    {
-        SyncSwatchSelection();
-        SyncDropdownPaleta();
-        ShowPage(colorPanel);
-    }
-
-    public void OpenAudio()
-    {
-        SyncAudioSliders();
-        ShowPage(audioPanel);
-    }
-
-    public void OpenVideo()
-    {
-        SyncVideoSliders();
-        ShowPage(videoPanel);
-    }
-
-    public void OpenControles()
-    {
-        UpdateAllKeyTexts();
-        ShowPage(controlsPanel);
-    }
-
-    private void OnPausePerformed(InputAction.CallbackContext ctx)
-    {
-        if (IsMenuOpen)
-            ContinueGame();
-        else
-            OpenMenuConfig();
-    }
-
-    #endregion
-
-    #region PanelMain
-
-    public void ContinueGame()
-    {
-        Time.timeScale = 1f;
-        mainConfigMenu.SetActive(false);
-        buttonConfig.SetActive(true);
-        EnablePlayerInput();
-        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
-    }
-
-    public void RestartLevel()
-    {
-        Time.timeScale = 1f;
-        EnablePlayerInput();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-
-    public void BackInitialMenu()
-    {
-        Time.timeScale = 1f;
-        EnablePlayerInput();
-        SceneManager.LoadScene(nomeMenuInicial);
-    }
-
-    #endregion
-
-    #region PanelColors — Cores
-
-    [Header("PanelColors — Paleta de Acessibilidade")]
-    [SerializeField] private TMP_Dropdown dropdownPaleta;
-
-    [Header("PanelColors — Swatches de Cor")]
-    [SerializeField] private Button[] swatchesJ;
-    [SerializeField] private Button[] swatchesK;
-    [SerializeField] private Button[] swatchesCLK;
-    [SerializeField] private Image previewJ;
-    [SerializeField] private Image previewK;
-    [SerializeField] private Image previewCLK;
-    [SerializeField] private float swatchSelectedBorder = 3f;
-
-    [Header("PanelColors — Cor Customizada (Overlay RGB)")]
-    [Tooltip("Botão '+' ao lado dos swatches de J")]
-    [SerializeField] private Button btnCustomJ;
-    [Tooltip("Botão '+' ao lado dos swatches de K")]
-    [SerializeField] private Button btnCustomK;
-    [Tooltip("Botão '+' ao lado dos swatches de CLK")]
-    [SerializeField] private Button btnCustomCLK;
-
-    [Tooltip("Overlay escuro que aparece por cima do painel")]
-    [SerializeField] private GameObject rgbOverlay;
-    [Tooltip("Texto do título do overlay (ex: 'Cor personalizada J')")]
-    [SerializeField] private TMP_Text rgbOverlayTitle;
-    [Tooltip("Slider do canal R (0–255)")]
-    [SerializeField] private Slider sliderR;
-    [Tooltip("Slider do canal G (0–255)")]
-    [SerializeField] private Slider sliderG;
-    [Tooltip("Slider do canal B (0–255)")]
-    [SerializeField] private Slider sliderB;
-    [Tooltip("Texto que exibe o valor do canal R")]
-    [SerializeField] private TMP_Text textR;
-    [Tooltip("Texto que exibe o valor do canal G")]
-    [SerializeField] private TMP_Text textG;
-    [Tooltip("Texto que exibe o valor do canal B")]
-    [SerializeField] private TMP_Text textB;
-    [Tooltip("Image de prévia da cor construída pelos sliders")]
-    [SerializeField] private Image rgbPreviewImage;
-    [Tooltip("Texto que exibe o HEX da cor atual")]
-    [SerializeField] private TMP_Text rgbHexText;
-    [Tooltip("Campo de texto para digitar/colar HEX da cor")]
-    [SerializeField] private TMP_InputField inputHex;
-
-    private string _activeCustomSignal = "J";
-
-    public void ChangeLanguage(int index)
-    {
-        string idioma = index == 0 ? "Português" : "Inglês";
-        PlayerPrefs.SetString("Idioma", idioma);
-    }
-
-    // ── Dropdown ─────────────────────────────────────────────────────────────
-
-    private void InitDropdownPaleta()
-    {
-        if (dropdownPaleta == null) return;
-        dropdownPaleta.ClearOptions();
-        dropdownPaleta.AddOptions(new List<string>(SignalColorManager.PaletteNames));
-        dropdownPaleta.SetValueWithoutNotify(0);
-        dropdownPaleta.onValueChanged.AddListener(OnDropdownPaletaChanged);
-    }
-
-    private void OnDropdownPaletaChanged(int index)
-    {
-        SignalColorManager.Instance?.ApplyPalette(index);
-        SyncSwatchSelection();
-    }
-
-    private void SyncDropdownPaleta()
-    {
-        if (dropdownPaleta == null || SignalColorManager.Instance == null) return;
         int j = SignalColorManager.Instance.IndexJ;
         int k = SignalColorManager.Instance.IndexK;
         int clk = SignalColorManager.Instance.IndexCLK;
+
         for (int i = 0; i < SignalColorManager.Palettes.Length; i++)
         {
-            var p = SignalColorManager.Palettes[i];
-            if (p[0] == j && p[1] == k && p[2] == clk)
+            var palette = SignalColorManager.Palettes[i];
+
+            if (palette[0] == j &&
+                palette[1] == k &&
+                palette[2] == clk)
             {
-                dropdownPaleta.SetValueWithoutNotify(i);
-                return;
+                dropdownPaleta?.SetValueWithoutNotify(
+                    SignalColorManager.PaletteNames[i]);
+
+                break;
             }
         }
     }
 
-    public void ApplyColorPalette(int index)
+    /// <summary>
+    /// Atualiza a borda do swatch selecionado.
+    /// </summary>
+    private void UpdateSwatchBorders(
+        List<Button> swatches,
+        int selectedIndex)
     {
-        SignalColorManager.Instance?.ApplyPalette(index);
-        SyncSwatchSelection();
-        SyncDropdownPaleta();
-    }
-
-    public void RestoreDefaultColors()
-    {
-        SignalColorManager.Instance?.RestoreDefaultColors();
-        SyncSwatchSelection();
-        SyncDropdownPaleta();
-    }
-
-    // ── Swatches ─────────────────────────────────────────────────────────────
-
-    private void InitSwatches()
-    {
-        if (SignalColorManager.Instance == null) return;
-        RegisterSwatchGroup(swatchesJ, "J");
-        RegisterSwatchGroup(swatchesK, "K");
-        RegisterSwatchGroup(swatchesCLK, "CLK");
-        PaintSwatchButtons(swatchesJ);
-        PaintSwatchButtons(swatchesK);
-        PaintSwatchButtons(swatchesCLK);
-        SyncSwatchSelection();
-    }
-
-    private void RegisterSwatchGroup(Button[] swatches, string signal)
-    {
-        if (swatches == null) return;
-        for (int i = 0; i < swatches.Length; i++)
+        for (int i = 0; i < swatches.Count; i++)
         {
-            if (swatches[i] == null) continue;
-            int capturedIndex = i;
-            swatches[i].onClick.RemoveAllListeners();
-            swatches[i].onClick.AddListener(() =>
-            {
-                SignalColorManager.Instance?.SetAndNotify(signal, capturedIndex);
-                SyncSwatchSelection();
-                SyncDropdownPaleta();
-            });
+            Color borderColor =
+                i == selectedIndex
+                    ? Color.white
+                    : Color.clear;
+
+            swatches[i].style.borderTopColor = borderColor;
+            swatches[i].style.borderBottomColor = borderColor;
+            swatches[i].style.borderLeftColor = borderColor;
+            swatches[i].style.borderRightColor = borderColor;
         }
     }
 
-    private void PaintSwatchButtons(Button[] swatches)
+    /// <summary>
+    /// Abre o seletor RGB para J.
+    /// </summary>
+    private void OpenCustomJ() => OpenRGBOverlay(SignalType.J);
+
+    /// <summary>
+    /// Abre o seletor RGB para K.
+    /// </summary>
+    private void OpenCustomK() => OpenRGBOverlay(SignalType.K);
+
+    /// <summary>
+    /// Abre o seletor RGB para CLK.
+    /// </summary>
+    private void OpenCustomCLK() => OpenRGBOverlay(SignalType.CLK);
+
+    /// <summary>
+    /// Abre o overlay de seleção RGB.
+    /// </summary>
+    private void OpenRGBOverlay(SignalType signalType)
     {
-        if (swatches == null) return;
-        for (int i = 0; i < swatches.Length && i < SignalColorManager.PresetColors.Length; i++)
+        if (SignalColorManager.Instance == null)
+            return;
+
+        activeCustomSignal = signalType;
+
+        if (rgbTitle != null)
+            rgbTitle.text = $"Cor Personalizada: {signalType}";
+
+        Color currentColor = signalType switch
         {
-            if (swatches[i] == null) continue;
-            var img = swatches[i].GetComponent<Image>();
-            if (img != null) img.color = SignalColorManager.PresetColors[i];
-        }
-    }
-
-    private void SyncSwatchSelection()
-    {
-        if (SignalColorManager.Instance == null) return;
-        UpdateSwatchOutlines(swatchesJ, SignalColorManager.Instance.IndexJ);
-        UpdateSwatchOutlines(swatchesK, SignalColorManager.Instance.IndexK);
-        UpdateSwatchOutlines(swatchesCLK, SignalColorManager.Instance.IndexCLK);
-        if (previewJ != null) previewJ.color = SignalColorManager.Instance.ColorJ;
-        if (previewK != null) previewK.color = SignalColorManager.Instance.ColorK;
-        if (previewCLK != null) previewCLK.color = SignalColorManager.Instance.ColorCLK;
-    }
-
-    private void UpdateSwatchOutlines(Button[] swatches, int selectedIndex)
-    {
-        if (swatches == null) return;
-        for (int i = 0; i < swatches.Length; i++)
-        {
-            if (swatches[i] == null) continue;
-            var outline = swatches[i].GetComponent<Outline>();
-            if (outline == null) continue;
-            outline.enabled = (i == selectedIndex);
-            outline.effectDistance = new Vector2(swatchSelectedBorder, -swatchSelectedBorder);
-            outline.effectColor = Color.white;
-        }
-    }
-
-    // ── Botões de cor customizada ─────────────────────────────────────────────
-
-    private void InitCustomColorButtons()
-    {
-        if (inputHex != null)
-            inputHex.onEndEdit.AddListener(OnHexInputChanged);
-        if (btnCustomJ != null) { btnCustomJ.onClick.RemoveAllListeners(); btnCustomJ.onClick.AddListener(() => OpenRGBOverlay("J")); }
-        if (btnCustomK != null) { btnCustomK.onClick.RemoveAllListeners(); btnCustomK.onClick.AddListener(() => OpenRGBOverlay("K")); }
-        if (btnCustomCLK != null) { btnCustomCLK.onClick.RemoveAllListeners(); btnCustomCLK.onClick.AddListener(() => OpenRGBOverlay("CLK")); }
-
-        // Configura range dos sliders
-        foreach (var sl in new[] { sliderR, sliderG, sliderB })
-        {
-            if (sl == null) continue;
-            sl.minValue = 0; sl.maxValue = 255; sl.wholeNumbers = true;
-        }
-
-        if (sliderR != null) sliderR.onValueChanged.AddListener(_ => OnRGBSliderChanged());
-        if (sliderG != null) sliderG.onValueChanged.AddListener(_ => OnRGBSliderChanged());
-        if (sliderB != null) sliderB.onValueChanged.AddListener(_ => OnRGBSliderChanged());
-
-        if (rgbOverlay != null) rgbOverlay.SetActive(false);
-    }
-
-    public void OpenRGBOverlay(string signal)
-    {
-        _activeCustomSignal = signal;
-
-        if (rgbOverlayTitle != null)
-            rgbOverlayTitle.text = $"Cor personalizada {signal}";
-
-        // Pré-carrega a cor atual do sinal
-        Color current = signal switch
-        {
-            "J" => SignalColorManager.Instance?.ColorJ ?? Color.white,
-            "K" => SignalColorManager.Instance?.ColorK ?? Color.white,
-            "CLK" => SignalColorManager.Instance?.ColorCLK ?? Color.white,
+            SignalType.J => SignalColorManager.Instance.ColorJ,
+            SignalType.K => SignalColorManager.Instance.ColorK,
+            SignalType.CLK => SignalColorManager.Instance.ColorCLK,
             _ => Color.white
         };
 
-        sliderR?.SetValueWithoutNotify(Mathf.RoundToInt(current.r * 255f));
-        sliderG?.SetValueWithoutNotify(Mathf.RoundToInt(current.g * 255f));
-        sliderB?.SetValueWithoutNotify(Mathf.RoundToInt(current.b * 255f));
+        sliderR?.SetValueWithoutNotify(Mathf.RoundToInt(currentColor.r * 255f));
+        sliderG?.SetValueWithoutNotify(Mathf.RoundToInt(currentColor.g * 255f));
+        sliderB?.SetValueWithoutNotify(Mathf.RoundToInt(currentColor.b * 255f));
 
         UpdateRGBPreview();
 
-        if (rgbOverlay != null) rgbOverlay.SetActive(true);
+        if (rgbOverlay != null)
+            rgbOverlay.style.display = DisplayStyle.Flex;
     }
 
-    private void OnRGBSliderChanged() => UpdateRGBPreview();
-
-    private void OnHexInputChanged(string hex)
+    /// <summary>
+    /// Fecha o overlay RGB.
+    /// </summary>
+    private void CloseRGBOverlay()
     {
-        string cleaned = hex.Trim();
-        if (!cleaned.StartsWith("#")) cleaned = "#" + cleaned;
-
-        if (ColorUtility.TryParseHtmlString(cleaned, out Color c))
-        {
-            sliderR?.SetValueWithoutNotify(Mathf.RoundToInt(c.r * 255f));
-            sliderG?.SetValueWithoutNotify(Mathf.RoundToInt(c.g * 255f));
-            sliderB?.SetValueWithoutNotify(Mathf.RoundToInt(c.b * 255f));
-            UpdateRGBPreview();
-        }
-        else
-        {
-            // HEX inválido — restaura o texto com a cor atual
-            if (rgbHexText != null) inputHex.SetTextWithoutNotify(rgbHexText.text);
-        }
+        if (rgbOverlay != null)
+            rgbOverlay.style.display = DisplayStyle.None;
     }
 
+    /// <summary>
+    /// Atualiza preview RGB ao mover sliders.
+    /// </summary>
+    private void OnRGBSliderChanged(ChangeEvent<float> evt)
+    {
+        UpdateRGBPreview();
+    }
+
+    /// <summary>
+    /// Atualiza o preview RGB.
+    /// </summary>
     private void UpdateRGBPreview()
     {
         float r = (sliderR?.value ?? 255f) / 255f;
         float g = (sliderG?.value ?? 255f) / 255f;
         float b = (sliderB?.value ?? 255f) / 255f;
 
-        Color c = new Color(r, g, b);
+        Color color = new(r, g, b);
 
-        if (rgbPreviewImage != null) rgbPreviewImage.color = c;
+        if (rgbPreview != null)
+            rgbPreview.style.backgroundColor = color;
 
-        if (textR != null) textR.text = Mathf.RoundToInt(r * 255f).ToString();
-        if (textG != null) textG.text = Mathf.RoundToInt(g * 255f).ToString();
-        if (textB != null) textB.text = Mathf.RoundToInt(b * 255f).ToString();
-
-        if (rgbHexText != null)
-        {
-            string hex = "#" + ColorUtility.ToHtmlStringRGB(c);
-            rgbHexText.text = hex;
-            inputHex?.SetTextWithoutNotify(hex);
-        }
+        inputHex?.SetValueWithoutNotify(
+            "#" + ColorUtility.ToHtmlStringRGB(color));
     }
 
-    public void ConfirmRGBColor()
+    /// <summary>
+    /// Atualiza sliders ao editar HEX.
+    /// </summary>
+    private void OnHexInputChanged(ChangeEvent<string> evt)
     {
+        string hex = evt.newValue.Trim();
+
+        if (!hex.StartsWith("#"))
+            hex = "#" + hex;
+
+        if (!ColorUtility.TryParseHtmlString(hex, out Color color))
+            return;
+
+        sliderR?.SetValueWithoutNotify(Mathf.RoundToInt(color.r * 255f));
+        sliderG?.SetValueWithoutNotify(Mathf.RoundToInt(color.g * 255f));
+        sliderB?.SetValueWithoutNotify(Mathf.RoundToInt(color.b * 255f));
+
+        if (rgbPreview != null)
+            rgbPreview.style.backgroundColor = color;
+    }
+
+    /// <summary>
+    /// Confirma a cor RGB personalizada.
+    /// </summary>
+    private void ConfirmRGBColor()
+    {
+        if (SignalColorManager.Instance == null)
+            return;
+
         float r = (sliderR?.value ?? 255f) / 255f;
         float g = (sliderG?.value ?? 255f) / 255f;
         float b = (sliderB?.value ?? 255f) / 255f;
 
-        SignalColorManager.Instance?.SetCustomColor(_activeCustomSignal, new Color(r, g, b));
-        SyncSwatchSelection();
-        SyncDropdownPaleta();
+        SignalColorManager.Instance.SetCustomColor(
+            activeCustomSignal.ToString(),
+            new Color(r, g, b));
 
-        if (rgbOverlay != null) rgbOverlay.SetActive(false);
+        SyncColorUI();
+
+        CloseRGBOverlay();
     }
-
-    public void CancelRGBColor()
-    {
-        if (rgbOverlay != null) rgbOverlay.SetActive(false);
-    }
-
-    #endregion
-
-    #region PanelAudio
-
-    [Header("PanelAudio — Sliders")]
-    [SerializeField] private Slider sliderMaster;
-    [SerializeField] private Slider sliderSons;
-    [SerializeField] private Slider sliderMusica;
-
-    private void InitAudioSliders()
-    {
-        if (AudioManager.Instance == null) return;
-        if (sliderMaster != null) { sliderMaster.SetValueWithoutNotify(AudioManager.Instance.GetMasterVolume()); sliderMaster.onValueChanged.AddListener(val => AudioManager.Instance.SetMasterVolume(val)); }
-        if (sliderSons != null) { sliderSons.SetValueWithoutNotify(AudioManager.Instance.GetSFXVolume()); sliderSons.onValueChanged.AddListener(val => AudioManager.Instance.SetSFXVolume(val)); }
-        if (sliderMusica != null) { sliderMusica.SetValueWithoutNotify(AudioManager.Instance.GetMusicVolume()); sliderMusica.onValueChanged.AddListener(val => AudioManager.Instance.SetMusicVolume(val)); }
-    }
-
-    private void SyncAudioSliders()
-    {
-        if (AudioManager.Instance == null) return;
-        sliderMaster?.SetValueWithoutNotify(AudioManager.Instance.GetMasterVolume());
-        sliderSons?.SetValueWithoutNotify(AudioManager.Instance.GetSFXVolume());
-        sliderMusica?.SetValueWithoutNotify(AudioManager.Instance.GetMusicVolume());
-    }
-
-    public void RestoreDefaultAudio()
-    {
-        AudioManager.Instance?.RestoreDefaultVolumes();
-        SyncAudioSliders();
-    }
-
-    #endregion
-
-    #region PanelVideo
-
-    [Header("PanelVideo — Contraste")]
-    [SerializeField] private Slider sliderContrast;
-    [Tooltip("SpriteRenderer do overlay de contraste (entre fundo e jogo)")]
-    [SerializeField] private SpriteRenderer contrastOverlaySprite;
-    private const string CONTRAST_SAVE_KEY = "ContrastValue";
-
-    private void InitVideoSettings()
-    {
-        if (sliderContrast == null) return;
-        sliderContrast.minValue = -1f;
-        sliderContrast.maxValue = 1f;
-        sliderContrast.wholeNumbers = false;
-
-        float saved = PlayerPrefs.GetFloat(CONTRAST_SAVE_KEY, 0f);
-        sliderContrast.SetValueWithoutNotify(saved);
-        ApplyContrast(saved);
-
-        sliderContrast.onValueChanged.AddListener(ApplyContrast);
-    }
-
-    private void SyncVideoSliders()
-    {
-        if (sliderContrast == null) return;
-        sliderContrast.SetValueWithoutNotify(PlayerPrefs.GetFloat(CONTRAST_SAVE_KEY, 0f));
-    }
-
-    public void ApplyContrast(float value)
-    {
-        if (contrastOverlaySprite == null) return;
-
-        // value > 0 -> overlay branco (clareia o fundo)
-        // value < 0 -> overlay preto (escurece o fundo)
-        // value = 0 -> totalmente transparente
-        if (value > 0f)
-            contrastOverlaySprite.color = new Color(1f, 1f, 1f, value);
-        else if (value < 0f)
-            contrastOverlaySprite.color = new Color(0f, 0f, 0f, -value);
-        else
-            contrastOverlaySprite.color = new Color(0f, 0f, 0f, 0f);
-
-        PlayerPrefs.SetFloat(CONTRAST_SAVE_KEY, value);
-        PlayerPrefs.Save();
-    }
-
-    public void RestoreDefaultVideo()
-    {
-        if (sliderContrast != null) sliderContrast.SetValueWithoutNotify(0f);
-        ApplyContrast(0f);
-    }
-
-    #endregion
-
-    #region PanelControles
-
-    private void InitRebindButtons()
-    {
-        for (int i = 0; i < rebindEntries.Length; i++)
-        {
-            int capturedIndex = i;
-            var entry = rebindEntries[i];
-            if (entry.rebindButton != null)
-            {
-                entry.rebindButton.onClick.RemoveAllListeners();
-                entry.rebindButton.onClick.AddListener(() => StartRebind(capturedIndex));
-            }
-        }
-    }
-
-    public void StartRebind(int entryIndex)
-    {
-        if (entryIndex < 0 || entryIndex >= rebindEntries.Length) return;
-        if (_currentRebindOp != null) return;
-        // Tira o foco do EventSystem para o input system não conflitar
-        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
-        pauseAction?.action.Disable();
-
-        var entry = rebindEntries[entryIndex];
-        var action = entry.actionReference?.action;
-        if (action == null) return;
-        action.Disable();
-        entry.displayText.text = "[ ... ]";
-        SetAllRebindButtonsInteractable(false);
-        _currentRebindOp = action
-            .PerformInteractiveRebinding(entry.bindingIndex)
-            .WithControlsExcluding("<Mouse>/position")
-            .WithControlsExcluding("<Mouse>/delta")
-            .WithControlsExcluding("<Mouse>/scroll")
-            .WithCancelingThrough("<Keyboard>/escape")
-            .OnMatchWaitForAnother(0.1f)
-            .OnComplete(op => OnRebindComplete(entry, op))
-            .OnCancel(op => OnRebindCanceled(entry, op))
-            .Start();
-    }
-
-    private void OnRebindComplete(RebindEntry entry, InputActionRebindingExtensions.RebindingOperation op)
-    {
-        op.Dispose(); _currentRebindOp = null;
-        string newPath = entry.actionReference.action.bindings[entry.bindingIndex].effectivePath;
-        ResolveConflicts(entry, newPath);
-        entry.actionReference.action.Enable();
-        SaveBindings(); UpdateAllKeyTexts(); SetAllRebindButtonsInteractable(true);
-        SetFirstSelected(controlsPanel); // restaura foco no painel de controles
-        pauseAction?.action.Enable();
-    }
-
-    private void OnRebindCanceled(RebindEntry entry, InputActionRebindingExtensions.RebindingOperation op)
-    {
-        op.Dispose(); _currentRebindOp = null;
-        entry.actionReference.action.Enable();
-        UpdateAllKeyTexts(); SetAllRebindButtonsInteractable(true);
-        SetFirstSelected(controlsPanel);
-        pauseAction?.action.Enable();
-    }
-
-    private void ResolveConflicts(RebindEntry changedEntry, string newPath)
-    {
-        foreach (var other in rebindEntries)
-        {
-            if (other == changedEntry || other.actionReference?.action == null) continue;
-            var otherBinding = other.actionReference.action.bindings[other.bindingIndex];
-            string otherPath = otherBinding.hasOverrides ? otherBinding.overridePath : otherBinding.path;
-            if (otherPath == newPath) other.actionReference.action.ApplyBindingOverride(other.bindingIndex, string.Empty);
-        }
-    }
-
-    private void UpdateAllKeyTexts()
-    {
-        foreach (var entry in rebindEntries)
-        {
-            if (entry.displayText == null || entry.actionReference?.action == null) continue;
-            var bindings = entry.actionReference.action.bindings;
-            if (entry.bindingIndex >= bindings.Count) continue;
-            var binding = bindings[entry.bindingIndex];
-            string path = binding.hasOverrides ? binding.overridePath : binding.path;
-            entry.displayText.text = string.IsNullOrEmpty(path)
-                ? "---"
-                : InputControlPath.ToHumanReadableString(path, InputControlPath.HumanReadableStringOptions.OmitDevice);
-        }
-    }
-
-    private void SetAllRebindButtonsInteractable(bool interactable)
-    {
-        foreach (var entry in rebindEntries)
-            if (entry.rebindButton != null) entry.rebindButton.interactable = interactable;
-    }
-
-    public void RestoreDefaultControls()
-    {
-        if (_currentRebindOp != null) { _currentRebindOp.Cancel(); return; }
-        if (inputActionAsset != null) { inputActionAsset.RemoveAllBindingOverrides(); PlayerPrefs.DeleteKey(BINDINGS_SAVE_KEY); }
-        UpdateAllKeyTexts();
-    }
-
-    #endregion
-
-    #region Restaurar Padrões (Geral)
 
     /// <summary>
-    /// Restore all default patterns
+    /// Salva preferências persistentes.
     /// </summary>
-    public void RestoreDefault()
+    private void OnApplicationQuit()
     {
-        if (inputActionAsset != null) inputActionAsset.RemoveAllBindingOverrides();
-        SignalColorManager.Instance?.RestoreDefaultColors();
-        AudioManager.Instance?.RestoreDefaultVolumes();
-        RestoreDefaultVideo();
-        PlayerPrefs.DeleteAll();
-        SyncSwatchSelection(); SyncDropdownPaleta(); SyncAudioSliders(); UpdateAllKeyTexts();
-    }
-
-    #endregion
-
-    #region Salvar / Carregar Bindings
-
-    private void SaveBindings()
-    {
-        if (inputActionAsset == null) return;
-        PlayerPrefs.SetString(BINDINGS_SAVE_KEY, inputActionAsset.SaveBindingOverridesAsJson());
         PlayerPrefs.Save();
-    }
-
-    private void LoadBindings()
-    {
-        if (inputActionAsset == null) return;
-        string json = PlayerPrefs.GetString(BINDINGS_SAVE_KEY, string.Empty);
-        if (!string.IsNullOrEmpty(json)) inputActionAsset.LoadBindingOverridesFromJson(json);
-        UpdateAllKeyTexts();
-    }
-
-    #endregion
-
-    private void DisablePlayerInput()
-    {
-        playerInput?.actions.FindActionMap("Player")?.Disable();
-    }
-
-    private void EnablePlayerInput()
-    {
-        playerInput?.actions.FindActionMap("Player")?.Enable();
     }
 }

@@ -1,0 +1,80 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/Panel.uss?fileID=7433441132597879392&amp;guid=5b6ccb061d6f6e54b939846c701d8098&amp;type=3#Panel"/>
+    <ui:VisualElement name="ConfigContainer" style="flex-grow: 1; align-items: center; justify-content: center; width: 100%; height: 100%;">
+        <ui:VisualElement name="Header" style="align-items: center; margin-bottom: 20px; -unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;);">
+            <ui:Label text="Configurações" name="TitleConfig" class="menu-title"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="TabsArea" style="flex-direction: row; justify-content: center; margin-bottom: 20px;">
+            <ui:Button text="Cores" name="BtnTabColors" class="menu-button" style="width: auto; margin: 0 10px; padding: 10px 20px;"/>
+            <ui:Button text="Áudio" name="BtnTabAudio" class="menu-button" style="width: auto; margin: 0 10px; padding: 10px 20px;"/>
+            <ui:Button text="Vídeo" name="BtnTabVideo" class="menu-button" style="width: auto; margin: 0 10px; padding: 10px 20px;"/>
+            <ui:Button text="Controles" name="BtnTabControls" class="menu-button" style="width: auto; margin: 0 10px; padding: 10px 20px;"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="PagesArea" style="flex-grow: 1; width: 80%; max-width: 900px; background-color: rgba(0, 0, 0, 0.4); border-radius: 15px; padding: 30px;">
+            <ui:VisualElement name="PanelColor" style="flex-grow: 1; display: none; flex-direction: column; position: relative;">
+                <ui:Label text="Personalização dos Sinais" style="color: rgb(255, 255, 255); -unity-font-style: bold; font-size: 24px; margin-bottom: 20px; -unity-text-align: upper-center;"/>
+                <ui:VisualElement style="flex-direction: row; justify-content: center; margin-bottom: 20px;">
+                    <ui:Label text="Paleta:" style="color: white; font-size: 18px; margin-right: 10px; align-self: center;"/>
+                    <ui:DropdownField name="DropdownPaleta" style="width: 250px;"/>
+                </ui:VisualElement>
+                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+                    <ui:Label text="J" style="color: white; -unity-font-style: bold; font-size: 20px; width: 50px;"/>
+                    <ui:VisualElement name="PreviewJ" style="width: 30px; height: 30px; border-radius: 5px; margin-right: 15px; border-width: 2px; border-color: white;"/>
+                    <ui:VisualElement name="ContainerSwatchesJ" style="flex-direction: row; flex-grow: 1; flex-wrap: wrap;"/>
+                    <ui:Button name="BtnCustomJ" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
+                </ui:VisualElement>
+                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+                    <ui:Label text="K" style="color: white; -unity-font-style: bold; font-size: 20px; width: 50px;"/>
+                    <ui:VisualElement name="PreviewK" style="width: 30px; height: 30px; border-radius: 5px; margin-right: 15px; border-width: 2px; border-color: white;"/>
+                    <ui:VisualElement name="ContainerSwatchesK" style="flex-direction: row; flex-grow: 1; flex-wrap: wrap;"/>
+                    <ui:Button name="BtnCustomK" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
+                </ui:VisualElement>
+                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+                    <ui:Label text="CLK" style="color: white; -unity-font-style: bold; font-size: 20px; width: 50px;"/>
+                    <ui:VisualElement name="PreviewCLK" style="width: 30px; height: 30px; border-radius: 5px; margin-right: 15px; border-width: 2px; border-color: white;"/>
+                    <ui:VisualElement name="ContainerSwatchesCLK" style="flex-direction: row; flex-grow: 1; flex-wrap: wrap;"/>
+                    <ui:Button name="BtnCustomCLK" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="RGBOverlay" style="display: none; position: absolute; top: -30px; left: -30px; right: -30px; bottom: -30px; background-color: rgba(0, 0, 0, 0.95); align-items: center; justify-content: center; border-radius: 15px;">
+                    <ui:Label name="RGBTitle" text="Cor Personalizada" style="color: white; font-size: 22px; margin-bottom: 20px;"/>
+                    <ui:VisualElement style="flex-direction: row; margin-bottom: 20px; align-items: center;">
+                        <ui:VisualElement name="RGBPreview" style="width: 60px; height: 60px; border-radius: 5px; margin-right: 20px; border-width: 2px; border-color: white;"/>
+                        <ui:TextField name="InputHex" label="HEX:" style="width: 150px; color: white;"/>
+                    </ui:VisualElement>
+                    <ui:Slider name="SliderR" label="R" high-value="255" low-value="0" style="width: 300px; margin-bottom: 10px;"/>
+                    <ui:Slider name="SliderG" label="G" high-value="255" low-value="0" style="width: 300px; margin-bottom: 10px;"/>
+                    <ui:Slider name="SliderB" label="B" high-value="255" low-value="0" style="width: 300px; margin-bottom: 20px;"/>
+                    <ui:VisualElement style="flex-direction: row;">
+                        <ui:Button name="BtnConfirmRGB" text="Confirmar" class="menu-button" style="margin-right: 10px;"/>
+                        <ui:Button name="BtnCancelRGB" text="Cancelar" class="menu-button"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="PanelAudio" style="flex-grow: 1; display: none; flex-direction: column;">
+                <ui:Label text="Volume Geral" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px;"/>
+                <ui:Slider name="SliderMaster" high-value="1" low-value="0" style="margin-bottom: 20px;"/>
+                <ui:Label text="Efeitos Sonoros" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px;"/>
+                <ui:Slider name="SliderSons" high-value="1" low-value="0" style="margin-bottom: 20px;"/>
+                <ui:Label text="Música" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px;"/>
+                <ui:Slider name="SliderMusica" high-value="1" low-value="0" style="margin-bottom: 20px;"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="PanelVideo" style="flex-grow: 1; display: none; flex-direction: column; justify-content: center;">
+                <ui:Label text="Contraste do Fundo" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px; -unity-text-align: upper-center; margin-bottom: 20px;"/>
+                <ui:Slider name="SliderContrast" high-value="1" low-value="-1" style="margin-bottom: 20px;"/>
+                
+                <ui:VisualElement style="flex-direction: row; justify-content: center; margin-top: 10px;">
+                    <ui:Button name="BtnResetContrast" text="Resetar Contraste" class="menu-button" style="margin-right: 10px;"/>
+                    <ui:Button name="BtnToggleLanguage" text="Trocar Idioma" class="menu-button"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="PanelControls" style="flex-grow: 1; display: none; flex-direction: column;">
+                <ui:Label text="Mapeamento de Teclas" style="color: rgb(255, 255, 255); -unity-font-style: bold; font-size: 24px; margin-bottom: 20px; -unity-text-align: upper-center;"/>
+                <ui:ScrollView name="ControlsScrollView" style="flex-grow: 1; margin-bottom: 20px; background-color: rgba(0, 0, 0, 0.2); border-radius: 10px; padding: 10px;"/>
+                <ui:Button name="BtnRestoreControls" text="Restaurar Padrões" class="menu-button" style="align-self: center;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="Footer" style="margin-top: 20px; align-items: center;">
+            <ui:Button text="Voltar" name="BtnBack" class="menu-button"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

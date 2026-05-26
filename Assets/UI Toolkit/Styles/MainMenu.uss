@@ -1,6 +1,10 @@
 VisualElement {
 }
 
+:root {
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&guid=06cc052497f62034fb43e3edf087d21a&type=3#Exo2-VariableFont_wght");
+}
+
 .menu-button {
     width: 300px;
     height: 60px;

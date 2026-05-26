@@ -10,35 +10,43 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
-  m_Name: Tutorial Shared Data
+  m_Name: GameHUD Shared Data
   m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
-  m_TableCollectionName: Tutorial
-  m_TableCollectionNameGuidString: bcdba3d027686d241b4c3261971aa0ab
+  m_TableCollectionName: GameHUD
+  m_TableCollectionNameGuidString: 1335d71b210ede741858eb8a611103b6
   m_Entries:
-  - m_Id: 650081370112
-    m_Key: moviment
+  - m_Id: 12584910848
+    m_Key: btn_menu
     m_Metadata:
       m_Items: []
-  - m_Id: 682767581184
-    m_Key: jump
+  - m_Id: 84920173621
+    m_Key: lbl_title_menu
     m_Metadata:
       m_Items: []
-  - m_Id: 596200044527616
-    m_Key: game
+  - m_Id: 39482017465
+    m_Key: btn_continue
     m_Metadata:
       m_Items: []
-  - m_Id: 698110345216
-    m_Key: dash
+  - m_Id: 92017465139
+    m_Key: btn_retry
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56102938472
+    m_Key: btn_options
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47382019560
+    m_Key: btn_exit
     m_Metadata:
       m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
-    rid: 2516561656222843184
+    rid: 2516561719917281302
   references:
     version: 2
     RefIds:
-    - rid: 2516561656222843184
+    - rid: 2516561719917281302
       type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
       data:
-        m_CustomEpoch: 1779575567809
+        m_CustomEpoch: 1779818597052
