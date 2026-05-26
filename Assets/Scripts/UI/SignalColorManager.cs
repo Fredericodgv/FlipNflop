@@ -49,9 +49,14 @@ public class SignalColorManager : MonoBehaviour
     // ─── Paletas de acessibilidade ───────────────────────────────────────────
     public static readonly int[][] Palettes = new int[][]
     {
-        new[] { 0, 0, 0 },
-        new[] { 6, 3, 0 },
-        new[] { 1, 2, 5 },
+        // Padrão
+        new[] { 0, 0, 0, 0, 6, 4, 7 },
+
+        // Daltonismo
+        new[] { 1, 9, 2, 3, 6, 7, 5 },
+
+        // Alto Contraste
+        new[] { 1, 5, 3, 2, 6, 4, 7 },
     };
     public static readonly string[] PaletteNames = { "Padrão", "Daltonismo", "Alto Contraste" };
 
@@ -59,8 +64,8 @@ public class SignalColorManager : MonoBehaviour
     private const int DEFAULT_J_IDX = 0;
     private const int DEFAULT_K_IDX = 0;
     private const int DEFAULT_CLK_IDX = 0;
-    private const int DEFAULT_PRESET_IDX = 4; // Verde
-    private const int DEFAULT_CLEAR_IDX = 7; // Vermelho
+    private const int DEFAULT_PRESET_IDX = 0;
+    private const int DEFAULT_CLEAR_IDX = 0;
     private const int DEFAULT_FEEDBACK_SUC_IDX = 4; // Verde
     private const int DEFAULT_FEEDBACK_FAIL_IDX = 7; // Vermelho
 
@@ -113,13 +118,24 @@ public class SignalColorManager : MonoBehaviour
     /// </summary>
     public void ApplyPalette(int paletteIndex)
     {
-        if (paletteIndex < 0 || paletteIndex >= Palettes.Length) return;
-        SetColorByIndex("J", Palettes[paletteIndex][0]);
-        SetColorByIndex("K", Palettes[paletteIndex][1]);
-        SetColorByIndex("CLK", Palettes[paletteIndex][2]);
+        if (paletteIndex < 0 || paletteIndex >= Palettes.Length)
+            return;
+
+        int[] palette = Palettes[paletteIndex];
+
+        SetColorByIndex("J", palette[0]);
+        SetColorByIndex("K", palette[1]);
+
+        SetColorByIndex("Preset", palette[2]);
+        SetColorByIndex("Clear", palette[3]);
+
+        SetColorByIndex("CLK", palette[4]);
+
+        SetColorByIndex("FeedbackSuccess", palette[5]);
+        SetColorByIndex("FeedbackFailure", palette[6]);
+
         NotifyAndSave();
     }
-
     #endregion
 
     #region Definir Cor por Índice (preset)

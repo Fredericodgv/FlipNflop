@@ -506,13 +506,30 @@ public class ConfigManager : MonoBehaviour
         int k = SignalColorManager.Instance.IndexK;
         int clk = SignalColorManager.Instance.IndexCLK;
 
+        int preset = SignalColorManager.Instance.IndexPreset;
+        int clear = SignalColorManager.Instance.IndexClear;
+
+        int success = SignalColorManager.Instance.IndexFeedbackSuccess;
+        int failure = SignalColorManager.Instance.IndexFeedbackFailure;
+
         for (int i = 0; i < SignalColorManager.Palettes.Length; i++)
         {
             var palette = SignalColorManager.Palettes[i];
 
-            if (palette[0] == j && palette[1] == k && palette[2] == clk)
+            if (
+                palette[0] == j &&
+                palette[1] == k &&
+                palette[2] == clk &&
+                palette[3] == preset &&
+                palette[4] == clear &&
+                palette[5] == success &&
+                palette[6] == failure
+            )
             {
-                dropdownPaleta?.SetValueWithoutNotify(SignalColorManager.PaletteNames[i]);
+                dropdownPaleta?.SetValueWithoutNotify(
+                    SignalColorManager.PaletteNames[i]
+                );
+
                 break;
             }
         }
