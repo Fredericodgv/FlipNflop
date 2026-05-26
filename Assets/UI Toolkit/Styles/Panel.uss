@@ -16,3 +16,18 @@
     -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&guid=06cc052497f62034fb43e3edf087d21a&type=3#Exo2-VariableFont_wght");
     -unity-font-style: bold;
 }
+
+.signal-label {
+    color: white;
+    -unity-font-style: bold;
+    font-size: 20px;
+    width: 50px;
+}
+
+.tab-button-active {
+    background-color: rgba(255, 255, 255, 0.25);
+    -unity-font-style: bold;
+    border-bottom-width: 3px;
+    border-bottom-color: white;
+    /* Ajuste ao seu gosto – cor, borda, escala etc. */
+}

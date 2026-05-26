@@ -59,6 +59,10 @@ public class LevelJsonLoader : MonoBehaviour
     private int _cachedJ_Y;
     private int _cachedK_Y;
     private int _cachedClock_Y;
+    private int _cachedPresetY;
+    private int _cachedClearY;
+    private bool _hasPreset;
+    private bool _hasClear;
     #endregion
 
     #region Parsed Signals
@@ -206,11 +210,17 @@ public class LevelJsonLoader : MonoBehaviour
         int clearY = 6;
         int clockY = 4;
 
+        // Dentro de RenderLevel, após definir presetY e clearY:
+        _hasPreset = ParsedPresetSignal != null;
+        _hasClear = ParsedClearSignal != null;
+        _cachedPresetY = presetY;
+        _cachedClearY = clearY;
+
         // Verifica se o SignalColorManager (develop) existe, senão usa a cor do JSON (Refactor)
         Color jColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorJ : data.JSignalColor;
         Color kColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorK : data.KSignalColor;
-        Color presetColor = data.PresetSignalColor;
-        Color clearColor = data.ClearSignalColor;
+        Color presetColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorPreset : data.PresetSignalColor;
+        Color clearColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorClear : data.ClearSignalColor;
         Color clockColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorCLK : data.ClockSignalColor;
 
         tilemapRenderer.RenderDiagram(ParsedJSignal, jY, jColor);
@@ -265,9 +275,23 @@ public class LevelJsonLoader : MonoBehaviour
         Color kColor = SignalColorManager.Instance.ColorK;
         Color clkColor = SignalColorManager.Instance.ColorCLK;
 
+        // J, K e CLK (como antes)
         ColorRow(inputTilemap, _cachedLevelLength, _cachedJ_Y, startX, jColor);
         ColorRow(inputTilemap, _cachedLevelLength, _cachedK_Y, startX, kColor);
         ColorRow(clockTilemap, _cachedLevelLength, _cachedClock_Y, startX, clkColor);
+
+        // Preset e Clear (novas adições)
+        if (_hasPreset)
+        {
+            Color presetColor = SignalColorManager.Instance.ColorPreset;
+            ColorRow(inputTilemap, _cachedLevelLength, _cachedPresetY, startX, presetColor);
+        }
+
+        if (_hasClear)
+        {
+            Color clearColor = SignalColorManager.Instance.ColorClear;
+            ColorRow(inputTilemap, _cachedLevelLength, _cachedClearY, startX, clearColor);
+        }
     }
 
     private void ColorRow(Tilemap map, int length, int yRow, int baseX, Color color)

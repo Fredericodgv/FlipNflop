@@ -10,46 +10,90 @@
             <ui:Button text="Vídeo" name="BtnTabVideo" class="menu-button" style="width: auto; margin: 0 10px; padding: 10px 20px;"/>
             <ui:Button text="Controles" name="BtnTabControls" class="menu-button" style="width: auto; margin: 0 10px; padding: 10px 20px;"/>
         </ui:VisualElement>
-        <ui:VisualElement name="PagesArea" style="flex-grow: 1; width: 80%; max-width: 900px; background-color: rgba(0, 0, 0, 0.4); border-radius: 15px; padding: 30px;">
-            <ui:VisualElement name="PanelColor" style="flex-grow: 1; display: none; flex-direction: column; position: relative;">
+        <ui:VisualElement name="PagesArea" style="flex-grow: 1; width: 80%; max-width: 900px; background-color: rgba(0, 0, 0, 0.4); border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; padding: 30px;">
+            <ui:VisualElement name="PanelColor" style="flex-grow: 1; display: flex; flex-direction: column; position: relative;">
                 <ui:Label text="Personalização dos Sinais" style="color: rgb(255, 255, 255); -unity-font-style: bold; font-size: 24px; margin-bottom: 20px; -unity-text-align: upper-center;"/>
                 <ui:VisualElement style="flex-direction: row; justify-content: center; margin-bottom: 20px;">
                     <ui:Label text="Paleta:" style="color: white; font-size: 18px; margin-right: 10px; align-self: center;"/>
                     <ui:DropdownField name="DropdownPaleta" style="width: 250px;"/>
                 </ui:VisualElement>
+
+                <!-- J -->
                 <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
-                    <ui:Label text="J" style="color: white; -unity-font-style: bold; font-size: 20px; width: 50px;"/>
-                    <ui:VisualElement name="PreviewJ" style="width: 30px; height: 30px; border-radius: 5px; margin-right: 15px; border-width: 2px; border-color: white;"/>
-                    <ui:VisualElement name="ContainerSwatchesJ" style="flex-direction: row; flex-grow: 1; flex-wrap: wrap;"/>
+                    <ui:Label text="J" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;"/>
+                    <ui:VisualElement name="PreviewJ" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
+                    <ui:VisualElement name="ContainerSwatchesJ" style="flex-direction: row; flex-grow: 1;"/>
                     <ui:Button name="BtnCustomJ" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
                 </ui:VisualElement>
+
+                <!-- K -->
                 <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
-                    <ui:Label text="K" style="color: white; -unity-font-style: bold; font-size: 20px; width: 50px;"/>
-                    <ui:VisualElement name="PreviewK" style="width: 30px; height: 30px; border-radius: 5px; margin-right: 15px; border-width: 2px; border-color: white;"/>
-                    <ui:VisualElement name="ContainerSwatchesK" style="flex-direction: row; flex-grow: 1; flex-wrap: wrap;"/>
+                    <ui:Label text="K" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;"/>
+                    <ui:VisualElement name="PreviewK" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
+                    <ui:VisualElement name="ContainerSwatchesK" style="flex-direction: row; flex-grow: 1;"/>
                     <ui:Button name="BtnCustomK" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
                 </ui:VisualElement>
+
+                <!-- CLK -->
                 <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
-                    <ui:Label text="CLK" style="color: white; -unity-font-style: bold; font-size: 20px; width: 50px;"/>
-                    <ui:VisualElement name="PreviewCLK" style="width: 30px; height: 30px; border-radius: 5px; margin-right: 15px; border-width: 2px; border-color: white;"/>
-                    <ui:VisualElement name="ContainerSwatchesCLK" style="flex-direction: row; flex-grow: 1; flex-wrap: wrap;"/>
+                    <ui:Label text="CLK" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;"/>
+                    <ui:VisualElement name="PreviewCLK" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
+                    <ui:VisualElement name="ContainerSwatchesCLK" style="flex-direction: row; flex-grow: 1;"/>
                     <ui:Button name="BtnCustomCLK" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
                 </ui:VisualElement>
-                <ui:VisualElement name="RGBOverlay" style="display: none; position: absolute; top: -30px; left: -30px; right: -30px; bottom: -30px; background-color: rgba(0, 0, 0, 0.95); align-items: center; justify-content: center; border-radius: 15px;">
+
+                <!-- Preset -->
+                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+                    <ui:Label text="Preset" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;"/>
+                    <ui:VisualElement name="PreviewPreset" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
+                    <ui:VisualElement name="ContainerSwatchesPreset" style="flex-direction: row; flex-grow: 1;"/>
+                    <ui:Button name="BtnCustomPreset" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
+                </ui:VisualElement>
+
+                <!-- Clear -->
+                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+                    <ui:Label text="Clear" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;"/>
+                    <ui:VisualElement name="PreviewClear" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
+                    <ui:VisualElement name="ContainerSwatchesClear" style="flex-direction: row; flex-grow: 1;"/>
+                    <ui:Button name="BtnCustomClear" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
+                </ui:VisualElement>
+
+                <!-- Separador Feedback -->
+                <ui:Label text="Feedback do Desenho" style="color: rgb(200, 200, 200); -unity-font-style: bold; font-size: 16px; margin-top: 10px; margin-bottom: 10px; -unity-text-align: upper-center;"/>
+
+                <!-- Feedback Correto -->
+                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+                    <ui:Label text="Certo" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;"/>
+                    <ui:VisualElement name="PreviewFeedbackSuccess" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
+                    <ui:VisualElement name="ContainerSwatchesFeedbackSuccess" style="flex-direction: row; flex-grow: 1;"/>
+                    <ui:Button name="BtnCustomFeedbackSuccess" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
+                </ui:VisualElement>
+
+                <!-- Feedback Errado -->
+                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+                    <ui:Label text="Errado" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;"/>
+                    <ui:VisualElement name="PreviewFeedbackFailure" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
+                    <ui:VisualElement name="ContainerSwatchesFeedbackFailure" style="flex-direction: row; flex-grow: 1;"/>
+                    <ui:Button name="BtnCustomFeedbackFailure" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
+                </ui:VisualElement>
+
+                <!-- RGB Overlay (CORRIGIDO – sem calc()) -->
+                <ui:VisualElement name="RGBOverlay" style="display: none; position: absolute; top: -30px; left: -30px; right: -30px; bottom: -30px; background-color: rgba(0, 0, 0, 0.95); align-items: center; justify-content: center; border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
                     <ui:Label name="RGBTitle" text="Cor Personalizada" style="color: white; font-size: 22px; margin-bottom: 20px;"/>
                     <ui:VisualElement style="flex-direction: row; margin-bottom: 20px; align-items: center;">
-                        <ui:VisualElement name="RGBPreview" style="width: 60px; height: 60px; border-radius: 5px; margin-right: 20px; border-width: 2px; border-color: white;"/>
-                        <ui:TextField name="InputHex" label="HEX:" style="width: 150px; color: white;"/>
+                        <ui:VisualElement name="RGBPreview" style="width: 60px; height: 60px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 20px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
+                        <ui:TextField name="InputHex" label="HEX:" max-length="-1" enabled="true" style="width: 150px; color: white; overflow: hidden;"/>
                     </ui:VisualElement>
-                    <ui:Slider name="SliderR" label="R" high-value="255" low-value="0" style="width: 300px; margin-bottom: 10px;"/>
-                    <ui:Slider name="SliderG" label="G" high-value="255" low-value="0" style="width: 300px; margin-bottom: 10px;"/>
-                    <ui:Slider name="SliderB" label="B" high-value="255" low-value="0" style="width: 300px; margin-bottom: 20px;"/>
+                    <ui:Slider name="SliderR" label="R" high-value="255" low-value="0" style="width: 300px; margin-bottom: 10px; color: rgb(255, 255, 255); font-size: 24px;"/>
+                    <ui:Slider name="SliderG" label="G" high-value="255" low-value="0" style="width: 300px; margin-bottom: 10px; color: rgb(255, 255, 255); font-size: 24px;"/>
+                    <ui:Slider name="SliderB" label="B" high-value="255" low-value="0" style="width: 300px; margin-bottom: 20px; color: rgb(255, 255, 255); font-size: 24px;"/>
                     <ui:VisualElement style="flex-direction: row;">
                         <ui:Button name="BtnConfirmRGB" text="Confirmar" class="menu-button" style="margin-right: 10px;"/>
                         <ui:Button name="BtnCancelRGB" text="Cancelar" class="menu-button"/>
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
+
             <ui:VisualElement name="PanelAudio" style="flex-grow: 1; display: none; flex-direction: column;">
                 <ui:Label text="Volume Geral" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px;"/>
                 <ui:Slider name="SliderMaster" high-value="1" low-value="0" style="margin-bottom: 20px;"/>
@@ -58,18 +102,19 @@
                 <ui:Label text="Música" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px;"/>
                 <ui:Slider name="SliderMusica" high-value="1" low-value="0" style="margin-bottom: 20px;"/>
             </ui:VisualElement>
+
             <ui:VisualElement name="PanelVideo" style="flex-grow: 1; display: none; flex-direction: column; justify-content: center;">
                 <ui:Label text="Contraste do Fundo" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px; -unity-text-align: upper-center; margin-bottom: 20px;"/>
                 <ui:Slider name="SliderContrast" high-value="1" low-value="-1" style="margin-bottom: 20px;"/>
-                
                 <ui:VisualElement style="flex-direction: row; justify-content: center; margin-top: 10px;">
                     <ui:Button name="BtnResetContrast" text="Resetar Contraste" class="menu-button" style="margin-right: 10px;"/>
                     <ui:Button name="BtnToggleLanguage" text="Trocar Idioma" class="menu-button"/>
                 </ui:VisualElement>
             </ui:VisualElement>
+
             <ui:VisualElement name="PanelControls" style="flex-grow: 1; display: none; flex-direction: column;">
                 <ui:Label text="Mapeamento de Teclas" style="color: rgb(255, 255, 255); -unity-font-style: bold; font-size: 24px; margin-bottom: 20px; -unity-text-align: upper-center;"/>
-                <ui:ScrollView name="ControlsScrollView" style="flex-grow: 1; margin-bottom: 20px; background-color: rgba(0, 0, 0, 0.2); border-radius: 10px; padding: 10px;"/>
+                <ui:ScrollView name="ControlsScrollView" style="flex-grow: 1; margin-bottom: 20px; background-color: rgba(0, 0, 0, 0.2); border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; padding: 10px;"/>
                 <ui:Button name="BtnRestoreControls" text="Restaurar Padrões" class="menu-button" style="align-self: center;"/>
             </ui:VisualElement>
         </ui:VisualElement>

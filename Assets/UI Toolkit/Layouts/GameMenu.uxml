@@ -13,7 +13,7 @@
                     <Bindings>
                         <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(84920173621)"/>
                     </Bindings>
-                </ui:Label>
+        </ui:Label>
                 <ui:Button text="Continuar" name="Continue" class="menu-button">
                     <Bindings>
                         <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(39482017465)"/>

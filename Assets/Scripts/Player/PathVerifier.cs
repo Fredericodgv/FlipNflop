@@ -54,23 +54,28 @@ public class PathVerifier : MonoBehaviour
 
     #region Unity Methods
 
-    /// <summary>
-    /// Called when the script instance is being loaded. Triggers generation of the reference path (gabarito).
-    /// </summary>
     private void Awake()
     {
         GenerateCorrectPath();
     }
 
-    /// <summary>
-    /// Unity Start: hides success/failure UI elements initially.
-    /// </summary>
     private void Start()
     {
         if (resultPanel != null) resultPanel.SetActive(false);
 
         if (signalPath != null)
             signalLineRenderer = signalPath.GetComponent<LineRenderer>();
+
+        // Registra callback para atualizar cores ao vivo caso o jogador mude nas configurações
+        SignalColorManager.OnColorsChanged += SyncFeedbackColors;
+
+        // Aplica as cores salvas imediatamente
+        SyncFeedbackColors();
+    }
+
+    private void OnDestroy()
+    {
+        SignalColorManager.OnColorsChanged -= SyncFeedbackColors;
     }
 
     private void Update()
@@ -81,9 +86,6 @@ public class PathVerifier : MonoBehaviour
         UpdateRealtimeFeedback();
     }
 
-    /// <summary>
-    /// Draws gizmos in the editor to visualize the generated reference corners and connecting segments.
-    /// </summary>
     private void OnDrawGizmos()
     {
         if (correctCorners == null || correctCorners.Count < 2) return;
@@ -94,11 +96,8 @@ public class PathVerifier : MonoBehaviour
             Gizmos.DrawLine(correctCorners[i], correctCorners[i + 1]);
         }
         if (correctCorners.Count > 0)
-        {
             Gizmos.DrawSphere(correctCorners[correctCorners.Count - 1], 0.2f);
-        }
 
-        // Desenha quinas perdidas em vermelho durante o jogo
         if (showMissedCornersInGame && Application.isPlaying && missedCorners != null && missedCorners.Count > 0)
         {
             Gizmos.color = Color.red;
@@ -112,13 +111,28 @@ public class PathVerifier : MonoBehaviour
 
     #endregion
 
+    #region Color Sync
+
+    /// <summary>
+    /// Sincroniza successColor e failureColor com o SignalColorManager.
+    /// Chamado no Start e sempre que OnColorsChanged for disparado.
+    /// </summary>
+    private void SyncFeedbackColors()
+    {
+        if (SignalColorManager.Instance == null) return;
+
+        successColor = SignalColorManager.Instance.ColorFeedbackSuccess;
+        failureColor = SignalColorManager.Instance.ColorFeedbackFailure;
+    }
+
+    #endregion
+
     #region Public Methods
 
     /// <summary>
     /// Finalizes and evaluates the path until a specific X coordinate (e.g., player's death position).
-    /// Called when player dies or finishes the level
+    /// Called when player dies or finishes the level.
     /// </summary>
-    /// <param name="endX">The X coordinate limit of the path.</param>
     public void FinalizeAndCheckPath(float? endX = null)
     {
         if (signalPath == null)
@@ -137,11 +151,11 @@ public class PathVerifier : MonoBehaviour
 
     #region Path Verification Core
 
-    /// <summary>
-    /// Internal: evaluates the player's finalized path, draws feedback and toggles success/failure UI.
-    /// </summary>
     private void CheckPlayerPath()
     {
+        // Garante cores atualizadas no momento da verificação final
+        SyncFeedbackColors();
+
         if (signalPath == null || signalPath.PathPoints.Count < 2)
         {
             Debug.LogError("Caminho do jogador inválido ou não definido!");
@@ -188,10 +202,6 @@ public class PathVerifier : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Counts how many segments of the correct path were covered by the player's path.
-    /// A segment gabarito[i]→gabarito[i+1] is considered covered if its midpoint is sufficiently close to the player's path.
-    /// </summary>
     private int CountCoveredGabaritoSegments(List<Vector3> playerPath)
     {
         int covered = 0;
@@ -207,10 +217,6 @@ public class PathVerifier : MonoBehaviour
         return covered;
     }
 
-    /// <summary>
-    /// Counts how many horizontal segments exist in the correct path (gabarito), which serves as the basis for scoring and feedback.
-    /// </summary>
-    /// <returns></returns>
     private int CountHorizontalGabaritoSegments()
     {
         int count = 0;
@@ -222,9 +228,6 @@ public class PathVerifier : MonoBehaviour
         return count;
     }
 
-    /// <summary>
-    /// Draws the feedback by iterating over each small segment of the player's path.
-    /// </summary>
     private void DrawFeedbackLines(List<Vector3> playerPath, out int correctSegments, out int totalSegments)
     {
         correctSegments = 0;
@@ -250,13 +253,11 @@ public class PathVerifier : MonoBehaviour
             bool endIsOnPath = Vector3.Distance(p_end, closestEnd) <= cornerTolerance;
 
             bool isSegmentCorrect = startIsOnPath && endIsOnPath;
-
             bool isVertical = Mathf.Abs(p_start.y - p_end.y) > 0.1f;
 
             if (isVertical && isSegmentCorrect)
             {
                 bool aligned = false;
-
                 foreach (Vector3 corner in correctCorners)
                 {
                     if (Mathf.Abs(corner.x - p_start.x) <= cornerTolerance &&
@@ -266,9 +267,7 @@ public class PathVerifier : MonoBehaviour
                         break;
                     }
                 }
-
-                if (!aligned)
-                    isSegmentCorrect = false;
+                if (!aligned) isSegmentCorrect = false;
             }
 
             totalSegments++;
@@ -277,7 +276,6 @@ public class PathVerifier : MonoBehaviour
             if (isSegmentCorrect)
             {
                 DrawSolidLine(p_start, p_end, successColor);
-
                 patternAccumulator = 0f;
                 isDrawingDash = true;
             }
@@ -288,10 +286,6 @@ public class PathVerifier : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Instaciate a solid LineRenderer between the start and end points, using the specified color.
-    /// Used to draw path segments that are correct (on the gabarito).
-    /// </summary>
     private void DrawSolidLine(Vector3 start, Vector3 end, Color color)
     {
         LineRenderer line = Instantiate(linePrefab, feedbackLinesParent);
@@ -301,10 +295,6 @@ public class PathVerifier : MonoBehaviour
         line.endColor = color;
     }
 
-    /// <summary>
-    /// Draws a dashed line between the start and end points by instantiating multiple small LineRenderers.
-    /// Used to draw path segments that are incorrect (off the gabarito).
-    /// </summary>
     private void DrawDashedLine(Vector3 start, Vector3 end, ref float accumulator, ref bool isDrawingDash)
     {
         float length = Vector3.Distance(start, end);
@@ -334,10 +324,6 @@ public class PathVerifier : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Update real-time feedback by spawning LineRenderers for each segment of the player's path.
-    /// Each segment is colored green (on the gabarito) or red (off the gabarito), with no interpolation — abrupt color cuts at transition points.
-    /// </summary>
     private void UpdateRealtimeFeedback()
     {
         if (linePrefab == null || feedbackLinesParent == null) return;
@@ -362,7 +348,6 @@ public class PathVerifier : MonoBehaviour
             if (onPath)
             {
                 DrawSolidLine(p_start, p_end, successColor);
-
                 patternAccumulator = 0f;
                 isDrawingDash = true;
             }
@@ -377,9 +362,6 @@ public class PathVerifier : MonoBehaviour
 
     #region Helper Functions
 
-    /// <summary>
-    /// Evaluates if a specific corner from the gabarito was "hit" by the player's path, meaning the player passed sufficiently close to it at some point.
-    /// </summary>
     private bool EvaluateCornerHit(Vector3 corner, List<Vector3> playerPath, out float minDistance, out Vector3 closestPoint)
     {
         minDistance = float.MaxValue;
@@ -407,10 +389,6 @@ public class PathVerifier : MonoBehaviour
         return wasHit;
     }
 
-    /// <summary>
-    /// Ensures that the target GameObject and its parent (if exists) are active in the scene. Used to show result panels that might be initially hidden.
-    /// </summary>
-    /// <param name="target"></param>
     private void ActivateWithParent(GameObject target)
     {
         if (target == null) return;
@@ -420,9 +398,6 @@ public class PathVerifier : MonoBehaviour
         if (!target.activeSelf) target.SetActive(true);
     }
 
-    /// <summary>
-    /// Evaluates if each corner in the gabarito was hit by the player's path and returns a list of booleans indicating the result for each corner.
-    /// </summary>
     private List<bool> EvaluateCorrectCorners(List<Vector3> playerPath)
     {
         var checks = new List<bool>();
@@ -447,9 +422,6 @@ public class PathVerifier : MonoBehaviour
         return checks;
     }
 
-    /// <summary>
-    /// Finds the closest point on the player's path to a given target point (e.g., a corner from the gabarito) by checking each segment of the path.
-    /// </summary>
     private Vector3 FindClosestPointOnFullPath(Vector3 targetPoint, List<Vector3> path)
     {
         if (path.Count == 0) return Vector3.zero;
@@ -471,9 +443,6 @@ public class PathVerifier : MonoBehaviour
         return bestPoint;
     }
 
-    /// <summary>
-    /// Finds the closest point on a line segment defined by lineStart and lineEnd to a given point. Used for precise distance calculations between the player's path and the gabarito corners.
-    /// </summary>
     private Vector3 FindClosestPointOnLineSegment(Vector3 point, Vector3 lineStart, Vector3 lineEnd)
     {
         Vector3 lineDirection = lineEnd - lineStart;
@@ -523,9 +492,6 @@ public class PathVerifier : MonoBehaviour
 
     #region Gabarito Generation
 
-    /// <summary>
-    /// Generates the reference path (gabarito) by loading signal events from the LevelJsonLoader and building the correct corners based on those events.
-    /// </summary>
     private void GenerateCorrectPath()
     {
         var loader = UnityEngine.Object.FindAnyObjectByType<LevelJsonLoader>();
@@ -552,9 +518,6 @@ public class PathVerifier : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Builds the correct corners for the reference path (gabarito) based on a list of signal events.
-    /// </summary>
     public void BuildCorrectCornersFromSignalEvents(List<SignalEvent> events, float initialX = 0f, bool initialState = false)
     {
         correctCorners = new List<Vector3>();

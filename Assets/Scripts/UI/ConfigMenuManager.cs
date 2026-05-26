@@ -12,7 +12,11 @@ public class ConfigManager : MonoBehaviour
     {
         J,
         K,
-        CLK
+        CLK,
+        Preset,
+        Clear,
+        FeedbackSuccess,
+        FeedbackFailure
     }
 
     [Header("Vídeo")]
@@ -46,20 +50,32 @@ public class ConfigManager : MonoBehaviour
     private Button btnResetContrast;
     private Button btnToggleLanguage;
 
-    // Cores
+    // Cores — sinais
     private DropdownField dropdownPaleta;
 
     private VisualElement previewJ;
     private VisualElement previewK;
     private VisualElement previewCLK;
+    private VisualElement previewPreset;
+    private VisualElement previewClear;
+    private VisualElement previewFeedbackSuccess;
+    private VisualElement previewFeedbackFailure;
 
     private VisualElement containerSwatchesJ;
     private VisualElement containerSwatchesK;
     private VisualElement containerSwatchesCLK;
+    private VisualElement containerSwatchesPreset;
+    private VisualElement containerSwatchesClear;
+    private VisualElement containerSwatchesFeedbackSuccess;
+    private VisualElement containerSwatchesFeedbackFailure;
 
     private Button btnCustomJ;
     private Button btnCustomK;
     private Button btnCustomCLK;
+    private Button btnCustomPreset;
+    private Button btnCustomClear;
+    private Button btnCustomFeedbackSuccess;
+    private Button btnCustomFeedbackFailure;
 
     // RGB Overlay
     private VisualElement rgbOverlay;
@@ -80,6 +96,10 @@ public class ConfigManager : MonoBehaviour
     private readonly List<Button> swatchesJ = new();
     private readonly List<Button> swatchesK = new();
     private readonly List<Button> swatchesCLK = new();
+    private readonly List<Button> swatchesPreset = new();
+    private readonly List<Button> swatchesClear = new();
+    private readonly List<Button> swatchesFeedbackSuccess = new();
+    private readonly List<Button> swatchesFeedbackFailure = new();
 
     /// <summary>
     /// Inicializa referências obrigatórias.
@@ -156,14 +176,26 @@ public class ConfigManager : MonoBehaviour
         previewJ = root.Q<VisualElement>("PreviewJ");
         previewK = root.Q<VisualElement>("PreviewK");
         previewCLK = root.Q<VisualElement>("PreviewCLK");
+        previewPreset = root.Q<VisualElement>("PreviewPreset");
+        previewClear = root.Q<VisualElement>("PreviewClear");
+        previewFeedbackSuccess = root.Q<VisualElement>("PreviewFeedbackSuccess");
+        previewFeedbackFailure = root.Q<VisualElement>("PreviewFeedbackFailure");
 
         containerSwatchesJ = root.Q<VisualElement>("ContainerSwatchesJ");
         containerSwatchesK = root.Q<VisualElement>("ContainerSwatchesK");
         containerSwatchesCLK = root.Q<VisualElement>("ContainerSwatchesCLK");
+        containerSwatchesPreset = root.Q<VisualElement>("ContainerSwatchesPreset");
+        containerSwatchesClear = root.Q<VisualElement>("ContainerSwatchesClear");
+        containerSwatchesFeedbackSuccess = root.Q<VisualElement>("ContainerSwatchesFeedbackSuccess");
+        containerSwatchesFeedbackFailure = root.Q<VisualElement>("ContainerSwatchesFeedbackFailure");
 
         btnCustomJ = root.Q<Button>("BtnCustomJ");
         btnCustomK = root.Q<Button>("BtnCustomK");
         btnCustomCLK = root.Q<Button>("BtnCustomCLK");
+        btnCustomPreset = root.Q<Button>("BtnCustomPreset");
+        btnCustomClear = root.Q<Button>("BtnCustomClear");
+        btnCustomFeedbackSuccess = root.Q<Button>("BtnCustomFeedbackSuccess");
+        btnCustomFeedbackFailure = root.Q<Button>("BtnCustomFeedbackFailure");
 
         // RGB
         rgbOverlay = root.Q<VisualElement>("RGBOverlay");
@@ -185,41 +217,25 @@ public class ConfigManager : MonoBehaviour
     /// </summary>
     private void RegisterCallbacks()
     {
-        if (btnTabColors != null)
-            btnTabColors.clicked += ShowColorsTab;
+        if (btnTabColors != null) btnTabColors.clicked += ShowColorsTab;
+        if (btnTabAudio != null) btnTabAudio.clicked += ShowAudioTab;
+        if (btnTabVideo != null) btnTabVideo.clicked += ShowVideoTab;
+        if (btnTabControls != null) btnTabControls.clicked += ShowControlsTab;
+        if (btnBack != null) btnBack.clicked += OnBackClicked;
 
-        if (btnTabAudio != null)
-            btnTabAudio.clicked += ShowAudioTab;
+        if (btnResetContrast != null) btnResetContrast.clicked += ResetContrast;
+        if (btnToggleLanguage != null) btnToggleLanguage.clicked += ToggleLanguage;
 
-        if (btnTabVideo != null)
-            btnTabVideo.clicked += ShowVideoTab;
+        if (btnCustomJ != null) btnCustomJ.clicked += OpenCustomJ;
+        if (btnCustomK != null) btnCustomK.clicked += OpenCustomK;
+        if (btnCustomCLK != null) btnCustomCLK.clicked += OpenCustomCLK;
+        if (btnCustomPreset != null) btnCustomPreset.clicked += OpenCustomPreset;
+        if (btnCustomClear != null) btnCustomClear.clicked += OpenCustomClear;
+        if (btnCustomFeedbackSuccess != null) btnCustomFeedbackSuccess.clicked += OpenCustomFeedbackSuccess;
+        if (btnCustomFeedbackFailure != null) btnCustomFeedbackFailure.clicked += OpenCustomFeedbackFailure;
 
-        if (btnTabControls != null)
-            btnTabControls.clicked += ShowControlsTab;
-
-        if (btnBack != null)
-            btnBack.clicked += OnBackClicked;
-
-        if (btnResetContrast != null)
-            btnResetContrast.clicked += ResetContrast;
-
-        if (btnToggleLanguage != null)
-            btnToggleLanguage.clicked += ToggleLanguage;
-
-        if (btnCustomJ != null)
-            btnCustomJ.clicked += OpenCustomJ;
-
-        if (btnCustomK != null)
-            btnCustomK.clicked += OpenCustomK;
-
-        if (btnCustomCLK != null)
-            btnCustomCLK.clicked += OpenCustomCLK;
-
-        if (btnConfirmRGB != null)
-            btnConfirmRGB.clicked += ConfirmRGBColor;
-
-        if (btnCancelRGB != null)
-            btnCancelRGB.clicked += CloseRGBOverlay;
+        if (btnConfirmRGB != null) btnConfirmRGB.clicked += ConfirmRGBColor;
+        if (btnCancelRGB != null) btnCancelRGB.clicked += CloseRGBOverlay;
 
         sliderR?.RegisterValueChangedCallback(OnRGBSliderChanged);
         sliderG?.RegisterValueChangedCallback(OnRGBSliderChanged);
@@ -233,41 +249,25 @@ public class ConfigManager : MonoBehaviour
     /// </summary>
     private void UnregisterCallbacks()
     {
-        if (btnTabColors != null)
-            btnTabColors.clicked -= ShowColorsTab;
+        if (btnTabColors != null) btnTabColors.clicked -= ShowColorsTab;
+        if (btnTabAudio != null) btnTabAudio.clicked -= ShowAudioTab;
+        if (btnTabVideo != null) btnTabVideo.clicked -= ShowVideoTab;
+        if (btnTabControls != null) btnTabControls.clicked -= ShowControlsTab;
+        if (btnBack != null) btnBack.clicked -= OnBackClicked;
 
-        if (btnTabAudio != null)
-            btnTabAudio.clicked -= ShowAudioTab;
+        if (btnResetContrast != null) btnResetContrast.clicked -= ResetContrast;
+        if (btnToggleLanguage != null) btnToggleLanguage.clicked -= ToggleLanguage;
 
-        if (btnTabVideo != null)
-            btnTabVideo.clicked -= ShowVideoTab;
+        if (btnCustomJ != null) btnCustomJ.clicked -= OpenCustomJ;
+        if (btnCustomK != null) btnCustomK.clicked -= OpenCustomK;
+        if (btnCustomCLK != null) btnCustomCLK.clicked -= OpenCustomCLK;
+        if (btnCustomPreset != null) btnCustomPreset.clicked -= OpenCustomPreset;
+        if (btnCustomClear != null) btnCustomClear.clicked -= OpenCustomClear;
+        if (btnCustomFeedbackSuccess != null) btnCustomFeedbackSuccess.clicked -= OpenCustomFeedbackSuccess;
+        if (btnCustomFeedbackFailure != null) btnCustomFeedbackFailure.clicked -= OpenCustomFeedbackFailure;
 
-        if (btnTabControls != null)
-            btnTabControls.clicked -= ShowControlsTab;
-
-        if (btnBack != null)
-            btnBack.clicked -= OnBackClicked;
-
-        if (btnResetContrast != null)
-            btnResetContrast.clicked -= ResetContrast;
-
-        if (btnToggleLanguage != null)
-            btnToggleLanguage.clicked -= ToggleLanguage;
-
-        if (btnCustomJ != null)
-            btnCustomJ.clicked -= OpenCustomJ;
-
-        if (btnCustomK != null)
-            btnCustomK.clicked -= OpenCustomK;
-
-        if (btnCustomCLK != null)
-            btnCustomCLK.clicked -= OpenCustomCLK;
-
-        if (btnConfirmRGB != null)
-            btnConfirmRGB.clicked -= ConfirmRGBColor;
-
-        if (btnCancelRGB != null)
-            btnCancelRGB.clicked -= CloseRGBOverlay;
+        if (btnConfirmRGB != null) btnConfirmRGB.clicked -= ConfirmRGBColor;
+        if (btnCancelRGB != null) btnCancelRGB.clicked -= CloseRGBOverlay;
 
         sliderMaster?.UnregisterValueChangedCallback(OnMasterVolumeChanged);
         sliderSons?.UnregisterValueChangedCallback(OnSFXVolumeChanged);
@@ -282,24 +282,9 @@ public class ConfigManager : MonoBehaviour
         inputHex?.UnregisterValueChangedCallback(OnHexInputChanged);
     }
 
-    /// <summary>
-    /// Exibe a aba de cores.
-    /// </summary>
     private void ShowColorsTab() => ShowTab(panelColor);
-
-    /// <summary>
-    /// Exibe a aba de áudio.
-    /// </summary>
     private void ShowAudioTab() => ShowTab(panelAudio);
-
-    /// <summary>
-    /// Exibe a aba de vídeo.
-    /// </summary>
     private void ShowVideoTab() => ShowTab(panelVideo);
-
-    /// <summary>
-    /// Exibe a aba de controles.
-    /// </summary>
     private void ShowControlsTab() => ShowTab(panelControls);
 
     /// <summary>
@@ -325,18 +310,16 @@ public class ConfigManager : MonoBehaviour
         var panelOptions = root.Q<VisualElement>("PanelOptions");
         var panelMain = root.Q<VisualElement>("PanelMain");
 
-        if (panelOptions != null)
-            panelOptions.style.display = DisplayStyle.None;
-
-        if (panelMain != null)
-            panelMain.style.display = DisplayStyle.Flex;
+        if (panelOptions != null) panelOptions.style.display = DisplayStyle.None;
+        if (panelMain != null) panelMain.style.display = DisplayStyle.Flex;
 
         root.Q<Button>("Options")?.Focus();
     }
 
-    /// <summary>
-    /// Inicializa configurações de áudio.
-    /// </summary>
+    // -------------------------------------------------------------------------
+    // Áudio
+    // -------------------------------------------------------------------------
+
     private void InitAudioSliders()
     {
         if (AudioManager.Instance == null)
@@ -361,33 +344,14 @@ public class ConfigManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Atualiza volume master.
-    /// </summary>
-    private void OnMasterVolumeChanged(ChangeEvent<float> evt)
-    {
-        AudioManager.Instance?.SetMasterVolume(evt.newValue);
-    }
+    private void OnMasterVolumeChanged(ChangeEvent<float> evt) => AudioManager.Instance?.SetMasterVolume(evt.newValue);
+    private void OnSFXVolumeChanged(ChangeEvent<float> evt) => AudioManager.Instance?.SetSFXVolume(evt.newValue);
+    private void OnMusicVolumeChanged(ChangeEvent<float> evt) => AudioManager.Instance?.SetMusicVolume(evt.newValue);
 
-    /// <summary>
-    /// Atualiza volume dos efeitos.
-    /// </summary>
-    private void OnSFXVolumeChanged(ChangeEvent<float> evt)
-    {
-        AudioManager.Instance?.SetSFXVolume(evt.newValue);
-    }
+    // -------------------------------------------------------------------------
+    // Vídeo
+    // -------------------------------------------------------------------------
 
-    /// <summary>
-    /// Atualiza volume da música.
-    /// </summary>
-    private void OnMusicVolumeChanged(ChangeEvent<float> evt)
-    {
-        AudioManager.Instance?.SetMusicVolume(evt.newValue);
-    }
-
-    /// <summary>
-    /// Inicializa configurações de vídeo.
-    /// </summary>
     private void InitVideoSettings()
     {
         if (sliderContrast == null)
@@ -401,17 +365,8 @@ public class ConfigManager : MonoBehaviour
         sliderContrast.RegisterValueChangedCallback(OnContrastChanged);
     }
 
-    /// <summary>
-    /// Atualiza contraste da tela.
-    /// </summary>
-    private void OnContrastChanged(ChangeEvent<float> evt)
-    {
-        ApplyContrast(evt.newValue);
-    }
+    private void OnContrastChanged(ChangeEvent<float> evt) => ApplyContrast(evt.newValue);
 
-    /// <summary>
-    /// Aplica o contraste visual.
-    /// </summary>
     private void ApplyContrast(float value)
     {
         if (contrastOverlaySprite == null)
@@ -429,18 +384,12 @@ public class ConfigManager : MonoBehaviour
         PlayerPrefs.SetFloat(ContrastSaveKey, value);
     }
 
-    /// <summary>
-    /// Reseta o contraste.
-    /// </summary>
     private void ResetContrast()
     {
         if (sliderContrast != null)
             sliderContrast.value = 0f;
     }
 
-    /// <summary>
-    /// Alterna para o próximo idioma disponível.
-    /// </summary>
     private void ToggleLanguage()
     {
         var locales = LocalizationSettings.AvailableLocales.Locales;
@@ -451,9 +400,10 @@ public class ConfigManager : MonoBehaviour
         LocalizationSettings.SelectedLocale = locales[nextIndex];
     }
 
-    /// <summary>
-    /// Inicializa configurações de cores.
-    /// </summary>
+    // -------------------------------------------------------------------------
+    // Cores
+    // -------------------------------------------------------------------------
+
     private void InitColorSettings()
     {
         if (SignalColorManager.Instance == null)
@@ -466,9 +416,7 @@ public class ConfigManager : MonoBehaviour
             dropdownPaleta.RegisterValueChangedCallback(evt =>
             {
                 int index = dropdownPaleta.choices.IndexOf(evt.newValue);
-
                 SignalColorManager.Instance.ApplyPalette(index);
-
                 SyncColorUI();
             });
         }
@@ -476,12 +424,16 @@ public class ConfigManager : MonoBehaviour
         GenerateSwatches(containerSwatchesJ, swatchesJ, SignalType.J);
         GenerateSwatches(containerSwatchesK, swatchesK, SignalType.K);
         GenerateSwatches(containerSwatchesCLK, swatchesCLK, SignalType.CLK);
+        GenerateSwatches(containerSwatchesPreset, swatchesPreset, SignalType.Preset);
+        GenerateSwatches(containerSwatchesClear, swatchesClear, SignalType.Clear);
+        GenerateSwatches(containerSwatchesFeedbackSuccess, swatchesFeedbackSuccess, SignalType.FeedbackSuccess);
+        GenerateSwatches(containerSwatchesFeedbackFailure, swatchesFeedbackFailure, SignalType.FeedbackFailure);
 
         SyncColorUI();
     }
 
     /// <summary>
-    /// Gera botões de cores pré-definidas.
+    /// Gera botões de cores pré-definidas para um sinal.
     /// </summary>
     private void GenerateSwatches(
         VisualElement container,
@@ -516,10 +468,7 @@ public class ConfigManager : MonoBehaviour
 
             swatch.clicked += () =>
             {
-                SignalColorManager.Instance.SetAndNotify(
-                    signalType.ToString(),
-                    colorIndex);
-
+                SignalColorManager.Instance.SetAndNotify(signalType.ToString(), colorIndex);
                 SyncColorUI();
             };
 
@@ -529,7 +478,7 @@ public class ConfigManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Atualiza a interface de cores.
+    /// Sincroniza toda a UI de cores com o estado atual do SignalColorManager.
     /// </summary>
     private void SyncColorUI()
     {
@@ -539,11 +488,20 @@ public class ConfigManager : MonoBehaviour
         previewJ.style.backgroundColor = SignalColorManager.Instance.ColorJ;
         previewK.style.backgroundColor = SignalColorManager.Instance.ColorK;
         previewCLK.style.backgroundColor = SignalColorManager.Instance.ColorCLK;
+        previewPreset.style.backgroundColor = SignalColorManager.Instance.ColorPreset;
+        previewClear.style.backgroundColor = SignalColorManager.Instance.ColorClear;
+        previewFeedbackSuccess.style.backgroundColor = SignalColorManager.Instance.ColorFeedbackSuccess;
+        previewFeedbackFailure.style.backgroundColor = SignalColorManager.Instance.ColorFeedbackFailure;
 
         UpdateSwatchBorders(swatchesJ, SignalColorManager.Instance.IndexJ);
         UpdateSwatchBorders(swatchesK, SignalColorManager.Instance.IndexK);
         UpdateSwatchBorders(swatchesCLK, SignalColorManager.Instance.IndexCLK);
+        UpdateSwatchBorders(swatchesPreset, SignalColorManager.Instance.IndexPreset);
+        UpdateSwatchBorders(swatchesClear, SignalColorManager.Instance.IndexClear);
+        UpdateSwatchBorders(swatchesFeedbackSuccess, SignalColorManager.Instance.IndexFeedbackSuccess);
+        UpdateSwatchBorders(swatchesFeedbackFailure, SignalColorManager.Instance.IndexFeedbackFailure);
 
+        // Atualiza dropdown de paleta (apenas para J/K/CLK como antes)
         int j = SignalColorManager.Instance.IndexJ;
         int k = SignalColorManager.Instance.IndexK;
         int clk = SignalColorManager.Instance.IndexCLK;
@@ -552,13 +510,9 @@ public class ConfigManager : MonoBehaviour
         {
             var palette = SignalColorManager.Palettes[i];
 
-            if (palette[0] == j &&
-                palette[1] == k &&
-                palette[2] == clk)
+            if (palette[0] == j && palette[1] == k && palette[2] == clk)
             {
-                dropdownPaleta?.SetValueWithoutNotify(
-                    SignalColorManager.PaletteNames[i]);
-
+                dropdownPaleta?.SetValueWithoutNotify(SignalColorManager.PaletteNames[i]);
                 break;
             }
         }
@@ -567,16 +521,11 @@ public class ConfigManager : MonoBehaviour
     /// <summary>
     /// Atualiza a borda do swatch selecionado.
     /// </summary>
-    private void UpdateSwatchBorders(
-        List<Button> swatches,
-        int selectedIndex)
+    private void UpdateSwatchBorders(List<Button> swatches, int selectedIndex)
     {
         for (int i = 0; i < swatches.Count; i++)
         {
-            Color borderColor =
-                i == selectedIndex
-                    ? Color.white
-                    : Color.clear;
+            Color borderColor = i == selectedIndex ? Color.white : Color.clear;
 
             swatches[i].style.borderTopColor = borderColor;
             swatches[i].style.borderBottomColor = borderColor;
@@ -585,24 +534,18 @@ public class ConfigManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Abre o seletor RGB para J.
-    /// </summary>
+    // -------------------------------------------------------------------------
+    // Abertura do overlay RGB
+    // -------------------------------------------------------------------------
+
     private void OpenCustomJ() => OpenRGBOverlay(SignalType.J);
-
-    /// <summary>
-    /// Abre o seletor RGB para K.
-    /// </summary>
     private void OpenCustomK() => OpenRGBOverlay(SignalType.K);
-
-    /// <summary>
-    /// Abre o seletor RGB para CLK.
-    /// </summary>
     private void OpenCustomCLK() => OpenRGBOverlay(SignalType.CLK);
+    private void OpenCustomPreset() => OpenRGBOverlay(SignalType.Preset);
+    private void OpenCustomClear() => OpenRGBOverlay(SignalType.Clear);
+    private void OpenCustomFeedbackSuccess() => OpenRGBOverlay(SignalType.FeedbackSuccess);
+    private void OpenCustomFeedbackFailure() => OpenRGBOverlay(SignalType.FeedbackFailure);
 
-    /// <summary>
-    /// Abre o overlay de seleção RGB.
-    /// </summary>
     private void OpenRGBOverlay(SignalType signalType)
     {
         if (SignalColorManager.Instance == null)
@@ -618,6 +561,10 @@ public class ConfigManager : MonoBehaviour
             SignalType.J => SignalColorManager.Instance.ColorJ,
             SignalType.K => SignalColorManager.Instance.ColorK,
             SignalType.CLK => SignalColorManager.Instance.ColorCLK,
+            SignalType.Preset => SignalColorManager.Instance.ColorPreset,
+            SignalType.Clear => SignalColorManager.Instance.ColorClear,
+            SignalType.FeedbackSuccess => SignalColorManager.Instance.ColorFeedbackSuccess,
+            SignalType.FeedbackFailure => SignalColorManager.Instance.ColorFeedbackFailure,
             _ => Color.white
         };
 
@@ -631,26 +578,14 @@ public class ConfigManager : MonoBehaviour
             rgbOverlay.style.display = DisplayStyle.Flex;
     }
 
-    /// <summary>
-    /// Fecha o overlay RGB.
-    /// </summary>
     private void CloseRGBOverlay()
     {
         if (rgbOverlay != null)
             rgbOverlay.style.display = DisplayStyle.None;
     }
 
-    /// <summary>
-    /// Atualiza preview RGB ao mover sliders.
-    /// </summary>
-    private void OnRGBSliderChanged(ChangeEvent<float> evt)
-    {
-        UpdateRGBPreview();
-    }
+    private void OnRGBSliderChanged(ChangeEvent<float> evt) => UpdateRGBPreview();
 
-    /// <summary>
-    /// Atualiza o preview RGB.
-    /// </summary>
     private void UpdateRGBPreview()
     {
         float r = (sliderR?.value ?? 255f) / 255f;
@@ -662,13 +597,9 @@ public class ConfigManager : MonoBehaviour
         if (rgbPreview != null)
             rgbPreview.style.backgroundColor = color;
 
-        inputHex?.SetValueWithoutNotify(
-            "#" + ColorUtility.ToHtmlStringRGB(color));
+        inputHex?.SetValueWithoutNotify("#" + ColorUtility.ToHtmlStringRGB(color));
     }
 
-    /// <summary>
-    /// Atualiza sliders ao editar HEX.
-    /// </summary>
     private void OnHexInputChanged(ChangeEvent<string> evt)
     {
         string hex = evt.newValue.Trim();
@@ -687,9 +618,6 @@ public class ConfigManager : MonoBehaviour
             rgbPreview.style.backgroundColor = color;
     }
 
-    /// <summary>
-    /// Confirma a cor RGB personalizada.
-    /// </summary>
     private void ConfirmRGBColor()
     {
         if (SignalColorManager.Instance == null)
@@ -699,18 +627,12 @@ public class ConfigManager : MonoBehaviour
         float g = (sliderG?.value ?? 255f) / 255f;
         float b = (sliderB?.value ?? 255f) / 255f;
 
-        SignalColorManager.Instance.SetCustomColor(
-            activeCustomSignal.ToString(),
-            new Color(r, g, b));
+        SignalColorManager.Instance.SetCustomColor(activeCustomSignal.ToString(), new Color(r, g, b));
 
         SyncColorUI();
-
         CloseRGBOverlay();
     }
 
-    /// <summary>
-    /// Salva preferências persistentes.
-    /// </summary>
     private void OnApplicationQuit()
     {
         PlayerPrefs.Save();
