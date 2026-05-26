@@ -1,0 +1,187 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: ConfigMenu_pt-BR
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: pt-BR
+  m_SharedData: {fileID: 11400000, guid: b078eccd26181e348bead05bd7da94cb, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 84510293847
+    m_Localized: "Configura\xE7\xF5es"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14583920174
+    m_Localized: Cores
+    m_Metadata:
+      m_Items: []
+  - m_Id: 57291038475
+    m_Localized: "\xC1udio"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364510
+    m_Localized: "V\xEDdeo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38475619203
+    m_Localized: Controles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91847561029
+    m_Localized: "Personaliza\xE7\xE3o dos Sinais"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56473829104
+    m_Localized: 'Paleta:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10293847566
+    m_Localized: Feedback do Desenho
+    m_Metadata:
+      m_Items: []
+  - m_Id: 84736291048
+    m_Localized: J
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364591
+    m_Localized: K
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47561029384
+    m_Localized: CLK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28374659102
+    m_Localized: Preset
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56473820195
+    m_Localized: Clear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364012
+    m_Localized: Certo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38475612093
+    m_Localized: Errado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10928374655
+    m_Localized: "Padr\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56473892011
+    m_Localized: Daltonismo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364577
+    m_Localized: Alto Contraste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56473829165
+    m_Localized: +
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364055
+    m_Localized: +
+    m_Metadata:
+      m_Items: []
+  - m_Id: 84736291077
+    m_Localized: +
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10293847588
+    m_Localized: +
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56473829188
+    m_Localized: +
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364599
+    m_Localized: +
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38475619288
+    m_Localized: +
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56473829177
+    m_Localized: Cor Personalizada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364566
+    m_Localized: HEX
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10293847599
+    m_Localized: Vermelho
+    m_Metadata:
+      m_Items: []
+  - m_Id: 84736291066
+    m_Localized: Verde
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56473829144
+    m_Localized: Azul
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364522
+    m_Localized: Confirmar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38475619255
+    m_Localized: Cancelar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364077
+    m_Localized: Volume Geral
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56473829133
+    m_Localized: Efeitos Sonoros
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10293847511
+    m_Localized: "M\xFAsica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 84736291011
+    m_Localized: Contraste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56473829155
+    m_Localized: Restaurar Contraste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364533
+    m_Localized: Idioma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38475619211
+    m_Localized: "Configura\xE7\xE3o de Controles"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10293847544
+    m_Localized: "Restaurar Padr\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364588
+    m_Localized: Voltar
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
