@@ -154,71 +154,35 @@
                 </ui:Label>
                 <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
 
-    <ui:Label text="Certo" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
-        <Bindings>
-            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364012)"/>
-        </Bindings>
-    </ui:Label>
+                <ui:Label text="Certo" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364012)"/>
+                    </Bindings>
+                </ui:Label>
 
-    <ui:VisualElement name="PreviewFeedbackSuccess"
-                      style="width: 30px; height: 30px;
-                      border-top-left-radius: 5px;
-                      border-top-right-radius: 5px;
-                      border-bottom-left-radius: 5px;
-                      border-bottom-right-radius: 5px;
-                      margin-right: 15px;
-                      border-left-width: 2px;
-                      border-right-width: 2px;
-                      border-top-width: 2px;
-                      border-bottom-width: 2px;
-                      border-left-color: white;
-                      border-right-color: white;
-                      border-top-color: white;
-                      border-bottom-color: white;"/>
+                <ui:VisualElement name="PreviewFeedbackSuccess"style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
 
-    <ui:VisualElement name="ContainerSwatchesFeedbackSuccess"
-                      style="flex-direction: row; flex-grow: 1;"/>
+                <ui:VisualElement name="ContainerSwatchesFeedbackSuccess" style="flex-direction: row; flex-grow: 1;"/>
 
-    <ui:Button name="BtnCustomFeedbackSuccess"
-               text="+"
-               class="menu-button"
-               style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
+                <ui:Button name="BtnCustomFeedbackSuccess" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
 
-</ui:VisualElement>
+            </ui:VisualElement>
 
-<ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+            <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
 
-    <ui:Label text="Errado" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
-        <Bindings>
-            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(38475612093)"/>
-        </Bindings>
-    </ui:Label>
+                <ui:Label text="Errado" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
+                    <Bindings> 
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(38475612093)"/>
+                    </Bindings>
+                </ui:Label>
 
-    <ui:VisualElement name="PreviewFeedbackFailure"
-                      style="width: 30px; height: 30px;
-                      border-top-left-radius: 5px;
-                      border-top-right-radius: 5px;
-                      border-bottom-left-radius: 5px;
-                      border-bottom-right-radius: 5px;
-                      margin-right: 15px;
-                      border-left-width: 2px;
-                      border-right-width: 2px;
-                      border-top-width: 2px;
-                      border-bottom-width: 2px;
-                      border-left-color: white;
-                      border-right-color: white;
-                      border-top-color: white;
-                      border-bottom-color: white;"/>
+                <ui:VisualElement name="PreviewFeedbackFailure" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
 
-    <ui:VisualElement name="ContainerSwatchesFeedbackFailure"
-                      style="flex-direction: row; flex-grow: 1;"/>
+                <ui:VisualElement name="ContainerSwatchesFeedbackFailure" style="flex-direction: row; flex-grow: 1;"/>
 
-    <ui:Button name="BtnCustomFeedbackFailure"
-               text="+"
-               class="menu-button"
-               style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
+                <ui:Button name="BtnCustomFeedbackFailure" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
 
-</ui:VisualElement>
+            </ui:VisualElement>
 
             </ui:VisualElement>
 
