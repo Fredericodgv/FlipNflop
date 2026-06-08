@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
@@ -20,6 +21,9 @@ public class MenuManager : MonoBehaviour
     private VisualElement painelLevelSelect;
     private VisualElement painelTutorial;
     private UploadMenuManager uploadManager;
+    private Button backBtn;
+    private VisualElement activeSubmenu;
+    private readonly List<VisualElement> submenus = new();
 
     private void OnEnable()
     {
@@ -31,6 +35,16 @@ public class MenuManager : MonoBehaviour
         painelMenuInicial = root.Q<VisualElement>("MainMenu");
         painelSobre = root.Q<VisualElement>("About");
         painelLevelSelect = root.Q<VisualElement>("LevelSelect");
+        painelTutorial = root.Q<VisualElement>("Tutorial"); // Use o ID exato do seu painel
+        backBtn = root.Q<Button>("BackButton");
+
+        submenus.Clear();
+        submenus.Add(painelSobre);
+        submenus.Add(painelLevelSelect);
+        submenus.Add(painelTutorial);
+
+        if (backBtn != null)
+            backBtn.clicked += FecharSubmenuAtual;
 
         // 2. Botões do Menu Principal
         Button btnPlay = root.Q<Button>("PlayButton");
@@ -43,27 +57,12 @@ public class MenuManager : MonoBehaviour
             btnUpload.clicked += uploadManager.OnClickUpload;
         }
 
-
-        painelTutorial = root.Q<VisualElement>("Tutorial"); // Use o ID exato do seu painel
-
         // Botão que abre o tutorial no Menu Principal
         Button btnTutorial = root.Q<Button>("TutorialButton");
         if (btnTutorial != null) btnTutorial.clicked += AbrirTutorial;
 
-        // Botão de voltar do Tutorial
-        Button btnVoltarTutorial =
-        painelTutorial?.Q<Button>("BackButton");
-        if (btnVoltarTutorial != null) btnVoltarTutorial.clicked += FecharTutorial;
-
         Button btnAbout = root.Q<Button>("AboutButton");
         if (btnAbout != null) btnAbout.clicked += AbrirSobre;
-
-        // 3. Botões de Voltar
-        Button btnVoltarLevel = painelLevelSelect?.Q<Button>("BackButton");
-        if (btnVoltarLevel != null) btnVoltarLevel.clicked += FecharSelecaoDeNiveis;
-
-        Button btnVoltarSobre = painelSobre?.Q<Button>("BackButton");
-        if (btnVoltarSobre != null) btnVoltarSobre.clicked += FecharSobre;
 
         // 4. Conectando os 9 botões usando TextAsset
         for (int i = 0; i < arquivosDasFases.Length; i++)
@@ -79,6 +78,12 @@ public class MenuManager : MonoBehaviour
                 ConfigurarBotaoNivel(root, idDoBotao, nomeDoJson);
             }
         }
+    }
+
+    private void OnDisable()
+    {
+        if (backBtn != null)
+            backBtn.clicked -= FecharSubmenuAtual;
     }
 
     private void ConfigurarBotaoNivel(VisualElement root, string btnId, string jsonName)
@@ -98,38 +103,80 @@ public class MenuManager : MonoBehaviour
 
     public void AbrirSobre()
     {
-        if (painelMenuInicial != null) painelMenuInicial.style.display = DisplayStyle.None;
-        if (painelSobre != null) painelSobre.style.display = DisplayStyle.Flex;
+        OpenSubmenu(painelSobre);
     }
 
     public void FecharSobre()
     {
-        if (painelSobre != null) painelSobre.style.display = DisplayStyle.None;
-        if (painelMenuInicial != null) painelMenuInicial.style.display = DisplayStyle.Flex;
+        CloseSubmenu(painelSobre);
     }
 
     public void AbrirSelecaoDeNiveis()
     {
-        if (painelMenuInicial != null) painelMenuInicial.style.display = DisplayStyle.None;
-        if (painelLevelSelect != null) painelLevelSelect.style.display = DisplayStyle.Flex;
+        OpenSubmenu(painelLevelSelect);
     }
 
     public void FecharSelecaoDeNiveis()
     {
-        if (painelLevelSelect != null) painelLevelSelect.style.display = DisplayStyle.None;
-        if (painelMenuInicial != null) painelMenuInicial.style.display = DisplayStyle.Flex;
+        CloseSubmenu(painelLevelSelect);
     }
 
     public void AbrirTutorial()
     {
-        if (painelMenuInicial != null) painelMenuInicial.style.display = DisplayStyle.None;
-        if (painelTutorial != null) painelTutorial.style.display = DisplayStyle.Flex;
+        OpenSubmenu(painelTutorial);
     }
 
     public void FecharTutorial()
     {
-        if (painelTutorial != null) painelTutorial.style.display = DisplayStyle.None;
-        if (painelMenuInicial != null) painelMenuInicial.style.display = DisplayStyle.Flex;
+        CloseSubmenu(painelTutorial);
+    }
+
+    private void FecharSubmenuAtual()
+    {
+        if (activeSubmenu != null)
+            CloseSubmenu(activeSubmenu);
+    }
+
+    private void OpenSubmenu(VisualElement submenu)
+    {
+        if (submenu == null)
+        {
+            Debug.LogError("Elemento de submenu não encontrado!");
+            return;
+        }
+
+        if (painelMenuInicial != null)
+            painelMenuInicial.AddToClassList("hidden");
+
+        foreach (VisualElement item in submenus)
+        {
+            if (item != null)
+                item.AddToClassList("hidden");
+        }
+
+        submenu.RemoveFromClassList("hidden");
+        activeSubmenu = submenu;
+
+        if (backBtn != null)
+            backBtn.RemoveFromClassList("hidden");
+    }
+
+    private void CloseSubmenu(VisualElement submenu)
+    {
+        if (submenu == null)
+        {
+            Debug.LogError("Elemento de submenu não encontrado!");
+            return;
+        }
+
+        submenu.AddToClassList("hidden");
+        activeSubmenu = null;
+
+        if (backBtn != null)
+            backBtn.AddToClassList("hidden");
+
+        if (painelMenuInicial != null)
+            painelMenuInicial.RemoveFromClassList("hidden");
     }
 
     #endregion

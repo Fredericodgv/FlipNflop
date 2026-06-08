@@ -1,33 +1,243 @@
-VisualElement {
-}
-
 :root {
-    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&guid=06cc052497f62034fb43e3edf087d21a&type=3#Exo2-VariableFont_wght");
+    -unity-font-definition: url("../../TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf");
 }
 
+.screen,
+.flip-screen {
+    flex-grow: 1;
+    background-color: #071022;
+}
+
+.bg-main {
+    background-image: url("../../Arts/Background.jpeg");
+}
+
+.overlay,
+.screen-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(5, 10, 24, 0.4);
+}
+
+.panel,
+.screen-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    align-items: center;
+    justify-content: center;
+    padding-top: 32px;
+    padding-right: 48px;
+    padding-bottom: 32px;
+    padding-left: 48px;
+}
+
+.card,
+.menu-card {
+    align-items: center;
+    justify-content: center;
+    padding-top: 28px;
+    padding-right: 28px;
+    padding-bottom: 28px;
+    padding-left: 28px;
+}
+
+.menu-card-small {
+    width: 320px;
+}
+
+.page,
+.content-card {
+    width: 80%;
+    max-width: 768px;
+    height: 80%;
+    padding: 24px;
+    background-color: rgba(14, 23, 52, 1);
+    border-radius: 16px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgba(54, 229, 255, 0.8);
+    border-right-color: rgba(54, 229, 255, 0.8);
+    border-top-color: rgba(54, 229, 255, 0.8);
+    border-bottom-color: rgba(54, 229, 255, 0.8);
+}
+
+.tutorial-page {
+    padding-bottom: 128px;
+}
+
+.btn,
+.menu-button,
+.secondary-button,
+.hud-menu-button {
+    height: 48px;
+    background-color: #1C2B5C;
+    color: #F5F7FA;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: #36E5FF;
+    border-right-color: #36E5FF;
+    border-top-color: #36E5FF;
+    border-bottom-color: #36E5FF;
+    border-radius: 16px;
+    font-size: 18px;
+    -unity-font-style: bold;
+}
+
+.btn:hover,
+.btn:focus,
+.menu-button:hover,
+.menu-button:focus,
+.secondary-button:hover,
+.secondary-button:focus,
+.hud-menu-button:hover,
+.hud-menu-button:focus {
+    background-color: #2F5BFF;
+}
+
+.btn,
 .menu-button {
-    width: 300px;
-    height: 60px;
+    width: 100%;
+    margin-bottom: 8px;
 }
 
-.level-button {
-    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&guid=06cc052497f62034fb43e3edf087d21a&type=3#Exo2-VariableFont_wght");
+.primary,
+.action-button {
+    border-left-color: #FFB347;
+    border-right-color: #FFB347;
+    border-top-color: #FFB347;
+    border-bottom-color: #FFB347;
+}
+
+.back,
+.secondary-button {
     width: 120px;
-    height: 120px;
-    font-size: 24px;
-    padding-top: 15px;
-    padding-right: 15px;
-    padding-bottom: 15px;
-    padding-left: 15px;
-    margin-top: 15px;
-    margin-right: 90px;
-    margin-bottom: 15px;
-    margin-left: 90px;
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
 }
 
+.title,
+.section-title {
+    color: #F5F7FA;
+    font-size: 24px;
+    -unity-font-style: bold;
+    margin-top: 10px;
+    margin-bottom: 24px;
+}
+
+.credits,
+.credits-list {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.text,
 .about-text {
+    color: #F5F7FA;
+    font-size: 28px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.grid,
+.level-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+}
+
+.level,
+.level-button {
+    width: 96px;
+    height: 96px;
+    margin: 16px;
+    background-color: #1C2B5C;
+    color: #F5F7FA;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: #36E5FF;
+    border-right-color: #36E5FF;
+    border-top-color: #36E5FF;
+    border-bottom-color: #36E5FF;
+    font-size: 34px;
+    -unity-font-style: bold;
+}
+
+.level:hover,
+.level:focus,
+.level-button:hover,
+.level-button:focus {
+    background-color: #2F5BFF;
+    border-left-color: #FFB347;
+    border-right-color: #FFB347;
+    border-top-color: #FFB347;
+    border-bottom-color: #FFB347;
+}
+
+.scroll,
+.tutorial-scroll {
+    flex-grow: 1;
+    width: 100%;
+    margin-bottom: 0;
+    background-color: rgba(7, 16, 34, 0.7);
+    padding-top: 20px;
+    padding-right: 22px;
+    padding-bottom: 20px;
+    padding-left: 22px;
+}
+
+.tutorial-item,
+.tutorial-row {
     flex-direction: column;
-    flex-wrap: nowrap;
-    font-size: 32px;
-    color: rgb(255, 255, 255);
+    min-height: 0;
+    margin-bottom: 18px;
+    padding-top: 16px;
+    padding-right: 18px;
+    padding-bottom: 16px;
+    padding-left: 18px;
+    background-color: rgba(28, 43, 92, 0.72);
+}
+
+.image-slot,
+.tutorial-image-slot {
+    display: none;
+}
+
+.tutorial-text {
+    width: 100%;
+    white-space: normal;
+    font-size: 23px;
+    color: #F5F7FA;
+}
+
+.hud-menu-button {
+    width: 128px;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.game-menu-card {
+    width: 320px;
+    min-height: 430px;
+}
+
+.hidden {
+    display: none !important;
 }
