@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -26,14 +27,16 @@ public class GameMenuManager : MonoBehaviour
     private VisualElement panelMain;
     private VisualElement panelOptions;
     private VisualElement panelTutorial;
+    private VisualElement activeSubmenu;
 
     private Button menuHudButton;
     private Button continueButton;
     private Button retryButton;
     private Button tutorialButton;
-    private Button tutorialBackButton;
+    private Button backButton;
     private Button optionsButton;
     private Button exitButton;
+    private readonly List<VisualElement> submenus = new();
 
     /// <summary>
     /// Indica se o menu está aberto.
@@ -85,10 +88,14 @@ public class GameMenuManager : MonoBehaviour
         panelOptions = root.Q<VisualElement>("PanelOptions");
         panelTutorial = root.Q<VisualElement>("Tutorial");
 
+        submenus.Clear();
+        submenus.Add(panelOptions);
+        submenus.Add(panelTutorial);
+
         continueButton = root.Q<Button>("Continue");
         retryButton = root.Q<Button>("Retry");
         tutorialButton = root.Q<Button>("TutorialButton");
-        tutorialBackButton = panelTutorial?.Q<Button>("BackButton");
+        backButton = root.Q<Button>("BackButton");
         optionsButton = root.Q<Button>("Options");
         exitButton = root.Q<Button>("Exit");
     }
@@ -101,11 +108,19 @@ public class GameMenuManager : MonoBehaviour
         if (gameMenuOverlay != null)
             gameMenuOverlay.style.display = DisplayStyle.None;
 
-        if (panelOptions != null)
-            panelOptions.style.display = DisplayStyle.None;
+        if (panelMain != null)
+            panelMain.RemoveFromClassList("hidden");
 
-        if (panelTutorial != null)
-            panelTutorial.style.display = DisplayStyle.None;
+        foreach (VisualElement submenu in submenus)
+        {
+            if (submenu != null)
+                submenu.AddToClassList("hidden");
+        }
+
+        if (backButton != null)
+            backButton.AddToClassList("hidden");
+
+        activeSubmenu = null;
     }
 
     /// <summary>
@@ -125,8 +140,8 @@ public class GameMenuManager : MonoBehaviour
         if (tutorialButton != null)
             tutorialButton.clicked += OpenTutorial;
 
-        if (tutorialBackButton != null)
-            tutorialBackButton.clicked += CloseTutorial;
+        if (backButton != null)
+            backButton.clicked += CloseActiveSubmenu;
 
         if (optionsButton != null)
             optionsButton.clicked += OpenOptions;
@@ -158,8 +173,8 @@ public class GameMenuManager : MonoBehaviour
         if (tutorialButton != null)
             tutorialButton.clicked -= OpenTutorial;
 
-        if (tutorialBackButton != null)
-            tutorialBackButton.clicked -= CloseTutorial;
+        if (backButton != null)
+            backButton.clicked -= CloseActiveSubmenu;
 
         if (optionsButton != null)
             optionsButton.clicked -= OpenOptions;
@@ -198,13 +213,18 @@ public class GameMenuManager : MonoBehaviour
             gameMenuOverlay.style.display = DisplayStyle.Flex;
 
         if (panelMain != null)
-            panelMain.style.display = DisplayStyle.Flex;
+            panelMain.RemoveFromClassList("hidden");
 
-        if (panelOptions != null)
-            panelOptions.style.display = DisplayStyle.None;
+        foreach (VisualElement submenu in submenus)
+        {
+            if (submenu != null)
+                submenu.AddToClassList("hidden");
+        }
 
-        if (panelTutorial != null)
-            panelTutorial.style.display = DisplayStyle.None;
+        if (backButton != null)
+            backButton.AddToClassList("hidden");
+
+        activeSubmenu = null;
 
         if (continueButton != null)
             continueButton.Focus();
@@ -258,14 +278,7 @@ public class GameMenuManager : MonoBehaviour
     /// </summary>
     public void OpenOptions()
     {
-        if (panelMain != null)
-            panelMain.style.display = DisplayStyle.None;
-
-        if (panelTutorial != null)
-            panelTutorial.style.display = DisplayStyle.None;
-
-        if (panelOptions != null)
-            panelOptions.style.display = DisplayStyle.Flex;
+        OpenSubmenu(panelOptions);
     }
 
     /// <summary>
@@ -273,14 +286,7 @@ public class GameMenuManager : MonoBehaviour
     /// </summary>
     public void OpenTutorial()
     {
-        if (panelMain != null)
-            panelMain.style.display = DisplayStyle.None;
-
-        if (panelOptions != null)
-            panelOptions.style.display = DisplayStyle.None;
-
-        if (panelTutorial != null)
-            panelTutorial.style.display = DisplayStyle.Flex;
+        OpenSubmenu(panelTutorial);
     }
 
     /// <summary>
@@ -288,13 +294,68 @@ public class GameMenuManager : MonoBehaviour
     /// </summary>
     public void CloseTutorial()
     {
-        if (panelTutorial != null)
-            panelTutorial.style.display = DisplayStyle.None;
+        CloseSubmenu(panelTutorial);
+    }
+
+    /// <summary>
+    /// Fecha o submenu atualmente aberto.
+    /// </summary>
+    private void CloseActiveSubmenu()
+    {
+        if (activeSubmenu != null)
+            CloseSubmenu(activeSubmenu);
+    }
+
+    /// <summary>
+    /// Exibe um submenu e oculta o painel principal.
+    /// </summary>
+    private void OpenSubmenu(VisualElement submenu)
+    {
+        if (submenu == null)
+        {
+            Debug.LogError("Elemento de submenu não encontrado!");
+            return;
+        }
 
         if (panelMain != null)
-            panelMain.style.display = DisplayStyle.Flex;
+            panelMain.AddToClassList("hidden");
 
-        if (tutorialButton != null)
+        foreach (VisualElement item in submenus)
+        {
+            if (item != null)
+                item.AddToClassList("hidden");
+        }
+
+        submenu.RemoveFromClassList("hidden");
+        activeSubmenu = submenu;
+
+        if (backButton != null)
+            backButton.RemoveFromClassList("hidden");
+    }
+
+    /// <summary>
+    /// Fecha um submenu e retorna ao painel principal.
+    /// </summary>
+    private void CloseSubmenu(VisualElement submenu)
+    {
+        if (submenu == null)
+        {
+            Debug.LogError("Elemento de submenu não encontrado!");
+            return;
+        }
+
+        submenu.AddToClassList("hidden");
+        activeSubmenu = null;
+
+        if (backButton != null)
+            backButton.AddToClassList("hidden");
+
+        if (panelMain != null)
+            panelMain.RemoveFromClassList("hidden");
+
+        if (submenu == panelOptions && optionsButton != null)
+            optionsButton.Focus();
+        else if (tutorialButton != null)
             tutorialButton.Focus();
     }
 
