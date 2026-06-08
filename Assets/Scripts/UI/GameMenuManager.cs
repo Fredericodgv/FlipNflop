@@ -25,10 +25,13 @@ public class GameMenuManager : MonoBehaviour
     private VisualElement gameMenuOverlay;
     private VisualElement panelMain;
     private VisualElement panelOptions;
+    private VisualElement panelTutorial;
 
     private Button menuHudButton;
     private Button continueButton;
     private Button retryButton;
+    private Button tutorialButton;
+    private Button tutorialBackButton;
     private Button optionsButton;
     private Button exitButton;
 
@@ -80,9 +83,12 @@ public class GameMenuManager : MonoBehaviour
         gameMenuOverlay = root.Q<VisualElement>("GameMenu");
         panelMain = root.Q<VisualElement>("PanelMain");
         panelOptions = root.Q<VisualElement>("PanelOptions");
+        panelTutorial = root.Q<VisualElement>("Tutorial");
 
         continueButton = root.Q<Button>("Continue");
         retryButton = root.Q<Button>("Retry");
+        tutorialButton = root.Q<Button>("TutorialButton");
+        tutorialBackButton = panelTutorial?.Q<Button>("BackButton");
         optionsButton = root.Q<Button>("Options");
         exitButton = root.Q<Button>("Exit");
     }
@@ -97,6 +103,9 @@ public class GameMenuManager : MonoBehaviour
 
         if (panelOptions != null)
             panelOptions.style.display = DisplayStyle.None;
+
+        if (panelTutorial != null)
+            panelTutorial.style.display = DisplayStyle.None;
     }
 
     /// <summary>
@@ -112,6 +121,12 @@ public class GameMenuManager : MonoBehaviour
 
         if (retryButton != null)
             retryButton.clicked += RestartLevel;
+
+        if (tutorialButton != null)
+            tutorialButton.clicked += OpenTutorial;
+
+        if (tutorialBackButton != null)
+            tutorialBackButton.clicked += CloseTutorial;
 
         if (optionsButton != null)
             optionsButton.clicked += OpenOptions;
@@ -139,6 +154,12 @@ public class GameMenuManager : MonoBehaviour
 
         if (retryButton != null)
             retryButton.clicked -= RestartLevel;
+
+        if (tutorialButton != null)
+            tutorialButton.clicked -= OpenTutorial;
+
+        if (tutorialBackButton != null)
+            tutorialBackButton.clicked -= CloseTutorial;
 
         if (optionsButton != null)
             optionsButton.clicked -= OpenOptions;
@@ -181,6 +202,9 @@ public class GameMenuManager : MonoBehaviour
 
         if (panelOptions != null)
             panelOptions.style.display = DisplayStyle.None;
+
+        if (panelTutorial != null)
+            panelTutorial.style.display = DisplayStyle.None;
 
         if (continueButton != null)
             continueButton.Focus();
@@ -237,8 +261,41 @@ public class GameMenuManager : MonoBehaviour
         if (panelMain != null)
             panelMain.style.display = DisplayStyle.None;
 
+        if (panelTutorial != null)
+            panelTutorial.style.display = DisplayStyle.None;
+
         if (panelOptions != null)
             panelOptions.style.display = DisplayStyle.Flex;
+    }
+
+    /// <summary>
+    /// Exibe o painel de tutorial.
+    /// </summary>
+    public void OpenTutorial()
+    {
+        if (panelMain != null)
+            panelMain.style.display = DisplayStyle.None;
+
+        if (panelOptions != null)
+            panelOptions.style.display = DisplayStyle.None;
+
+        if (panelTutorial != null)
+            panelTutorial.style.display = DisplayStyle.Flex;
+    }
+
+    /// <summary>
+    /// Fecha o tutorial e retorna ao menu principal de pausa.
+    /// </summary>
+    public void CloseTutorial()
+    {
+        if (panelTutorial != null)
+            panelTutorial.style.display = DisplayStyle.None;
+
+        if (panelMain != null)
+            panelMain.style.display = DisplayStyle.Flex;
+
+        if (tutorialButton != null)
+            tutorialButton.Focus();
     }
 
     /// <summary>

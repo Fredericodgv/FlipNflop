@@ -24,6 +24,11 @@
                         <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(92017465139)"/>
                     </Bindings>
                 </ui:Button>
+                <ui:Button text="Tutorial" name="TutorialButton" class="menu-button">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:036ba1f80a47b0447b1a810480fee168" entry="Id(497320624128)"/>
+                    </Bindings>
+                </ui:Button>
                 <ui:Button text="Opções" name="Options" class="menu-button">
                     <Bindings>
                         <UnityEngine.Localization.LocalizedString property="text" entry="Id(56102938472)" table="GUID:1335d71b210ede741858eb8a611103b6"/>
@@ -37,6 +42,44 @@
             </ui:VisualElement>
             <ui:VisualElement name="PanelOptions" style="flex-grow: 1; display: none;">
                 <ui:Instance template="ConfigMenu"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="Tutorial" style="flex-grow: 1; position: absolute; visibility: visible; top: 1px; right: 1px; bottom: 1px; left: 1px; display: none;">
+                <ui:Label text="Como Jogar" name="Title" style="align-items: auto; justify-content: flex-start; align-self: center; font-size: 36px; -unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;); color: rgb(255, 255, 255);"/>
+                <ui:ScrollView name="ScrollView" style="flex-grow: 1; margin-left: 64px; width: auto; margin-bottom: 128px; background-color: rgba(0, 0, 0, 0.878); margin-right: 64px;">
+                    <ui:VisualElement name="Jogo" focusable="false" style="flex-grow: 1; flex-direction: row-reverse; margin-bottom: 20px;">
+                        <ui:VisualElement name="Image" style="flex-grow: 1; height: 150px;"/>
+                        <ui:Label name="Text" style="width: 60%; white-space: normal; font-size: 24px; color: rgb(255, 255, 255);">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(596200044527616)"/>
+                            </Bindings>
+                        </ui:Label>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="Moviment" style="flex-grow: 1; flex-direction: row-reverse; margin-bottom: 20px;">
+                        <ui:VisualElement name="Image" style="flex-grow: 1; height: 150px;"/>
+                        <ui:Label name="Text" style="width: 60%; white-space: normal; font-size: 24px; color: rgb(255, 255, 255);">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(650081370112)"/>
+                            </Bindings>
+                        </ui:Label>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="Jump" style="flex-grow: 1; flex-direction: row-reverse; margin-bottom: 20px;">
+                        <ui:VisualElement name="Image" style="flex-grow: 1; height: 150px;"/>
+                        <ui:Label name="Text" style="width: 60%; white-space: normal; font-size: 24px; color: rgb(255, 255, 255);">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(682767581184)"/>
+                            </Bindings>
+                        </ui:Label>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="Dash" style="flex-grow: 1; flex-direction: row-reverse; margin-bottom: 20px;">
+                        <ui:VisualElement name="Image" style="flex-grow: 1; height: 150px;"/>
+                        <ui:Label name="Text" style="width: 60%; white-space: normal; font-size: 24px; color: rgb(255, 255, 255);">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(698110345216)"/>
+                            </Bindings>
+                        </ui:Label>
+                    </ui:VisualElement>
+                </ui:ScrollView>
+                <ui:Button text="Voltar" name="BackButton" style="height: 65px; width: 175px; position: absolute; top: 595px; left: 19px; display: flex;"/>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
