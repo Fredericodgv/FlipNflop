@@ -29,5 +29,312 @@
     -unity-font-style: bold;
     border-bottom-width: 3px;
     border-bottom-color: white;
-    /* Ajuste ao seu gosto – cor, borda, escala etc. */
+}
+
+.config-container {
+    width: 95%;
+    height: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 24px;
+    margin: 0 auto;
+}
+
+.config-header {
+    flex-shrink: 0;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.config-title {
+    font-size: 26px;
+    margin-bottom: 8px;
+    -unity-text-align: middle-center;
+}
+
+.config-tabs {
+    width: 100%;
+    flex-direction: row;
+    flex-shrink: 0;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.menu-button.config-tab-button {
+    width: 132px;
+    height: 46px;
+    min-height: 46px;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 18px;
+}
+
+.config-pages {
+    width: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    background-color: rgba(0, 0, 0, 0.35);
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    padding: 16px;
+    overflow: hidden;
+}
+
+.config-page {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.config-color-page,
+.config-controls-page {
+    justify-content: flex-start;
+}
+
+.config-audio-page,
+.config-video-page {
+    justify-content: center;
+}
+
+.config-section-title {
+    flex-shrink: 0;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    font-size: 22px;
+    margin-bottom: 12px;
+    -unity-text-align: upper-center;
+}
+
+.config-subsection-title {
+    flex-shrink: 0;
+    color: rgb(200, 200, 200);
+    -unity-font-style: bold;
+    font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 8px;
+    -unity-text-align: upper-center;
+}
+
+.config-palette-row,
+.config-color-row,
+.config-actions-row {
+    width: 100%;
+    flex-direction: row;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+.config-palette-row {
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.config-color-scroll {
+    width: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding-right: 4px;
+}
+
+.config-color-row {
+    height: 38px;
+    margin-bottom: 6px;
+}
+
+.config-inline-label,
+.config-signal-label,
+.config-field-label {
+    color: white;
+    -unity-font-style: bold;
+}
+
+.config-inline-label {
+    width: 84px;
+    font-size: 17px;
+    margin-right: 10px;
+    -unity-text-align: middle-right;
+}
+
+.config-signal-label {
+    width: 84px;
+    min-width: 84px;
+    font-size: 18px;
+    -unity-text-align: middle-left;
+}
+
+.config-field-label {
+    flex-shrink: 0;
+    font-size: 18px;
+    margin-top: 8px;
+    margin-bottom: 6px;
+}
+
+.config-palette-dropdown {
+    width: 360px;
+    height: 34px;
+    min-height: 34px;
+    font-size: 16px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.config-color-preview {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    flex-shrink: 0;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    margin-right: 10px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: white;
+    border-right-color: white;
+    border-top-color: white;
+    border-bottom-color: white;
+}
+
+.config-swatches {
+    flex-grow: 1;
+    flex-shrink: 1;
+    height: 34px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow: hidden;
+}
+
+.menu-button.config-plus-button {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    flex-shrink: 0;
+    margin-left: 8px;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    font-size: 20px;
+}
+
+.config-slider {
+    width: 100%;
+    flex-shrink: 0;
+    margin-bottom: 18px;
+}
+
+.config-actions-row {
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.menu-button.config-action-button {
+    width: 220px;
+    height: 48px;
+    margin-left: 8px;
+    margin-right: 8px;
+    margin-bottom: 0;
+    font-size: 18px;
+}
+
+.config-controls-scroll {
+    width: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin-bottom: 14px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    padding-top: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+}
+
+.menu-button.config-restore-button {
+    width: 260px;
+    height: 48px;
+    flex-shrink: 0;
+    align-self: center;
+    margin-bottom: 0;
+    font-size: 18px;
+}
+
+.config-rgb-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.55);
+}
+
+.config-rgb-dialog {
+    width: 460px;
+    max-height: 100%;
+    padding-top: 20px;
+    padding-right: 24px;
+    padding-bottom: 20px;
+    padding-left: 24px;
+    background-color: rgb(14, 23, 52);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(54, 229, 255);
+    border-right-color: rgb(54, 229, 255);
+    border-top-color: rgb(54, 229, 255);
+    border-bottom-color: rgb(54, 229, 255);
+}
+
+.config-rgb-preview {
+    width: 100%;
+    height: 40px;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: white;
+    border-right-color: white;
+    border-top-color: white;
+    border-bottom-color: white;
+}
+
+.config-hex-input {
+    height: 34px;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+    color: white;
+    font-size: 16px;
 }

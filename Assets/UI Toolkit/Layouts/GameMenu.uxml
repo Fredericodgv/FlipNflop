@@ -13,74 +13,58 @@
             <ui:VisualElement name="PanelMain" class="screen-panel">
                 <ui:VisualElement class="menu-card game-menu-card">
                     <ui:Button text="Continuar" name="Continue" class="menu-button action-button">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(39482017465)"/>
-                        </Bindings>
+<!--                        <Bindings>-->
+<!--                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(39482017465)"/>-->
+<!--                        </Bindings>-->
                     </ui:Button>
                     <ui:Button text="Recomeçar" name="Retry" class="menu-button">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(92017465139)"/>
-                        </Bindings>
+<!--                        <Bindings>-->
+<!--                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(92017465139)"/>-->
+<!--                        </Bindings>-->
                     </ui:Button>
                     <ui:Button text="Tutorial" name="TutorialButton" class="menu-button">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:036ba1f80a47b0447b1a810480fee168" entry="Id(497320624128)"/>
-                        </Bindings>
+<!--                        <Bindings>-->
+<!--                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:036ba1f80a47b0447b1a810480fee168" entry="Id(497320624128)"/>-->
+<!--                        </Bindings>-->
                     </ui:Button>
                     <ui:Button text="Opções" name="Options" class="menu-button">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" entry="Id(56102938472)" table="GUID:1335d71b210ede741858eb8a611103b6"/>
-                        </Bindings>
+<!--                        <Bindings>-->
+<!--                            <UnityEngine.Localization.LocalizedString property="text" entry="Id(56102938472)" table="GUID:1335d71b210ede741858eb8a611103b6"/>-->
+<!--                        </Bindings>-->
                     </ui:Button>
                     <ui:Button text="Sair" name="Exit" class="menu-button">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(47382019560)"/>
-                        </Bindings>
+<!--                        <Bindings>-->
+<!--                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(47382019560)"/>-->
+<!--                        </Bindings>-->
                     </ui:Button>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="PanelOptions" class="screen-panel hidden">
-                <ui:VisualElement class="content-card">
+                <ui:VisualElement class="content-card config-content-card">
                     <ui:Instance template="ConfigMenu"/>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="Tutorial" class="screen-panel hidden">
-                <ui:VisualElement class="content-card">
-                    <ui:Label text="Como Jogar" name="Title" class="section-title"/>
-                    <ui:ScrollView name="ScrollView" class="tutorial-scroll">
-                        <ui:VisualElement name="Jogo" focusable="false" class="tutorial-row">
-                            <ui:VisualElement name="Image" class="tutorial-image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text">
-                                <Bindings>
-                                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(596200044527616)"/>
-                                </Bindings>
-                            </ui:Label>
-                        </ui:VisualElement>
-                        <ui:VisualElement name="Moviment" class="tutorial-row">
-                            <ui:VisualElement name="Image" class="tutorial-image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text">
-                                <Bindings>
-                                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(650081370112)"/>
-                                </Bindings>
-                            </ui:Label>
-                        </ui:VisualElement>
-                        <ui:VisualElement name="Jump" class="tutorial-row">
-                            <ui:VisualElement name="Image" class="tutorial-image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text">
-                                <Bindings>
-                                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(682767581184)"/>
-                                </Bindings>
-                            </ui:Label>
-                        </ui:VisualElement>
-                        <ui:VisualElement name="Dash" class="tutorial-row">
-                            <ui:VisualElement name="Image" class="tutorial-image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text">
-                                <Bindings>
-                                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(698110345216)"/>
-                                </Bindings>
-                            </ui:Label>
-                        </ui:VisualElement>
-                    </ui:ScrollView>
+            <ui:VisualElement name="Tutorial" class="panel hidden">
+            <ui:VisualElement class="page tutorial-page">
+                <ui:Label text="Como Jogar" name="Title" class="title"/>
+                <ui:ScrollView name="ScrollView" class="tutorial-scroll">
+                    <ui:VisualElement name="Jogo" focusable="false" class="tutorial-item">
+                        <ui:VisualElement name="Image" class="image-slot"/>
+                        <ui:Label name="Text" class="tutorial-text" text="Seu objetivo é construir corretamente o diagrama temporal do sinal de saída do circuito. Analise os sinais de entrada e as transições do clock para guiar o personagem, desenhando a linha de saída adequada ao alternar entre plataformas que representam os níveis lógicos 0 e 1."/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="Moviment" class="tutorial-item">
+                        <ui:VisualElement name="Image" class="image-slot"/>
+                        <ui:Label name="Text" class="tutorial-text" text="Use A / D ou as setas para se mover. Mover para a direita avança o tempo e desenha a saída. Mover para a esquerda retrocede, apagando a linha para corrigir erros."/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="Jump" class="tutorial-item">
+                        <ui:VisualElement name="Image" class="image-slot"/>
+                        <ui:Label name="Text" class="tutorial-text" text="Use Espaço para pular. Isso permite desviar de obstáculos no chão sem alterar o nível lógico da linha desenhada."/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="Dash" class="tutorial-item">
+                        <ui:VisualElement name="Image" class="image-slot"/>
+                        <ui:Label name="Text" class="tutorial-text" text="Use Shift para correr. Um rápido aumento de velocidade que oferece agilidade para superar pedras e perigos." />
+                    </ui:VisualElement>
+                </ui:ScrollView>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:Button text="Voltar" name="BackButton" class="secondary-button hidden"/>

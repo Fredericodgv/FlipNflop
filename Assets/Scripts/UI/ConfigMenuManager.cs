@@ -455,6 +455,16 @@ public class ConfigManager : MonoBehaviour
 
             swatch.style.width = 30;
             swatch.style.height = 30;
+            swatch.style.minWidth = 30;
+            swatch.style.minHeight = 30;
+            swatch.style.maxWidth = 30;
+            swatch.style.maxHeight = 30;
+            swatch.style.flexShrink = 0;
+
+            swatch.style.paddingTop = 0;
+            swatch.style.paddingRight = 0;
+            swatch.style.paddingBottom = 0;
+            swatch.style.paddingLeft = 0;
 
             swatch.style.marginRight = 5;
             swatch.style.marginBottom = 5;

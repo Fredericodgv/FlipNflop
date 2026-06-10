@@ -4,7 +4,10 @@
 
 .screen,
 .flip-screen {
+    width: 1300px;
+    height: 691px;
     flex-grow: 1;
+    flex-shrink: 0;
     background-color: #071022;
 }
 
@@ -48,7 +51,7 @@
 }
 
 .menu-card-small {
-    width: 320px;
+    width: 400px;
 }
 
 .page,
@@ -69,6 +72,17 @@
     border-bottom-color: rgba(54, 229, 255, 0.8);
 }
 
+.config-content-card {
+    width: 780px;
+    max-width: 780px;
+    height: 560px;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    background-color: rgba(14, 23, 52, 0.96);
+}
+
 .tutorial-page {
     padding-bottom: 128px;
 }
@@ -77,19 +91,19 @@
 .menu-button,
 .secondary-button,
 .hud-menu-button {
-    height: 48px;
+    height: 64px;
     background-color: #1C2B5C;
     color: #F5F7FA;
     border-left-width: 1px;
     border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-left-color: #36E5FF;
-    border-right-color: #36E5FF;
-    border-top-color: #36E5FF;
-    border-bottom-color: #36E5FF;
+    border-left-color: #FFB347;
+    border-right-color: #FFB347;
+    border-top-color: #FFB347;
+    border-bottom-color: #FFB347;
     border-radius: 16px;
-    font-size: 18px;
+    font-size: 24px;
     -unity-font-style: bold;
 }
 
@@ -108,14 +122,6 @@
 .menu-button {
     width: 100%;
     margin-bottom: 8px;
-}
-
-.primary,
-.action-button {
-    border-left-color: #FFB347;
-    border-right-color: #FFB347;
-    border-top-color: #FFB347;
-    border-bottom-color: #FFB347;
 }
 
 .back,

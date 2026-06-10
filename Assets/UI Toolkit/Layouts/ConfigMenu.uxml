@@ -1,280 +1,120 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/UI%20Toolkit/Styles/Panel.uss?fileID=7433441132597879392&amp;guid=5b6ccb061d6f6e54b939846c701d8098&amp;type=3#Panel"/>
-
-    <ui:VisualElement name="ConfigContainer" style="flex-grow: 1; align-items: center; justify-content: center; width: 100%; height: 100%;">
-
-        <ui:VisualElement name="Header" style="align-items: center; margin-bottom: 20px; -unity-font-definition: url(&quot;project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&amp;guid=06cc052497f62034fb43e3edf087d21a&amp;type=3#Exo2-VariableFont_wght&quot;);">
-            <ui:Label text="Configurações" name="TitleConfig" class="menu-title">
-                <Bindings>
-                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(84510293847)"/>
-                </Bindings>
-            </ui:Label>
+    <ui:VisualElement name="ConfigContainer" class="config-container">
+        <ui:VisualElement name="Header" class="config-header">
+            <ui:Label text="Configurações" name="TitleConfig" class="menu-title config-title"/>
         </ui:VisualElement>
 
-        <ui:VisualElement name="TabsArea" style="flex-direction: row; justify-content: center; margin-bottom: 20px;">
-
-            <ui:Button text="Cores" name="BtnTabColors" class="menu-button" style="width: auto; margin: 0 10px; padding: 10px 20px;">
-                <Bindings>
-                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(14583920174)"/>
-                </Bindings>
-            </ui:Button>
-
-            <ui:Button text="Áudio" name="BtnTabAudio" class="menu-button" style="width: auto; margin: 0 10px; padding: 10px 20px;">
-                <Bindings>
-                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(57291038475)"/>
-                </Bindings>
-            </ui:Button>
-
-            <ui:Button text="Vídeo" name="BtnTabVideo" class="menu-button" style="width: auto; margin: 0 10px; padding: 10px 20px;">
-                <Bindings>
-                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364510)"/>
-                </Bindings>
-            </ui:Button>
-
-            <ui:Button text="Controles" name="BtnTabControls" class="menu-button" style="width: auto; margin: 0 10px; padding: 10px 20px;">
-                <Bindings>
-                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(38475619203)"/>
-                </Bindings>
-            </ui:Button>
-
+        <ui:VisualElement name="TabsArea" class="config-tabs">
+            <ui:Button text="Cores" name="BtnTabColors" class="menu-button config-tab-button"/>
+            <ui:Button text="Áudio" name="BtnTabAudio" class="menu-button config-tab-button"/>
+            <ui:Button text="Vídeo" name="BtnTabVideo" class="menu-button config-tab-button"/>
+            <ui:Button text="Controles" name="BtnTabControls" class="menu-button config-tab-button"/>
         </ui:VisualElement>
 
-        <ui:VisualElement name="PagesArea" style="flex-grow: 1; width: 80%; max-width: 900px; background-color: rgba(0, 0, 0, 0.4); border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; padding: 30px;">
+        <ui:VisualElement name="PagesArea" class="config-pages">
+            <ui:VisualElement name="PanelColor" class="config-page config-color-page" style="display: flex;">
+                <ui:Label text="Personalização dos Sinais" class="config-section-title"/>
 
-            <ui:VisualElement name="PanelColor" style="flex-grow: 1; display: flex; flex-direction: column; position: relative;">
-
-                <ui:Label text="Personalização dos Sinais" style="color: rgb(255, 255, 255); -unity-font-style: bold; font-size: 24px; margin-bottom: 20px; -unity-text-align: upper-center;">
-                    <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91847561029)"/>
-                    </Bindings>
-                </ui:Label>
-
-                <ui:VisualElement style="flex-direction: row; justify-content: center; margin-bottom: 20px;">
-
-                    <ui:Label text="Paleta:" style="color: white; font-size: 18px; margin-right: 10px; align-self: center;">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829104)"/>
-                        </Bindings>
-                    </ui:Label>
-
-                    <ui:DropdownField name="DropdownPaleta" style="width: 420px; height: 36px; min-height: 36px; font-size: 17px; padding-left: 12px; padding-right: 12px;"/>
-
+                <ui:VisualElement class="config-palette-row">
+                    <ui:Label text="Paleta:" class="config-inline-label"/>
+                    <ui:DropdownField name="DropdownPaleta" class="config-palette-dropdown"/>
                 </ui:VisualElement>
 
-                <!-- J -->
-                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+                <ui:ScrollView name="ColorScrollView" class="config-color-scroll">
+                    <ui:VisualElement class="config-color-row">
+                        <ui:Label text="J" class="config-signal-label"/>
+                        <ui:VisualElement name="PreviewJ" class="config-color-preview"/>
+                        <ui:VisualElement name="ContainerSwatchesJ" class="config-swatches"/>
+                        <ui:Button name="BtnCustomJ" text="+" class="menu-button config-plus-button"/>
+                    </ui:VisualElement>
 
-                    <ui:Label text="J" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(84736291048)"/>
-                        </Bindings>
-                    </ui:Label>
+                    <ui:VisualElement class="config-color-row">
+                        <ui:Label text="K" class="config-signal-label"/>
+                        <ui:VisualElement name="PreviewK" class="config-color-preview"/>
+                        <ui:VisualElement name="ContainerSwatchesK" class="config-swatches"/>
+                        <ui:Button name="BtnCustomK" text="+" class="menu-button config-plus-button"/>
+                    </ui:VisualElement>
 
-                    <ui:VisualElement name="PreviewJ" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
+                    <ui:VisualElement class="config-color-row">
+                        <ui:Label text="Preset" class="config-signal-label"/>
+                        <ui:VisualElement name="PreviewPreset" class="config-color-preview"/>
+                        <ui:VisualElement name="ContainerSwatchesPreset" class="config-swatches"/>
+                        <ui:Button name="BtnCustomPreset" text="+" class="menu-button config-plus-button"/>
+                    </ui:VisualElement>
 
-                    <ui:VisualElement name="ContainerSwatchesJ" style="flex-direction: row; flex-grow: 1;"/>
+                    <ui:VisualElement class="config-color-row">
+                        <ui:Label text="Clear" class="config-signal-label"/>
+                        <ui:VisualElement name="PreviewClear" class="config-color-preview"/>
+                        <ui:VisualElement name="ContainerSwatchesClear" class="config-swatches"/>
+                        <ui:Button name="BtnCustomClear" text="+" class="menu-button config-plus-button"/>
+                    </ui:VisualElement>
 
-                    <ui:Button name="BtnCustomJ" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
+                    <ui:VisualElement class="config-color-row">
+                        <ui:Label text="CLK" class="config-signal-label"/>
+                        <ui:VisualElement name="PreviewCLK" class="config-color-preview"/>
+                        <ui:VisualElement name="ContainerSwatchesCLK" class="config-swatches"/>
+                        <ui:Button name="BtnCustomCLK" text="+" class="menu-button config-plus-button"/>
+                    </ui:VisualElement>
 
-                </ui:VisualElement>
+                    <ui:Label text="Feedback do Desenho" class="config-subsection-title"/>
 
-                <!-- K -->
-                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
+                    <ui:VisualElement class="config-color-row">
+                        <ui:Label text="Certo" class="config-signal-label"/>
+                        <ui:VisualElement name="PreviewFeedbackSuccess" class="config-color-preview"/>
+                        <ui:VisualElement name="ContainerSwatchesFeedbackSuccess" class="config-swatches"/>
+                        <ui:Button name="BtnCustomFeedbackSuccess" text="+" class="menu-button config-plus-button"/>
+                    </ui:VisualElement>
 
-                    <ui:Label text="K" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364591)"/>
-                        </Bindings>
-                    </ui:Label>
-
-                    <ui:VisualElement name="PreviewK" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
-
-                    <ui:VisualElement name="ContainerSwatchesK" style="flex-direction: row; flex-grow: 1;"/>
-
-                    <ui:Button name="BtnCustomK" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
-
-                </ui:VisualElement>
-
-                <!-- PRESET -->
-                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
-
-                    <ui:Label text="Preset" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(28374659102)"/>
-                        </Bindings>
-                    </ui:Label>
-
-                    <ui:VisualElement name="PreviewPreset" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
-
-                    <ui:VisualElement name="ContainerSwatchesPreset" style="flex-direction: row; flex-grow: 1;"/>
-
-                    <ui:Button name="BtnCustomPreset" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
-
-                </ui:VisualElement>
-
-                <!-- CLEAR -->
-                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
-
-                    <ui:Label text="Clear" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473820195)"/>
-                        </Bindings>
-                    </ui:Label>
-
-                    <ui:VisualElement name="PreviewClear" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
-
-                    <ui:VisualElement name="ContainerSwatchesClear" style="flex-direction: row; flex-grow: 1;"/>
-
-                    <ui:Button name="BtnCustomClear" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
-
-                </ui:VisualElement>
-
-                <!-- CLK -->
-                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
-
-                    <ui:Label text="CLK" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(47561029384)"/>
-                        </Bindings>
-                    </ui:Label>
-
-                    <ui:VisualElement name="PreviewCLK" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
-
-                    <ui:VisualElement name="ContainerSwatchesCLK" style="flex-direction: row; flex-grow: 1;"/>
-
-                    <ui:Button name="BtnCustomCLK" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
-
-                </ui:VisualElement>
-
-                <!-- FEEDBACK -->
-                <ui:Label text="Feedback do Desenho" style="color: rgb(200, 200, 200); -unity-font-style: bold; font-size: 16px; margin-top: 10px; margin-bottom: 10px; -unity-text-align: upper-center;">
-                    <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(10293847566)"/>
-                    </Bindings>
-                </ui:Label>
-                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
-
-                <ui:Label text="Certo" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
-                    <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364012)"/>
-                    </Bindings>
-                </ui:Label>
-
-                <ui:VisualElement name="PreviewFeedbackSuccess" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
-
-                <ui:VisualElement name="ContainerSwatchesFeedbackSuccess" style="flex-direction: row; flex-grow: 1;"/>
-
-                <ui:Button name="BtnCustomFeedbackSuccess" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
-
+                    <ui:VisualElement class="config-color-row">
+                        <ui:Label text="Errado" class="config-signal-label"/>
+                        <ui:VisualElement name="PreviewFeedbackFailure" class="config-color-preview"/>
+                        <ui:VisualElement name="ContainerSwatchesFeedbackFailure" class="config-swatches"/>
+                        <ui:Button name="BtnCustomFeedbackFailure" text="+" class="menu-button config-plus-button"/>
+                    </ui:VisualElement>
+                </ui:ScrollView>
             </ui:VisualElement>
 
-            <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 15px;">
-
-                <ui:Label text="Errado" style="color: white; -unity-font-style: bold; font-size: 20px; width: 80px;">
-                    <Bindings> 
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(38475612093)"/>
-                    </Bindings>
-                </ui:Label>
-
-                <ui:VisualElement name="PreviewFeedbackFailure" style="width: 30px; height: 30px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; margin-right: 15px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: white; border-right-color: white; border-top-color: white; border-bottom-color: white;"/>
-
-                <ui:VisualElement name="ContainerSwatchesFeedbackFailure" style="flex-direction: row; flex-grow: 1;"/>
-
-                <ui:Button name="BtnCustomFeedbackFailure" text="+" class="menu-button" style="width: 40px; height: 40px; margin-left: 10px; padding: 0;"/>
-
+            <ui:VisualElement name="PanelAudio" class="config-page config-audio-page" style="display: none;">
+                <ui:Label text="Volume Geral" class="config-field-label"/>
+                <ui:Slider name="SliderMaster" high-value="1" low-value="0" class="config-slider"/>
+                <ui:Label text="Efeitos Sonoros" class="config-field-label"/>
+                <ui:Slider name="SliderSons" high-value="1" low-value="0" class="config-slider"/>
+                <ui:Label text="Música" class="config-field-label"/>
+                <ui:Slider name="SliderMusica" high-value="1" low-value="0" class="config-slider"/>
             </ui:VisualElement>
 
-            </ui:VisualElement>
-
-            <!-- AUDIO -->
-            <ui:VisualElement name="PanelAudio" style="flex-grow: 1; display: none; flex-direction: column;">
-
-                <ui:Label text="Volume Geral" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px;">
-                    <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364077)"/>
-                    </Bindings>
-                </ui:Label>
-
-                <ui:Slider name="SliderMaster" high-value="1" low-value="0" style="margin-bottom: 20px;"/>
-
-                <ui:Label text="Efeitos Sonoros" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px;">
-                    <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829133)"/>
-                    </Bindings>
-                </ui:Label>
-
-                <ui:Slider name="SliderSons" high-value="1" low-value="0" style="margin-bottom: 20px;"/>
-
-                <ui:Label text="Música" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px;">
-                    <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(10293847511)"/>
-                    </Bindings>
-                </ui:Label>
-
-                <ui:Slider name="SliderMusica" high-value="1" low-value="0" style="margin-bottom: 20px;"/>
-
-            </ui:VisualElement>
-
-            <!-- VIDEO -->
-            <ui:VisualElement name="PanelVideo" style="flex-grow: 1; display: none; flex-direction: column; justify-content: center;">
-
-                <ui:Label text="Contraste do Fundo" style="color: rgb(255, 255, 255); font-size: 20px; margin-top: 10px; -unity-text-align: upper-center; margin-bottom: 20px;">
-                    <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(84736291011)"/>
-                    </Bindings>
-                </ui:Label>
-
-                <ui:Slider name="SliderContrast" high-value="1" low-value="-1" style="margin-bottom: 20px;"/>
-
-                <ui:VisualElement style="flex-direction: row; justify-content: center; margin-top: 10px;">
-
-                    <ui:Button name="BtnResetContrast" text="Resetar Contraste" class="menu-button" style="margin-right: 10px;">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829155)"/>
-                        </Bindings>
-                    </ui:Button>
-
-                    <ui:Button name="BtnToggleLanguage" text="Trocar Idioma" class="menu-button">
-                        <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364533)"/>
-                        </Bindings>
-                    </ui:Button>
-
+            <ui:VisualElement name="PanelVideo" class="config-page config-video-page" style="display: none;">
+                <ui:Label text="Contraste do Fundo" class="config-section-title"/>
+                <ui:Slider name="SliderContrast" high-value="1" low-value="-1" class="config-slider"/>
+                <ui:VisualElement class="config-actions-row">
+                    <ui:Button name="BtnResetContrast" text="Resetar Contraste" class="menu-button config-action-button"/>
                 </ui:VisualElement>
-
             </ui:VisualElement>
 
-            <!-- CONTROLS -->
-            <ui:VisualElement name="PanelControls" style="flex-grow: 1; display: none; flex-direction: column;">
-
-                <ui:Label text="Mapeamento de Teclas" style="color: rgb(255, 255, 255); -unity-font-style: bold; font-size: 24px; margin-bottom: 20px; -unity-text-align: upper-center;">
-                    <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(38475619211)"/>
-                    </Bindings>
-                </ui:Label>
-
-                <ui:ScrollView name="ControlsScrollView" style="flex-grow: 1; margin-bottom: 20px; background-color: rgba(0, 0, 0, 0.2); border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; padding: 10px;"/>
-
-                <ui:Button name="BtnRestoreControls" text="Restaurar Padrões" class="menu-button" style="align-self: center;">
-                    <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(10293847544)"/>
-                    </Bindings>
-                </ui:Button>
-
+            <ui:VisualElement name="PanelControls" class="config-page config-controls-page" style="display: none;">
+                <ui:Label text="Mapeamento de Teclas" class="config-section-title"/>
+                <ui:ScrollView name="ControlsScrollView" class="config-controls-scroll"/>
+                <ui:Button name="BtnRestoreControls" text="Restaurar Padrões" class="menu-button config-restore-button"/>
             </ui:VisualElement>
-
         </ui:VisualElement>
 
-        <ui:VisualElement name="Footer" style="margin-top: 20px; align-items: center;">
-
-            <ui:Button text="Voltar" name="BtnBack" class="menu-button">
-                <Bindings>
-                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364588)"/>
-                </Bindings>
-            </ui:Button>
-
+        <ui:VisualElement name="RGBOverlay" class="config-rgb-overlay" style="display: none;">
+            <ui:VisualElement class="config-rgb-dialog">
+                <ui:Label text="Cor Personalizada" name="RGBTitle" class="config-section-title"/>
+                <ui:VisualElement name="RGBPreview" class="config-rgb-preview"/>
+                <ui:Label text="HEX" class="config-field-label"/>
+                <ui:TextField name="InputHex" class="config-hex-input"/>
+                <ui:Label text="R" class="config-field-label"/>
+                <ui:Slider name="SliderR" low-value="0" high-value="255" class="config-slider"/>
+                <ui:Label text="G" class="config-field-label"/>
+                <ui:Slider name="SliderG" low-value="0" high-value="255" class="config-slider"/>
+                <ui:Label text="B" class="config-field-label"/>
+                <ui:Slider name="SliderB" low-value="0" high-value="255" class="config-slider"/>
+                <ui:VisualElement class="config-actions-row">
+                    <ui:Button text="Cancelar" name="BtnCancelRGB" class="menu-button config-action-button"/>
+                    <ui:Button text="Confirmar" name="BtnConfirmRGB" class="menu-button config-action-button"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:VisualElement>
-
     </ui:VisualElement>
-
 </ui:UXML>
