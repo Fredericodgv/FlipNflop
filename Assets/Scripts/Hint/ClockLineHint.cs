@@ -45,8 +45,13 @@ public class ClockLineHint : MonoBehaviour
 
     private void Start()
     {
-        cameraTransform = Camera.main.transform;
-        lastCameraX = cameraTransform.position.x;
+        if (Camera.main != null)
+            cameraTransform = Camera.main.transform;
+
+        lastCameraX = cameraTransform != null ? cameraTransform.position.x : 0f;
+
+        hintMode = HasAsyncSignals() ? HintMode.ClockAndAsync : HintMode.ClockOnly;
+
         lastHintMode = hintMode;
         GenerateVisibleLines();
     }
