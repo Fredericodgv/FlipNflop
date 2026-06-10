@@ -40,9 +40,10 @@ public class SignalLabelRenderer : MonoBehaviour
     private GameObject clearLabel;
     private GameObject clockLabel;
 
-    // Guardar as posições atuais para caso precise atualizar em Real-Time
+    // Guardar as posições e estados atuais para caso precise atualizar em Real-Time
     private int curJY, curKY, curPresetY, curClearY, curClockY;
     private bool curHasPreset, curHasClear;
+    private bool curAsyncActiveHigh, curClockActiveHigh; // <-- Unificado aqui
 
     private void Start()
     {
@@ -51,9 +52,9 @@ public class SignalLabelRenderer : MonoBehaviour
 
     private void Update()
     {
-        if (updateInRealTime && jLabel != null) // Só atualiza se os labels já foram gerados
+        if (updateInRealTime && jLabel != null)
         {
-            GenerateLabels(curJY, curKY, curPresetY, curClearY, curClockY, curHasPreset, curHasClear);
+            GenerateLabels(curJY, curKY, curPresetY, curClearY, curClockY, curHasPreset, curHasClear, curAsyncActiveHigh, curClockActiveHigh);
         }
     }
 
@@ -61,11 +62,16 @@ public class SignalLabelRenderer : MonoBehaviour
     /// Generates and positions all signal labels based on REAL Tilemap Y coordinates.
     /// Call this from LevelJsonLoader.RenderLevel().
     /// </summary>
-    public void GenerateLabels(int jY, int kY, int presetY, int clearY, int clockY, bool hasPreset, bool hasClear)
+    public void GenerateLabels(int jY, int kY, int presetY, int clearY, int clockY, bool hasPreset, bool hasClear,
+                               bool isAsyncActiveHigh = true, bool isClockActiveHigh = true)
     {
         curJY = jY; curKY = kY; curPresetY = presetY;
         curClearY = clearY; curClockY = clockY;
         curHasPreset = hasPreset; curHasClear = hasClear;
+
+        // Salva os estados lógicos (True = Ativo em Alto / False = Ativo em Baixo)
+        curAsyncActiveHigh = isAsyncActiveHigh; // <-- Unificado aqui
+        curClockActiveHigh = isClockActiveHigh;
 
         ClearExistingLabels();
 
@@ -77,19 +83,21 @@ public class SignalLabelRenderer : MonoBehaviour
 
         Transform parent = (labelsParent != null) ? labelsParent : canvas.transform;
 
-        jLabel = CreateLabel("J_Label", jLabelSprite, jY, xOffset, parent);
-        kLabel = CreateLabel("K_Label", kLabelSprite, kY, xOffset, parent);
-        clockLabel = CreateLabel("Clock_Label", clockLabelSprite, clockY, xOffset, parent);
+        // J e K são convencionalmente ativos em alto, então passamos true direto
+        jLabel = CreateLabel("J_Label", jLabelSprite, jY, xOffset, parent, true);
+        kLabel = CreateLabel("K_Label", kLabelSprite, kY, xOffset, parent, true);
 
-        // Cria Preset e Clear se existirem
-        if (hasPreset) presetLabel = CreateLabel("Preset_Label", presetLabelSprite, presetY, xOffset, parent);
-        if (hasClear) clearLabel = CreateLabel("Clear_Label", clearLabelSprite, clearY, xOffset, parent);
+        clockLabel = CreateLabel("Clock_Label", clockLabelSprite, clockY, xOffset, parent, isClockActiveHigh);
+
+        // O mesmo estado assíncrono é repassado para o Preset e para o Clear
+        if (hasPreset) presetLabel = CreateLabel("Preset_Label", presetLabelSprite, presetY, xOffset, parent, isAsyncActiveHigh);
+        if (hasClear) clearLabel = CreateLabel("Clear_Label", clearLabelSprite, clearY, xOffset, parent, isAsyncActiveHigh);
     }
 
     /// <summary>
     /// Converts a Tilemap Y row index precisely into Canvas UI Coordinates.
     /// </summary>
-    private GameObject CreateLabel(string name, Sprite sprite, int tileY, float xPixels, Transform parent)
+    private GameObject CreateLabel(string name, Sprite sprite, int tileY, float xPixels, Transform parent, bool isActiveHigh)
     {
         if (sprite == null) return null;
 
@@ -112,7 +120,6 @@ public class SignalLabelRenderer : MonoBehaviour
         rt.anchorMin = new Vector2(0, 0.5f);
         rt.anchorMax = new Vector2(0, 0.5f);
         rt.pivot = new Vector2(0, 0.5f);
-
         rt.anchoredPosition = new Vector2(xPixels, canvasLocalPoint.y);
 
         Image img = labelObj.AddComponent<Image>();
@@ -122,7 +129,7 @@ public class SignalLabelRenderer : MonoBehaviour
         textObj.transform.SetParent(labelObj.transform, false);
         TextMeshProUGUI tmp = textObj.AddComponent<TextMeshProUGUI>();
         tmp.text = GetSigla(name);
-        tmp.fontSize = name.Contains("Clock") ? 18 : 24;
+        tmp.fontSize = 24;
         tmp.color = Color.white;
         tmp.alignment = TextAlignmentOptions.Center;
 
@@ -133,6 +140,25 @@ public class SignalLabelRenderer : MonoBehaviour
         textRt.pivot = new Vector2(0, 1);
         textRt.anchoredPosition = Vector2.zero;
 
+        if (!isActiveHigh)
+        {
+            GameObject overlineObj = new GameObject("Overline");
+            overlineObj.transform.SetParent(textObj.transform, false);
+            Image lineImg = overlineObj.AddComponent<Image>();
+            lineImg.color = Color.white;
+
+            RectTransform lineRt = overlineObj.GetComponent<RectTransform>();
+
+            lineRt.anchorMin = new Vector2(0.2f, 0.5f);
+            lineRt.anchorMax = new Vector2(0.8f, 0.5f);
+            lineRt.pivot = new Vector2(0.5f, 0f);
+
+            lineRt.sizeDelta = new Vector2(0, 2);
+
+            float yOffset = (tmp.fontSize / 2f) + 2f;
+            lineRt.anchoredPosition = new Vector2(0, yOffset);
+        }
+
         return labelObj;
     }
 
@@ -140,8 +166,8 @@ public class SignalLabelRenderer : MonoBehaviour
     {
         if (name.Contains("J")) return "J";
         if (name.Contains("K")) return "K";
-        if (name.Contains("Preset")) return "P";
-        if (name.Contains("Clear")) return "C";
+        if (name.Contains("Preset")) return "PRE";
+        if (name.Contains("Clear")) return "CLR";
         if (name.Contains("Clock")) return "CLK";
         return "";
     }
