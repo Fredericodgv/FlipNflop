@@ -1,3 +1,14 @@
+## [0.9.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.9.1...v0.9.2) (2026-06-10)
+
+
+### Bug Fixes
+
+* Enhance signal label generation with async state handling for better real-time updates ([7e95e0a](https://github.com/Fredericodgv/FlipNflop/commit/7e95e0a5e7b9364bad9765c09bbb2f8fc7505b5f))
+* Ensure preset and clear signals are validated before use in JK and SR flip-flop simulations ([9454196](https://github.com/Fredericodgv/FlipNflop/commit/9454196f44b5fd6fa5d45d4b25b1ca4a2b2a12de))
+* Update ClockLineHint.cs for improved synchronous hint ([4c02b5d](https://github.com/Fredericodgv/FlipNflop/commit/4c02b5d5734c37e7dbd854f3ae754824aa6153ba))
+
+
+
 ## [0.9.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.9.0...v0.9.1) (2026-05-25)
 
 
@@ -33,15 +44,6 @@
 ### Bug Fixes
 
 * add error handling for invalid flip-flop states in simulation ([ef4cc59](https://github.com/Fredericodgv/FlipNflop/commit/ef4cc59db8c5facb7999a381b52437d57a5c3b64))
-
-
-
-# [0.8.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.7.2...v0.8.0) (2026-05-18)
-
-
-### Features
-
-* menu config restructured ([0ec3eb2](https://github.com/Fredericodgv/FlipNflop/commit/0ec3eb231e65eba5572ab5706a735382e4f71647))
 
 
 
