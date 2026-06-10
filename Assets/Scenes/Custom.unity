@@ -157,7 +157,7 @@ MonoBehaviour:
   dashGap: 0.2
   clockStep: 6
   clockLineColor: {r: 0, g: 0.9, b: 1, a: 0.6}
-  hintMode: 1
+  hintMode: 2
   asyncHintColor: {r: 1, g: 0.5, b: 0, a: 0.6}
   levelJsonLoader: {fileID: 992803105}
   bufferLines: 5
@@ -3386,7 +3386,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f94a9837f543c7d40a642ee37ffbb33f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameMenuManager
-  nomeMenuInicial: MenuWeb
+  mainMenuSceneName: MenuWeb
   playerInput: {fileID: 810242267}
   pauseAction: {fileID: -8216907823368514188, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
 --- !u!4 &1267548385

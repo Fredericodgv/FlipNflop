@@ -251,9 +251,16 @@ public class LevelJsonLoader : MonoBehaviour
 
         if (signalLabelRenderer != null)
         {
-            signalLabelRenderer.GenerateLabels(jY, kY, presetY, clearY, clockY,
-                                               ParsedPresetSignal != null,
-                                               ParsedClearSignal != null);
+            bool asyncIsHigh = data.AsyncActive == 1;
+
+            // O risingEdge já foi calculado ali em cima! É só passá-lo direto.
+            signalLabelRenderer.GenerateLabels(
+                jY, kY, presetY, clearY, clockY,
+                ParsedPresetSignal != null,
+                ParsedClearSignal != null,
+                asyncIsHigh,  // Passa para o Preset e Clear
+                risingEdge    // Passa para o Clock (já existia no seu código)
+            );
         }
     }
 

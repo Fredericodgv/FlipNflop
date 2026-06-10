@@ -83,8 +83,8 @@ public static class FlipFlopSimulator
             bool presetValue = GetAt(presetSignal, i);
             bool clearValue = GetAt(clearSignal, i);
 
-            bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
-            bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
+            bool hasPreset = presetSignal != null && i < presetSignal.Length && (asyncActiveHigh ? presetValue : !presetValue);
+            bool hasClear = clearSignal != null && i < clearSignal.Length && (asyncActiveHigh ? clearValue : !clearValue);
 
             string asyncToken;
 
@@ -272,8 +272,8 @@ public static class FlipFlopSimulator
             bool presetValue = GetAt(presetSignal, i);
             bool clearValue = GetAt(clearSignal, i);
 
-            bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
-            bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
+            bool hasPreset = presetSignal != null && i < presetSignal.Length && (asyncActiveHigh ? presetValue : !presetValue);
+            bool hasClear = clearSignal != null && i < clearSignal.Length && (asyncActiveHigh ? clearValue : !clearValue);
 
             string asyncToken;
 
@@ -376,8 +376,8 @@ public static class FlipFlopSimulator
             bool presetValue = GetAt(presetSignal, i);
             bool clearValue = GetAt(clearSignal, i);
 
-            bool hasPreset = asyncActiveHigh ? presetValue : !presetValue;
-            bool hasClear = asyncActiveHigh ? clearValue : !clearValue;
+            bool hasPreset = presetSignal != null && i < presetSignal.Length && (asyncActiveHigh ? presetValue : !presetValue);
+            bool hasClear = clearSignal != null && i < clearSignal.Length && (asyncActiveHigh ? clearValue : !clearValue);
 
             string asyncToken;
 
