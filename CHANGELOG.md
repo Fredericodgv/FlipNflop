@@ -1,3 +1,12 @@
+## [0.10.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.0...v0.10.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* Little adjustment to feedbacklines ([b09f33c](https://github.com/Fredericodgv/FlipNflop/commit/b09f33ce18d2c6ace94faf95f90501844a92d23a))
+
+
+
 # [0.10.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.9.2...v0.10.0) (2026-06-10)
 
 
@@ -45,16 +54,6 @@
 ### Features
 
 * Remake main menu using Unity UIToolkit ([fb2dd41](https://github.com/Fredericodgv/FlipNflop/commit/fb2dd4116245d14191f7fdd56f0c01ea21057fda))
-
-
-
-## [0.8.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.8.1...v0.8.2) (2026-05-21)
-
-
-### Bug Fixes
-
-* remove unused label Y positions in Custom.unity ([70039df](https://github.com/Fredericodgv/FlipNflop/commit/70039dfac6e87691aa88b4c2b8c7676cebe2f946))
-* update GenerateLabels to fix assynchrone phases ([d26f2db](https://github.com/Fredericodgv/FlipNflop/commit/d26f2db17a25bb5f0f7accf8c42c6ec334783155))
 
 
 
