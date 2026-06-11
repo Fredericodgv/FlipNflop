@@ -227,7 +227,6 @@ public class PathVerifier : MonoBehaviour
         }
         return count;
     }
-
     private void DrawFeedbackLines(List<Vector3> playerPath, out int correctSegments, out int totalSegments)
     {
         correctSegments = 0;
@@ -246,29 +245,8 @@ public class PathVerifier : MonoBehaviour
             Vector3 p_start = playerPath[i];
             Vector3 p_end = playerPath[i + 1];
 
-            Vector3 closestStart = FindClosestPointOnFullPath(p_start, correctCorners);
-            Vector3 closestEnd = FindClosestPointOnFullPath(p_end, correctCorners);
-
-            bool startIsOnPath = Vector3.Distance(p_start, closestStart) <= cornerTolerance;
-            bool endIsOnPath = Vector3.Distance(p_end, closestEnd) <= cornerTolerance;
-
-            bool isSegmentCorrect = startIsOnPath && endIsOnPath;
-            bool isVertical = Mathf.Abs(p_start.y - p_end.y) > 0.1f;
-
-            if (isVertical && isSegmentCorrect)
-            {
-                bool aligned = false;
-                foreach (Vector3 corner in correctCorners)
-                {
-                    if (Mathf.Abs(corner.x - p_start.x) <= cornerTolerance &&
-                        Mathf.Abs(corner.x - p_end.x) <= cornerTolerance)
-                    {
-                        aligned = true;
-                        break;
-                    }
-                }
-                if (!aligned) isSegmentCorrect = false;
-            }
+            // Usa a nova lógica estrita de bounding box
+            bool isSegmentCorrect = IsSegmentStrictlyValid(p_start, p_end);
 
             totalSegments++;
             if (isSegmentCorrect) correctSegments++;
@@ -285,7 +263,6 @@ public class PathVerifier : MonoBehaviour
             }
         }
     }
-
     private void DrawSolidLine(Vector3 start, Vector3 end, Color color)
     {
         LineRenderer line = Instantiate(linePrefab, feedbackLinesParent);
@@ -323,7 +300,6 @@ public class PathVerifier : MonoBehaviour
             }
         }
     }
-
     private void UpdateRealtimeFeedback()
     {
         if (linePrefab == null || feedbackLinesParent == null) return;
@@ -340,12 +316,11 @@ public class PathVerifier : MonoBehaviour
         {
             Vector3 p_start = points[i];
             Vector3 p_end = points[i + 1];
-            Vector3 midpoint = (p_start + p_end) / 2f;
 
-            Vector3 closest = FindClosestPointOnFullPath(midpoint, correctCorners);
-            bool onPath = Vector3.Distance(midpoint, closest) <= cornerTolerance;
+            // Usa a nova lógica estrita de bounding box ao vivo
+            bool isSegmentCorrect = IsSegmentStrictlyValid(p_start, p_end);
 
-            if (onPath)
+            if (isSegmentCorrect)
             {
                 DrawSolidLine(p_start, p_end, successColor);
                 patternAccumulator = 0f;
@@ -357,7 +332,6 @@ public class PathVerifier : MonoBehaviour
             }
         }
     }
-
     #endregion
 
     #region Helper Functions
@@ -389,6 +363,58 @@ public class PathVerifier : MonoBehaviour
         return wasHit;
     }
 
+    /// <summary>
+    /// Verifica se um segmento do jogador está dentro dos limites ortogonais da tolerância,
+    /// mas corta o excesso longitudinal (evitando que a linha verde invada a vermelha na quina).
+    /// </summary>
+    private bool IsSegmentStrictlyValid(Vector3 p_start, Vector3 p_end)
+    {
+        // Se o segmento for microscópico (pontos duplicados), consideramos válido para evitar flickering
+        if ((p_end - p_start).sqrMagnitude < 0.0001f) return true;
+
+        for (int i = 0; i < correctCorners.Count - 1; i++)
+        {
+            Vector3 c1 = correctCorners[i];
+            Vector3 c2 = correctCorners[i + 1];
+            bool isCHoriz = Mathf.Abs(c1.y - c2.y) <= 0.1f;
+
+            if (isCHoriz)
+            {
+                // Verifica a distância ortogonal (Y) mantendo a tolerância original
+                if (Mathf.Abs(p_start.y - c1.y) <= cornerTolerance &&
+                    Mathf.Abs(p_end.y - c1.y) <= cornerTolerance)
+                {
+                    // Limite estrito longitudinal (X) com uma margem minúscula (0.1f) para não quebrar a quina
+                    float minX = Mathf.Min(c1.x, c2.x) - 0.1f;
+                    float maxX = Mathf.Max(c1.x, c2.x) + 0.1f;
+
+                    if (p_start.x >= minX && p_start.x <= maxX &&
+                        p_end.x >= minX && p_end.x <= maxX)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                // Verifica a distância ortogonal (X) mantendo a tolerância original
+                if (Mathf.Abs(p_start.x - c1.x) <= cornerTolerance &&
+                    Mathf.Abs(p_end.x - c1.x) <= cornerTolerance)
+                {
+                    // Limite estrito longitudinal (Y) com uma margem minúscula (0.1f)
+                    float minY = Mathf.Min(c1.y, c2.y) - 0.1f;
+                    float maxY = Mathf.Max(c1.y, c2.y) + 0.1f;
+
+                    if (p_start.y >= minY && p_start.y <= maxY &&
+                        p_end.y >= minY && p_end.y <= maxY)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     private void ActivateWithParent(GameObject target)
     {
         if (target == null) return;
