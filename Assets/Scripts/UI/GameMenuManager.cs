@@ -191,10 +191,26 @@ public class GameMenuManager : MonoBehaviour
     /// </summary>
     private void OnPausePerformed(InputAction.CallbackContext context)
     {
-        if (IsMenuOpen)
+        HandlePauseNavigation();
+    }
+
+    /// <summary>
+    /// Decide o destino do Esc/Pause de acordo com a tela atual.
+    /// </summary>
+    private void HandlePauseNavigation()
+    {
+        if (IsMenuOpen && activeSubmenu != null)
+        {
+            CloseActiveSubmenu();
+        }
+        else if (IsMenuOpen)
+        {
             ContinueGame();
+        }
         else
+        {
             OpenMenu();
+        }
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
@@ -84,6 +85,12 @@ public class MenuManager : MonoBehaviour
     {
         if (backBtn != null)
             backBtn.clicked -= FecharSubmenuAtual;
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            FecharSubmenuAtual();
     }
 
     private void ConfigurarBotaoNivel(VisualElement root, string btnId, string jsonName)
