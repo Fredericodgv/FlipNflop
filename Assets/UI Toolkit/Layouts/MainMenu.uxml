@@ -15,15 +15,18 @@
         </ui:VisualElement>
 
         <ui:VisualElement name="About" class="panel hidden">
-            <ui:VisualElement class="page">
+            <ui:VisualElement class="page about-page">
                 <ui:Label text="Créditos" name="Title" class="title"/>
-                <ui:Label text="Um Jogo Educacional Digital para a pratica de diagramas de tempo de flip-flops" class="text"/>
-                <ui:VisualElement name="Credits" class="credits">
-                    <ui:Label text="Frederico Dôndici" class="text"/>
-                    <ui:Label text="João Vitor Fernandes" class="text"/>
-                    <ui:Label text="Pedro Crawford" class="text"/>
-                    <ui:Label text="Diogo Amarante" class="text"/>
-                </ui:VisualElement>
+                <ui:ScrollView name="CreditsScrollView" mode="Vertical" class="credits">
+                    <ui:Label text="Flip n' Flop" name="Subtitle" class="subtitle"/>
+                    <ui:Label text="Um jogo educacional digital criado para apoiar o aprendizado de diagramas de tempo de flip-flops, combinando lógica digital, desafios interativos e progressão por fases." class="text"/>
+                    <ui:VisualElement name="Credits" class="credits-list">
+                        <ui:Label text="Frederico Dôndici" class="text"/>
+                        <ui:Label text="João Vitor Fernandes" class="text"/>
+                        <ui:Label text="Pedro Crawford" class="text"/>
+                        <ui:Label text="Diogo Amarante" class="text"/>
+                    </ui:VisualElement>
+                </ui:ScrollView>
             </ui:VisualElement>
         </ui:VisualElement>
 
