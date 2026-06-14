@@ -6,10 +6,12 @@
     "ffType": "JK",
     "clockCicles": 8,
     "activeClockEdge": "rising",
-    "jSignal": "000111 111111 100000 011100 110011 110000 011001 111001 111111 111111",
-    "kSignal": "000111 110011 111000 111111 100001 100011 100111 111100 011001 111111",
-    "ceiling": "110000 111111 111100 011111 000001 100001 111111 100001 111111 111111",
-    "floor": "111111 110011 100011 111100 000111 111111 110001 111111 111111 111111",
+    "jSignal": "000111 111111 100000 001111 110011 110000 011001 111001 111111 111111",
+    "kSignal": "000111 110011 100111 111111 100000 000111 100111 111100 011001 111111",
+    "presetSignal": "000000 000000 001100 000000 001100 000000 000000 000000 000000",
+    "asyncActive": "high",
+    "ceiling": "100001 111111 111001 111111 100011 100001 111111 100001 111111 111111",
+    "floor": "111111 110011 111001 111111 110011 111111 110001 111111 111111 111111",
     "obstacles": [
         {
             "obstacleName": "Mace",
@@ -25,9 +27,9 @@
             "obstacleName": "Mace",
             "startX": 27,
             "startY": 1,
-            "speed": 2,
-            "horizontalDistance": 6,
-            "verticalDistance": 3,
+            "speed": 1,
+            "horizontalDistance": 4,
+            "verticalDistance": 0,
             "starterCorner": "bottom-right",
             "clockwise": true
         },
@@ -35,9 +37,9 @@
             "obstacleName": "Mace",
             "startX": 32,
             "startY": 1,
-            "speed": 0,
+            "speed": 1,
             "horizontalDistance": 0,
-            "verticalDistance": 0,
+            "verticalDistance": 3,
             "starterCorner": "bottom-left",
             "clockwise": true
         },
@@ -49,16 +51,6 @@
             "horizontalDistance": 9,
             "verticalDistance": 0,
             "starterCorner": "bottom-left",
-            "clockwise": true
-        },
-        {
-            "obstacleName": "Mace",
-            "startX": 50,
-            "startY": 4,
-            "speed": 4,
-            "horizontalDistance": 0,
-            "verticalDistance": 3,
-            "starterCorner": "top-left",
             "clockwise": true
         }
     ]
