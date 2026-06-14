@@ -1,3 +1,12 @@
+## [0.10.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.1...v0.10.2) (2026-06-14)
+
+
+### Bug Fixes
+
+* link level selection button with level files ([2d25240](https://github.com/Fredericodgv/FlipNflop/commit/2d25240c0b97378091d9e8d5e5c58e1f60840854))
+
+
+
 ## [0.10.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.0...v0.10.1) (2026-06-11)
 
 
@@ -45,15 +54,6 @@
 
 * Update MainMenu layout to display buttons correctly ([fc95458](https://github.com/Fredericodgv/FlipNflop/commit/fc95458be54bd65486ecef4d3d37e06f26560089))
 * Update tutorial texts ([39c2a67](https://github.com/Fredericodgv/FlipNflop/commit/39c2a677249aacb09715ddb55a0e38f231ebcb4d))
-
-
-
-# [0.9.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.8.2...v0.9.0) (2026-05-23)
-
-
-### Features
-
-* Remake main menu using Unity UIToolkit ([fb2dd41](https://github.com/Fredericodgv/FlipNflop/commit/fb2dd4116245d14191f7fdd56f0c01ea21057fda))
 
 
 
