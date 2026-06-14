@@ -1,15 +1,15 @@
 {
     "levelName": "sixth_level",
-    "levelDescription": "implementa obstáculos mace com movimentos e velocidades variadas",
+    "levelDescription": "Implementa obstáculos mace com movimento vertical",
     "levelID": "76278262",
     "levelOrder": 60,
     "ffType": "JK",
-    "clockCicles": 9,
+    "clockCicles": 8,
     "activeClockEdge": "rising",
     "jSignal": "000111 111111 100000 011100 110011 110000 011001 111001 111111 111111",
     "kSignal": "000111 110011 111000 111111 100001 100011 100111 111100 011001 111111",
-    "floor": "111111 110011 100011 111100 000111 111111 110001 111111 111111 111111 111111 111111 111",
-    "ceiling": "110000 111111 111100 011111 000001 100001 111111 100001 111111 111111 111111 111111 111",
+    "ceiling": "110000 111111 111100 011111 000001 100001 111111 100001 111111 111111",
+    "floor": "111111 110011 100011 111100 000111 111111 110001 111111 111111 111111",
     "obstacles": [
         {
             "obstacleName": "Mace",
