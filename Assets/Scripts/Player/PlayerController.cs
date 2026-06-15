@@ -239,6 +239,9 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = Vector2.zero;
             horizontalInput = 0f;
 
+            animator.SetBool("run", false);
+            animator.SetFloat("speed", 0f);
+
             pathVerifier.FinalizeAndCheckPath();
 
             cameraController.EnableManualControl();
