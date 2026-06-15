@@ -63,7 +63,7 @@ public class SignalColorManager : MonoBehaviour
     // ─── Índices padrão ──────────────────────────────────────────────────────
     private const int DEFAULT_J_IDX = 0;
     private const int DEFAULT_K_IDX = 0;
-    private const int DEFAULT_CLK_IDX = 0;
+    private const int DEFAULT_CLK_IDX = 6;
     private const int DEFAULT_PRESET_IDX = 0;
     private const int DEFAULT_CLEAR_IDX = 0;
     private const int DEFAULT_FEEDBACK_SUC_IDX = 4; // Verde
@@ -288,6 +288,32 @@ public class SignalColorManager : MonoBehaviour
     {
         PlayerPrefs.Save();
         OnColorsChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// Compara os índices atuais com as paletas registradas e retorna o índice da paleta ativa.
+    /// Se as cores não baterem com nenhuma paleta oficial, retorna -1 (Personalizado).
+    /// </summary>
+    public int GetCurrentPaletteIndex()
+    {
+        for (int i = 0; i < Palettes.Length; i++)
+        {
+            int[] palette = Palettes[i];
+
+            // Checagem seguindo a ordem exata de atribuição do ApplyPalette
+            if (palette[0] == IndexJ &&
+                palette[1] == IndexK &&
+                palette[2] == IndexPreset &&
+                palette[3] == IndexClear &&
+                palette[4] == IndexCLK &&
+                palette[5] == IndexFeedbackSuccess &&
+                palette[6] == IndexFeedbackFailure)
+            {
+                return i; // Encontrou a paleta correspondente
+            }
+        }
+
+        return CUSTOM_INDEX; // Retorna -1 se for uma combinação personalizada
     }
 
     #endregion

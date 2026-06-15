@@ -3433,10 +3433,10 @@ MonoBehaviour:
   actionsToRebind:
   - labelText: Andar para direita
     inputAction: {fileID: -1680190386980627800, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
-    bindingIndex: 1
+    bindingIndex: 2
   - labelText: Andar para esquerda
     inputAction: {fileID: -1680190386980627800, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
-    bindingIndex: 2
+    bindingIndex: 1
   - labelText: Inverter plataforma
     inputAction: {fileID: 3506434624590365720, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     bindingIndex: 0

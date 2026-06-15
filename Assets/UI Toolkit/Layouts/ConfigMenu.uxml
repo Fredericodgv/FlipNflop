@@ -81,6 +81,7 @@
                 <ui:Slider name="SliderSons" high-value="1" low-value="0" class="config-slider"/>
                 <ui:Label text="Música" class="config-field-label"/>
                 <ui:Slider name="SliderMusica" high-value="1" low-value="0" class="config-slider"/>
+                <ui:Button name="BtnResetAudio" text="Restaurar Padrões" class="menu-button" style="align-self: center; margin-top: 10px;"/>
             </ui:VisualElement>
 
             <ui:VisualElement name="PanelVideo" class="config-page config-video-page" style="display: none;">
