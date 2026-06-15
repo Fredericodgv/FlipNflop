@@ -1,3 +1,12 @@
+## [0.10.4](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.3...v0.10.4) (2026-06-15)
+
+
+### Bug Fixes
+
+* player stops when finish level ([e94c51e](https://github.com/Fredericodgv/FlipNflop/commit/e94c51e60bac340a86f985ba0ff208402b7dd0c7))
+
+
+
 ## [0.10.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.2...v0.10.3) (2026-06-15)
 
 
@@ -42,17 +51,6 @@
 * add tutorial button to GameMenu.uxml ([43ca5ab](https://github.com/Fredericodgv/FlipNflop/commit/43ca5ab68e3a6ba3b9a4f214662d3968866e6860))
 * enhance MainMenu with tutorial and submenu functionality ([906bfad](https://github.com/Fredericodgv/FlipNflop/commit/906bfadabd6fd0af723c88aef2e70fd123985b10))
 * refactor GameMenu to improve submenu handling and UI structure ([aaae4f4](https://github.com/Fredericodgv/FlipNflop/commit/aaae4f4ae84cf2c2519a5a48b6aeac6031bdae6e))
-
-
-
-## [0.9.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.9.1...v0.9.2) (2026-06-10)
-
-
-### Bug Fixes
-
-* Enhance signal label generation with async state handling for better real-time updates ([7e95e0a](https://github.com/Fredericodgv/FlipNflop/commit/7e95e0a5e7b9364bad9765c09bbb2f8fc7505b5f))
-* Ensure preset and clear signals are validated before use in JK and SR flip-flop simulations ([9454196](https://github.com/Fredericodgv/FlipNflop/commit/9454196f44b5fd6fa5d45d4b25b1ca4a2b2a12de))
-* Update ClockLineHint.cs for improved synchronous hint ([4c02b5d](https://github.com/Fredericodgv/FlipNflop/commit/4c02b5d5734c37e7dbd854f3ae754824aa6153ba))
 
 
 
