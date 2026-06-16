@@ -68,9 +68,13 @@
                             <ui:VisualElement name="Image" class="image-slot"/>
                             <ui:Label name="Text" class="tutorial-text" text="Use shift para correr por um breve instante de tempo e superar obstáculos mais desafiadores." />
                         </ui:VisualElement>
-                        <ui:VisualElement name="Help" class="tutorial-item">
+                        <ui:VisualElement name="Linhas veticais" class="tutorial-item">
                             <ui:VisualElement name="Image" class="image-slot"/>
                             <ui:Label name="Text" class="tutorial-text" text="Use H para habilitar/desabilitar as linhas de ajuda para eventos síncronos e assíncronos" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="Dica" class="tutorial-item">
+                            <ui:VisualElement name="Image" class="image-slot"/>
+                            <ui:Label name="Text" class="tutorial-text" text="Use B para exibir dicas sobre a próxima operação síncrona" />
                         </ui:VisualElement>
                         <ui:VisualElement name="EndOfLevel" class="tutorial-item">
                             <ui:VisualElement name="Image" class="image-slot"/>

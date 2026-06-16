@@ -156,10 +156,10 @@ public class OperationHint : MonoBehaviour
 
         if (presetActive) return "Preset";
         if (clearActive) return "Clear";
-        if (j && k) return "Switch";
+        if (j && k) return "Comuta";
         if (j) return "Set";
         if (k) return "Reset";
-        return "Hold";
+        return "Mantém";
     }
 
     /// <summary>

@@ -3447,6 +3447,15 @@ MonoBehaviour:
   - labelText: Pular
     inputAction: {fileID: -2099379676528639254, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     bindingIndex: 0
+  - labelText: Dash
+    inputAction: {fileID: -7093669063402427910, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    bindingIndex: 0
+  - labelText: Linhas verticais
+    inputAction: {fileID: -4774699295614695227, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    bindingIndex: 0
+  - labelText: Dicas
+    inputAction: {fileID: 9063628408651508475, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    bindingIndex: 0
   scrollViewName: ControlsScrollView
   restoreButtonName: BtnRestoreControls
 --- !u!1 &1285681113
