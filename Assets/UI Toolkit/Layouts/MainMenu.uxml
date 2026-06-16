@@ -15,15 +15,18 @@
         </ui:VisualElement>
 
         <ui:VisualElement name="About" class="panel hidden">
-            <ui:VisualElement class="page">
+            <ui:VisualElement class="page about-page">
                 <ui:Label text="Créditos" name="Title" class="title"/>
-                <ui:Label text="Um Jogo Educacional Digital para a pratica de diagramas de tempo de flip-flops" class="text"/>
-                <ui:VisualElement name="Credits" class="credits">
-                    <ui:Label text="Frederico Dôndici" class="text"/>
-                    <ui:Label text="João Vitor Fernandes" class="text"/>
-                    <ui:Label text="Pedro Crawford" class="text"/>
-                    <ui:Label text="Diogo Amarante" class="text"/>
-                </ui:VisualElement>
+                <ui:ScrollView name="CreditsScrollView" mode="Vertical" class="credits">
+                    <ui:Label text="Flip n' Flop" name="Subtitle" class="subtitle"/>
+                    <ui:Label text="Um jogo educacional digital criado para apoiar o aprendizado de diagramas de tempo de flip-flops, combinando lógica digital, desafios interativos e progressão por fases." class="text"/>
+                    <ui:VisualElement name="Credits" class="credits-list">
+                        <ui:Label text="Frederico Dôndici" class="text"/>
+                        <ui:Label text="João Vitor Fernandes" class="text"/>
+                        <ui:Label text="Pedro Crawford" class="text"/>
+                        <ui:Label text="Diogo Amarante" class="text"/>
+                    </ui:VisualElement>
+                </ui:ScrollView>
             </ui:VisualElement>
         </ui:VisualElement>
 
@@ -50,19 +53,31 @@
                 <ui:ScrollView name="ScrollView" class="tutorial-scroll">
                     <ui:VisualElement name="Jogo" focusable="false" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Seu objetivo é construir corretamente o diagrama temporal do sinal de saída do circuito. Analise os sinais de entrada e as transições do clock para guiar o personagem, desenhando a linha de saída adequada ao alternar entre plataformas que representam os níveis lógicos 0 e 1."/>
+                        <ui:Label name="Text" class="tutorial-text" text="Seu objetivo é construir corretamente o diagrama de tempo do sinal de saída do Flip-Flop. Para isso, analise cuidadosamente o comportamento dos sinais de entrada ao longo do tempo e movimente a personagem exatamente pelo caminho em que você deseja desenhar a linha do sinal de saída."/>
                     </ui:VisualElement>
                     <ui:VisualElement name="Moviment" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Use A / D ou as setas para se mover. Mover para a direita avança o tempo e desenha a saída. Mover para a esquerda retrocede, apagando a linha para corrigir erros."/>
+                        <ui:Label name="Text" class="tutorial-text" text="Use A/D ou as setas para esquerda/direita para movimentar horizontalmente a personagem. Ao andar para a direita, a linha do sinal de saída é desenhada. Ao andar para a esquerda, a linha é apagada (permitindo corrigir erros)."/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="VerticalMoviment" class="tutorial-item">
+                        <ui:VisualElement name="Image" class="image-slot"/>
+                        <ui:Label name="Text" class="tutorial-text" text="Use W/S ou as setas para cima/baixo para alternar entre as plataformas do piso e do teto. Esse movimento é equivalente à trocar o valor lógico do sinal de saída entre 0 e 1."/>
                     </ui:VisualElement>
                     <ui:VisualElement name="Jump" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Use Espaço para pular. Isso permite desviar de obstáculos no chão sem alterar o nível lógico da linha desenhada."/>
+                        <ui:Label name="Text" class="tutorial-text" text="Use espaço para pular buracos nas plataformas ou desviar de outros obstáculos sem a necessidade de alternar plataformas."/>
                     </ui:VisualElement>
                     <ui:VisualElement name="Dash" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Use Shift para correr. Um rápido aumento de velocidade que oferece agilidade para superar pedras e perigos." />
+                        <ui:Label name="Text" class="tutorial-text" text="Use shift para correr por um breve instante de tempo e superar obstáculos mais desafiadores." />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="Help" class="tutorial-item">
+                        <ui:VisualElement name="Image" class="image-slot"/>
+                        <ui:Label name="Text" class="tutorial-text" text="Use H para habilitar/desabilitar as linhas de ajuda para eventos síncronos e assíncronos" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="EndOfLevel" class="tutorial-item">
+                        <ui:VisualElement name="Image" class="image-slot"/>
+                        <ui:Label name="Text" class="tutorial-text" text="Ao final da fase, verifique os acertos e erros no diagrama desenhado e a pontuação obtida." />
                     </ui:VisualElement>
                 </ui:ScrollView>
             </ui:VisualElement>
