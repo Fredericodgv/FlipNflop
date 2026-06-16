@@ -1,3 +1,12 @@
+## [0.11.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.11.1...v0.11.2) (2026-06-16)
+
+
+### Bug Fixes
+
+* Align level select buttons ([58b6ed2](https://github.com/Fredericodgv/FlipNflop/commit/58b6ed28a766f45461996f0e850a707f388cf0fb))
+
+
+
 ## [0.11.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.11.0...v0.11.1) (2026-06-16)
 
 
@@ -38,15 +47,6 @@
 ### Bug Fixes
 
 * player stops when finish level ([e94c51e](https://github.com/Fredericodgv/FlipNflop/commit/e94c51e60bac340a86f985ba0ff208402b7dd0c7))
-
-
-
-## [0.10.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.2...v0.10.3) (2026-06-15)
-
-
-### Bug Fixes
-
-* Enhance audio and color configuration options ([53376f9](https://github.com/Fredericodgv/FlipNflop/commit/53376f9ca540b6bf3d993d12868ecee747b11316))
 
 
 
