@@ -1,3 +1,13 @@
+## [0.10.5](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.4...v0.10.5) (2026-06-16)
+
+
+### Bug Fixes
+
+* Clear unused files ([da048ad](https://github.com/Fredericodgv/FlipNflop/commit/da048ad04694df095476392a54d2ea92acf75b54))
+* Next level button working! ([cc565a7](https://github.com/Fredericodgv/FlipNflop/commit/cc565a7fa714f5cf04ee536418e839077a7b8f18))
+
+
+
 ## [0.10.4](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.3...v0.10.4) (2026-06-15)
 
 
@@ -31,26 +41,6 @@
 ### Bug Fixes
 
 * Little adjustment to feedbacklines ([b09f33c](https://github.com/Fredericodgv/FlipNflop/commit/b09f33ce18d2c6ace94faf95f90501844a92d23a))
-
-
-
-# [0.10.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.9.2...v0.10.0) (2026-06-10)
-
-
-### Bug Fixes
-
-* Add english config menu ([5a1048c](https://github.com/Fredericodgv/FlipNflop/commit/5a1048c220e2434a8dfc445b5404b8d077dafbf0))
-* Add more signals color custom ([3d98344](https://github.com/Fredericodgv/FlipNflop/commit/3d983443430600b64374a3033fdbdbf60edc447c))
-* Enhance ConfigMenu with additional signal customization options ([85e0ff8](https://github.com/Fredericodgv/FlipNflop/commit/85e0ff8f320b42bcceaa32516652a101f9043392))
-* update ConfigMenu and GameMenu to match the Unity panel settings. ([ad0ea95](https://github.com/Fredericodgv/FlipNflop/commit/ad0ea95a708c562fd956febb4644e2aa11092752))
-* Update MainMenu buttons to use localized text and adjust layout margins ([5e042e0](https://github.com/Fredericodgv/FlipNflop/commit/5e042e0926899f3f815357ac18feb7b62e694fa7))
-
-
-### Features
-
-* add tutorial button to GameMenu.uxml ([43ca5ab](https://github.com/Fredericodgv/FlipNflop/commit/43ca5ab68e3a6ba3b9a4f214662d3968866e6860))
-* enhance MainMenu with tutorial and submenu functionality ([906bfad](https://github.com/Fredericodgv/FlipNflop/commit/906bfadabd6fd0af723c88aef2e70fd123985b10))
-* refactor GameMenu to improve submenu handling and UI structure ([aaae4f4](https://github.com/Fredericodgv/FlipNflop/commit/aaae4f4ae84cf2c2519a5a48b6aeac6031bdae6e))
 
 
 
