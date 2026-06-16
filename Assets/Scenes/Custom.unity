@@ -3105,7 +3105,7 @@ SpriteRenderer:
   m_SortingLayer: -2
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: a19fe71b306fc4045b7c66c6583ce46f, type: 3}
+  m_Sprite: {fileID: 5190299140411600157, guid: 9437ad3a669775a40898f66d8821a7d5, type: 3}
   m_Color: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 0.6392157}
   m_FlipX: 0
   m_FlipY: 0
@@ -3125,8 +3125,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 17, y: 4.91, z: 21.8}
-  m_LocalScale: {x: 4.211304, y: 3.125123, z: 1.0367304}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 2.98, y: 2.98, z: 2.98}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3214,6 +3214,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 729342354}
+    - target: {fileID: 4184767544947978882, guid: 31995a03191da904eb235a6629c91d70, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4585487842548421115, guid: 31995a03191da904eb235a6629c91d70, type: 3}
       propertyPath: m_SizeDelta.x
       value: 520
