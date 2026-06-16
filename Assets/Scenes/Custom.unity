@@ -155,12 +155,12 @@ MonoBehaviour:
   linePrefab: {fileID: 3090148692481908950, guid: f6794afdb432aaa46b21434cb386774a, type: 3}
   dashLength: 0.3
   dashGap: 0.2
-  clockStep: 6
-  clockLineColor: {r: 0, g: 0.9, b: 1, a: 0.6}
+  clockStep: 3
+  clockLineColor: {r: 0, g: 0.9, b: 1, a: 0.2509804}
   hintMode: 2
-  asyncHintColor: {r: 1, g: 0.5, b: 0, a: 0.6}
+  asyncHintColor: {r: 1, g: 0.5, b: 0, a: 0.2509804}
   levelJsonLoader: {fileID: 992803105}
-  bufferLines: 5
+  bufferLines: 10
   drawClockGizmos: 0
   drawAsyncGizmos: 0
   labelEveryN: 0
@@ -3105,8 +3105,8 @@ SpriteRenderer:
   m_SortingLayer: -2
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 5190299140411600157, guid: 9437ad3a669775a40898f66d8821a7d5, type: 3}
-  m_Color: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 0.6392157}
+  m_Sprite: {fileID: 7482667652216324306, guid: c34399d9a56ce0b4d8a6d30cc7da54f2, type: 3}
+  m_Color: {r: 0.03137255, g: 0.14117648, b: 0.73333335, a: 0.6392157}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -3125,7 +3125,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 17, y: 4.91, z: 21.8}
-  m_LocalScale: {x: 2.98, y: 2.98, z: 2.98}
+  m_LocalScale: {x: 41.23, y: 41.23, z: 41.23}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}

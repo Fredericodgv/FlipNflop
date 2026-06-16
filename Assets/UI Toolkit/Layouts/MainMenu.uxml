@@ -6,7 +6,7 @@
             <ui:VisualElement class="card menu-card-small">
                 <ui:Button text="Jogar" name="PlayButton" class="btn"/>
                 <!-- <ui:Button text="Upload" name="UploadButton" class="btn"/> -->
-                <ui:Button text="Tutorial" name="TutorialButton" class="btn"/>
+                <ui:Button text="Como Jogar" name="TutorialButton" class="btn"/>
                 <!--<ui:Button text="Configurações" name="SettingsButton" class="btn"/>-->
                 <ui:Button text="Créditos" name="AboutButton" class="btn"/>
             </ui:VisualElement>
@@ -20,7 +20,7 @@
                     <ui:VisualElement name="Credits" class="credits-list">
                         <ui:VisualElement class="credit-section">
                             <ui:Label text="Desenvolvedores (Alunos)" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;"/>
-                            <ui:Label text="Diogo Amarante" class="text"/>
+                            <ui:Label text="Diogo Amarante" class="text"/> 
                             <ui:Label text="Frederico Dôndici" class="text"/>
                             <ui:Label text="João Vitor Fernandes" class="text"/>
                             <ui:Label text="Pedro Crawford" class="text"/>

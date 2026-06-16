@@ -50,7 +50,7 @@ public class SignalColorManager : MonoBehaviour
     public static readonly int[][] Palettes = new int[][]
     {
         // Padrão
-        new[] { 0, 0, 0, 0, 6, 4, 7 },
+        new[] { 0, 0, 3, 3, 6, 4, 7 },
 
         // Daltonismo
         new[] { 1, 9, 2, 3, 6, 7, 5 },
