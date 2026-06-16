@@ -30,8 +30,23 @@ public class HUDController : MonoBehaviour
     /// </summary>
     public void NextLevel()
     {
-        if (!string.IsNullOrEmpty(nextLevelSceneName))
-            SceneManager.LoadScene(nextLevelSceneName);
+        if (LevelSequenceManager.HasNextLevel())
+        {
+            LevelSequenceManager.CurrentLevelIndex++;
+            int newIndex = LevelSequenceManager.CurrentLevelIndex;
+
+            string nextLevel = LevelSequenceManager.Levels[newIndex];
+
+            MenuManager.LevelToLoadJSON = nextLevel;
+
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+        else
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene("MenuWEB");
+        }
     }
 
     /// <summary>
