@@ -1,3 +1,12 @@
+## [0.11.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.11.0...v0.11.1) (2026-06-16)
+
+
+### Bug Fixes
+
+* minor adjusts in credits screen ([5a096ba](https://github.com/Fredericodgv/FlipNflop/commit/5a096ba568efe16ffaa7407cf5ad93c2015cf44d))
+
+
+
 # [0.11.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.5...v0.11.0) (2026-06-16)
 
 
@@ -38,15 +47,6 @@
 ### Bug Fixes
 
 * Enhance audio and color configuration options ([53376f9](https://github.com/Fredericodgv/FlipNflop/commit/53376f9ca540b6bf3d993d12868ecee747b11316))
-
-
-
-## [0.10.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.1...v0.10.2) (2026-06-14)
-
-
-### Bug Fixes
-
-* link level selection button with level files ([2d25240](https://github.com/Fredericodgv/FlipNflop/commit/2d25240c0b97378091d9e8d5e5c58e1f60840854))
 
 
 
