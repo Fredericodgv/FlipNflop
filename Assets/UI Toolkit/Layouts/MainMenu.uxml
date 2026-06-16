@@ -5,8 +5,9 @@
         <ui:VisualElement name="MainMenu" class="panel" style="display: flex;">
             <ui:VisualElement class="card menu-card-small">
                 <ui:Button text="Jogar" name="PlayButton" class="btn"/>
-                <ui:Button text="Upload" name="UploadButton" class="btn"/>
+                <!-- <ui:Button text="Upload" name="UploadButton" class="btn"/> -->
                 <ui:Button text="Tutorial" name="TutorialButton" class="btn"/>
+                <!--<ui:Button text="Configurações" name="SettingsButton" class="btn"/>-->
                 <ui:Button text="Créditos" name="AboutButton" class="btn"/>
             </ui:VisualElement>
         </ui:VisualElement>
