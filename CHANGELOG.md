@@ -1,3 +1,18 @@
+# [0.11.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.5...v0.11.0) (2026-06-16)
+
+
+### Bug Fixes
+
+* enhance About panel with scrollable credits and game title. ([6960247](https://github.com/Fredericodgv/FlipNflop/commit/696024778c1717c0c871e59fbe56413cc1d5ecf4))
+* fixes the Esc key for navigating between menus and submenus. ([f762b7c](https://github.com/Fredericodgv/FlipNflop/commit/f762b7ced28f5dd359296bdd98a4e92851ccbc5b))
+
+
+### Features
+
+* add new instructions to the tutorial submenu ([e2d93b2](https://github.com/Fredericodgv/FlipNflop/commit/e2d93b2cffcd04f564d41a07aaeaebdbb5b8e975))
+
+
+
 ## [0.10.5](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.4...v0.10.5) (2026-06-16)
 
 
@@ -32,15 +47,6 @@
 ### Bug Fixes
 
 * link level selection button with level files ([2d25240](https://github.com/Fredericodgv/FlipNflop/commit/2d25240c0b97378091d9e8d5e5c58e1f60840854))
-
-
-
-## [0.10.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.0...v0.10.1) (2026-06-11)
-
-
-### Bug Fixes
-
-* Little adjustment to feedbacklines ([b09f33c](https://github.com/Fredericodgv/FlipNflop/commit/b09f33ce18d2c6ace94faf95f90501844a92d23a))
 
 
 
