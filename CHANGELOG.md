@@ -1,3 +1,12 @@
+## [0.11.4](https://github.com/Fredericodgv/FlipNflop/compare/v0.11.3...v0.11.4) (2026-06-16)
+
+
+### Bug Fixes
+
+* Update UI elements and audio settings for improved user experience ([87d3c5f](https://github.com/Fredericodgv/FlipNflop/commit/87d3c5f9c7da4d92b01cc725cc79b136376c80a4))
+
+
+
 ## [0.11.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.11.2...v0.11.3) (2026-06-16)
 
 
@@ -37,16 +46,6 @@
 ### Features
 
 * add new instructions to the tutorial submenu ([e2d93b2](https://github.com/Fredericodgv/FlipNflop/commit/e2d93b2cffcd04f564d41a07aaeaebdbb5b8e975))
-
-
-
-## [0.10.5](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.4...v0.10.5) (2026-06-16)
-
-
-### Bug Fixes
-
-* Clear unused files ([da048ad](https://github.com/Fredericodgv/FlipNflop/commit/da048ad04694df095476392a54d2ea92acf75b54))
-* Next level button working! ([cc565a7](https://github.com/Fredericodgv/FlipNflop/commit/cc565a7fa714f5cf04ee536418e839077a7b8f18))
 
 
 
