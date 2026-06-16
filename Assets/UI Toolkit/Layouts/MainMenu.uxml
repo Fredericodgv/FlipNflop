@@ -1,60 +1,47 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="../Styles/MainMenu.uss"/>
-
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/MainMenu.uss?fileID=7433441132597879392&amp;guid=914addff2ff73d644a3f7eeeebd54bb4&amp;type=3#MainMenu"/>
     <ui:VisualElement class="screen bg-main">
         <ui:VisualElement class="overlay"/>
-
         <ui:VisualElement name="MainMenu" class="panel" style="display: flex;">
             <ui:VisualElement class="card menu-card-small">
                 <ui:Button text="Jogar" name="PlayButton" class="btn"/>
                 <ui:Button text="Upload" name="UploadButton" class="btn"/>
                 <ui:Button text="Tutorial" name="TutorialButton" class="btn"/>
-                <!--<ui:Button text="Configurações" name="SettingsButton" class="btn"/>-->
                 <ui:Button text="Créditos" name="AboutButton" class="btn"/>
             </ui:VisualElement>
         </ui:VisualElement>
-
-<ui:VisualElement name="About" class="panel hidden">
+        <ui:VisualElement name="About" class="panel hidden">
             <ui:VisualElement class="page about-page">
                 <ui:Label text="Créditos" name="Title" class="title"/>
-                
                 <ui:ScrollView name="CreditsScrollView" mode="Vertical" horizontal-scroller-visibility="Hidden" class="credits">
-                    <ui:Label text="Flip n' Flop" name="Subtitle" class="subtitle"/>
-                    
-                    <ui:Label text="Um jogo educacional digital criado para apoiar o aprendizado de diagramas de tempo de flip-flops, combinando lógica digital, desafios interativos e progressão por fases." style="white-space: normal;" class="text"/>
-                    
+                    <ui:Label text="Flip n&apos; Flop" name="Subtitle" class="subtitle"/>
+                    <ui:Label text="Um jogo educacional digital criado para apoiar o aprendizado de diagramas de tempo de flip-flops, combinando lógica digital, desafios interativos e progressão por fases." class="text" style="white-space: normal;"/>
                     <ui:VisualElement name="Credits" class="credits-list">
-                        
                         <ui:VisualElement class="credit-section">
-                            <ui:Label text="Desenvolvedores (Alunos)" style="color: #FFD700; -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;"/>
+                            <ui:Label text="Desenvolvedores (Alunos)" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;"/>
                             <ui:Label text="Diogo Amarante" class="text"/>
                             <ui:Label text="Frederico Dôndici" class="text"/>
                             <ui:Label text="João Vitor Fernandes" class="text"/>
                             <ui:Label text="Pedro Crawford" class="text"/>
                         </ui:VisualElement>
-
                         <ui:VisualElement class="credit-section">
-                            <ui:Label text="Artistas voluntários" class="subtitle" style="color: #FFD700; -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;"/>
+                            <ui:Label text="Artistas voluntários" class="subtitle" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;"/>
                             <ui:Label text="Diego Ângelo (Arte da Personagem)" class="text"/>
-                            
-                            <ui:Label text="Luis Felipe &quot;Koreano&quot; Resende (Música)" style="white-space: normal;" class="text"/>
+                            <ui:Label text="Luis Felipe &quot;Koreano&quot; Resende (Música)" class="text" style="white-space: normal;"/>
                         </ui:VisualElement>
-
                         <ui:VisualElement class="credit-section">
-                            <ui:Label text="Orientadores (Professores)" class="subtitle" style="color: #FFD700; -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;"/>
+                            <ui:Label text="Orientadores (Professores)" class="subtitle" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;"/>
                             <ui:Label text="Luciano Chaves" class="text"/>
                             <ui:Label text="Marcelo Caniato" class="text"/>
                         </ui:VisualElement>
-
                     </ui:VisualElement>
                 </ui:ScrollView>
             </ui:VisualElement>
         </ui:VisualElement>
-
         <ui:VisualElement name="LevelSelect" class="panel hidden">
             <ui:VisualElement class="page">
                 <ui:Label text="Selecione a fase" name="Title" class="title"/>
-                <ui:VisualElement name="LevelGrid" class="grid">
+                <ui:VisualElement name="LevelGrid" class="grid" style="align-self: center; justify-content: space-between; align-items: stretch; max-width: 501px;">
                     <ui:Button text="1" name="Level1" class="level"/>
                     <ui:Button text="2" name="Level2" class="level"/>
                     <ui:Button text="3" name="Level3" class="level"/>
@@ -67,38 +54,37 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-
         <ui:VisualElement name="Tutorial" class="panel hidden">
             <ui:VisualElement class="page tutorial-page">
                 <ui:Label text="Como Jogar" name="Title" class="title"/>
                 <ui:ScrollView name="ScrollView" class="tutorial-scroll">
                     <ui:VisualElement name="Jogo" focusable="false" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Seu objetivo é construir corretamente o diagrama de tempo do sinal de saída do Flip-Flop. Para isso, analise cuidadosamente o comportamento dos sinais de entrada ao longo do tempo e movimente a personagem exatamente pelo caminho em que você deseja desenhar a linha do sinal de saída."/>
+                        <ui:Label name="Text" text="Seu objetivo é construir corretamente o diagrama de tempo do sinal de saída do Flip-Flop. Para isso, analise cuidadosamente o comportamento dos sinais de entrada ao longo do tempo e movimente a personagem exatamente pelo caminho em que você deseja desenhar a linha do sinal de saída." class="tutorial-text"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="Moviment" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Use A/D ou as setas para esquerda/direita para movimentar horizontalmente a personagem. Ao andar para a direita, a linha do sinal de saída é desenhada. Ao andar para a esquerda, a linha é apagada (permitindo corrigir erros)."/>
+                        <ui:Label name="Text" text="Use A/D ou as setas para esquerda/direita para movimentar horizontalmente a personagem. Ao andar para a direita, a linha do sinal de saída é desenhada. Ao andar para a esquerda, a linha é apagada (permitindo corrigir erros)." class="tutorial-text"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="VerticalMoviment" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Use W/S ou as setas para cima/baixo para alternar entre as plataformas do piso e do teto. Esse movimento é equivalente à trocar o valor lógico do sinal de saída entre 0 e 1."/>
+                        <ui:Label name="Text" text="Use W/S ou as setas para cima/baixo para alternar entre as plataformas do piso e do teto. Esse movimento é equivalente à trocar o valor lógico do sinal de saída entre 0 e 1." class="tutorial-text"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="Jump" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Use espaço para pular buracos nas plataformas ou desviar de outros obstáculos sem a necessidade de alternar plataformas."/>
+                        <ui:Label name="Text" text="Use espaço para pular buracos nas plataformas ou desviar de outros obstáculos sem a necessidade de alternar plataformas." class="tutorial-text"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="Dash" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Use shift para correr por um breve instante de tempo e superar obstáculos mais desafiadores." />
+                        <ui:Label name="Text" text="Use shift para correr por um breve instante de tempo e superar obstáculos mais desafiadores." class="tutorial-text"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="Help" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Use H para habilitar/desabilitar as linhas de ajuda para eventos síncronos e assíncronos" />
+                        <ui:Label name="Text" text="Use H para habilitar/desabilitar as linhas de ajuda para eventos síncronos e assíncronos" class="tutorial-text"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="EndOfLevel" class="tutorial-item">
                         <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" class="tutorial-text" text="Ao final da fase, verifique os acertos e erros no diagrama desenhado e a pontuação obtida." />
+                        <ui:Label name="Text" text="Ao final da fase, verifique os acertos e erros no diagrama desenhado e a pontuação obtida." class="tutorial-text"/>
                     </ui:VisualElement>
                 </ui:ScrollView>
             </ui:VisualElement>
