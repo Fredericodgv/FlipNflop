@@ -10,16 +10,16 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource musicSource; // AudioSource com Output → grupo Musica do Mixer
 
     private const string PARAM_MASTER = "VolumeMaster";
-    private const string PARAM_MUSIC  = "VolumeMusica";
-    private const string PARAM_SFX    = "VolumeSons";
+    private const string PARAM_MUSIC = "VolumeMusica";
+    private const string PARAM_SFX = "VolumeSons";
 
     private const string KEY_MASTER = "AudioMaster";
-    private const string KEY_MUSIC  = "AudioMusica";
-    private const string KEY_SFX    = "AudioSons";
+    private const string KEY_MUSIC = "AudioMusica";
+    private const string KEY_SFX = "AudioSons";
 
-    private const float DEFAULT_MASTER = 1f;    // 100%
-    private const float DEFAULT_MUSIC  = 0.50f; // 50%
-    private const float DEFAULT_SFX    = 0.50f; // 50%
+    public const float DEFAULT_MASTER = 1f;    // 100%
+    public const float DEFAULT_MUSIC = 0.50f; // 50%
+    public const float DEFAULT_SFX = 0.25f; // 50%
 
     public static AudioManager Instance { get; private set; }
 
@@ -70,8 +70,8 @@ public class AudioManager : MonoBehaviour
     }
 
     public float GetMasterVolume() => PlayerPrefs.GetFloat(KEY_MASTER, DEFAULT_MASTER);
-    public float GetMusicVolume()  => PlayerPrefs.GetFloat(KEY_MUSIC,  DEFAULT_MUSIC);
-    public float GetSFXVolume()    => PlayerPrefs.GetFloat(KEY_SFX,    DEFAULT_SFX);
+    public float GetMusicVolume() => PlayerPrefs.GetFloat(KEY_MUSIC, DEFAULT_MUSIC);
+    public float GetSFXVolume() => PlayerPrefs.GetFloat(KEY_SFX, DEFAULT_SFX);
 
     #endregion
 

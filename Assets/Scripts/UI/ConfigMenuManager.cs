@@ -44,6 +44,7 @@ public class ConfigManager : MonoBehaviour
     private Slider sliderMaster;
     private Slider sliderSons;
     private Slider sliderMusica;
+    private Button btnResetAudio;
 
     // Vídeo
     private Slider sliderContrast;
@@ -52,6 +53,8 @@ public class ConfigManager : MonoBehaviour
 
     // Cores — sinais
     private DropdownField dropdownPaleta;
+    private Button btnResetColors;
+    private bool isApplyingPreset = false;
 
     private VisualElement previewJ;
     private VisualElement previewK;
@@ -164,6 +167,7 @@ public class ConfigManager : MonoBehaviour
         sliderMaster = root.Q<Slider>("SliderMaster");
         sliderSons = root.Q<Slider>("SliderSons");
         sliderMusica = root.Q<Slider>("SliderMusica");
+        btnResetAudio = root.Q<Button>("BtnResetAudio");
 
         // Vídeo
         sliderContrast = root.Q<Slider>("SliderContrast");
@@ -172,6 +176,7 @@ public class ConfigManager : MonoBehaviour
 
         // Cores
         dropdownPaleta = root.Q<DropdownField>("DropdownPaleta");
+        btnResetColors = root.Q<Button>("BtnResetColors");
 
         previewJ = root.Q<VisualElement>("PreviewJ");
         previewK = root.Q<VisualElement>("PreviewK");
@@ -236,6 +241,9 @@ public class ConfigManager : MonoBehaviour
 
         if (btnConfirmRGB != null) btnConfirmRGB.clicked += ConfirmRGBColor;
         if (btnCancelRGB != null) btnCancelRGB.clicked += CloseRGBOverlay;
+
+        if (btnResetColors != null) btnResetColors.clicked += ResetDefaultColors;
+        if (btnResetAudio != null) btnResetAudio.clicked += ResetDefaultAudio;
 
         sliderR?.RegisterValueChangedCallback(OnRGBSliderChanged);
         sliderG?.RegisterValueChangedCallback(OnRGBSliderChanged);
@@ -316,9 +324,7 @@ public class ConfigManager : MonoBehaviour
         root.Q<Button>("Options")?.Focus();
     }
 
-    // -------------------------------------------------------------------------
-    // Áudio
-    // -------------------------------------------------------------------------
+    #region Audio
 
     private void InitAudioSliders()
     {
@@ -348,9 +354,26 @@ public class ConfigManager : MonoBehaviour
     private void OnSFXVolumeChanged(ChangeEvent<float> evt) => AudioManager.Instance?.SetSFXVolume(evt.newValue);
     private void OnMusicVolumeChanged(ChangeEvent<float> evt) => AudioManager.Instance?.SetMusicVolume(evt.newValue);
 
-    // -------------------------------------------------------------------------
-    // Vídeo
-    // -------------------------------------------------------------------------
+    private void ResetDefaultAudio()
+    {
+        if (AudioManager.Instance == null) return;
+
+        // Busca os valores padrão diretamente do AudioManager
+        sliderMaster?.SetValueWithoutNotify(AudioManager.DEFAULT_MASTER);
+        sliderMusica?.SetValueWithoutNotify(AudioManager.DEFAULT_MUSIC);
+        sliderSons?.SetValueWithoutNotify(AudioManager.DEFAULT_SFX);
+
+        // Aplica no sistema de som
+        AudioManager.Instance.SetMasterVolume(AudioManager.DEFAULT_MASTER);
+        AudioManager.Instance.SetMusicVolume(AudioManager.DEFAULT_MUSIC);
+        AudioManager.Instance.SetSFXVolume(AudioManager.DEFAULT_SFX);
+
+        PlayerPrefs.Save();
+    }
+
+    #endregion
+
+    #region Video   
 
     private void InitVideoSettings()
     {
@@ -400,9 +423,9 @@ public class ConfigManager : MonoBehaviour
         LocalizationSettings.SelectedLocale = locales[nextIndex];
     }
 
-    // -------------------------------------------------------------------------
-    // Cores
-    // -------------------------------------------------------------------------
+    #endregion
+
+    #region Colors
 
     private void InitColorSettings()
     {
@@ -411,15 +434,34 @@ public class ConfigManager : MonoBehaviour
 
         if (dropdownPaleta != null)
         {
-            dropdownPaleta.choices = new List<string>(SignalColorManager.PaletteNames);
+            List<string> choices = new List<string>(SignalColorManager.PaletteNames);
+            if (!choices.Contains("Personalizado"))
+            {
+                choices.Add("Personalizado");
+            }
+            dropdownPaleta.choices = choices;
 
             dropdownPaleta.RegisterValueChangedCallback(evt =>
             {
-                int index = dropdownPaleta.choices.IndexOf(evt.newValue);
-                SignalColorManager.Instance.ApplyPalette(index);
-                SyncColorUI();
+                if (evt.newValue == "Personalizado" || isApplyingPreset)
+                    return;
+
+                int index = System.Array.IndexOf(SignalColorManager.PaletteNames, evt.newValue);
+
+                if (index >= 0)
+                {
+                    isApplyingPreset = true;
+
+                    SignalColorManager.Instance.ApplyPalette(index);
+                    SyncColorUI();
+
+                    dropdownPaleta.SetValueWithoutNotify(evt.newValue);
+
+                    isApplyingPreset = false;
+                }
             });
         }
+
 
         GenerateSwatches(containerSwatchesJ, swatchesJ, SignalType.J);
         GenerateSwatches(containerSwatchesK, swatchesK, SignalType.K);
@@ -487,7 +529,7 @@ public class ConfigManager : MonoBehaviour
         }
     }
 
-    /// <summary>
+    //// <summary>
     /// Sincroniza toda a UI de cores com o estado atual do SignalColorManager.
     /// </summary>
     private void SyncColorUI()
@@ -495,6 +537,7 @@ public class ConfigManager : MonoBehaviour
         if (SignalColorManager.Instance == null)
             return;
 
+        // 1. Atualiza os quadradinhos de preview com as cores do Manager
         previewJ.style.backgroundColor = SignalColorManager.Instance.ColorJ;
         previewK.style.backgroundColor = SignalColorManager.Instance.ColorK;
         previewCLK.style.backgroundColor = SignalColorManager.Instance.ColorCLK;
@@ -503,6 +546,7 @@ public class ConfigManager : MonoBehaviour
         previewFeedbackSuccess.style.backgroundColor = SignalColorManager.Instance.ColorFeedbackSuccess;
         previewFeedbackFailure.style.backgroundColor = SignalColorManager.Instance.ColorFeedbackFailure;
 
+        // 2. Sincroniza as bordas brancas dos seletores baseando-se nos índices puros
         UpdateSwatchBorders(swatchesJ, SignalColorManager.Instance.IndexJ);
         UpdateSwatchBorders(swatchesK, SignalColorManager.Instance.IndexK);
         UpdateSwatchBorders(swatchesCLK, SignalColorManager.Instance.IndexCLK);
@@ -511,37 +555,18 @@ public class ConfigManager : MonoBehaviour
         UpdateSwatchBorders(swatchesFeedbackSuccess, SignalColorManager.Instance.IndexFeedbackSuccess);
         UpdateSwatchBorders(swatchesFeedbackFailure, SignalColorManager.Instance.IndexFeedbackFailure);
 
-        // Atualiza dropdown de paleta (apenas para J/K/CLK como antes)
-        int j = SignalColorManager.Instance.IndexJ;
-        int k = SignalColorManager.Instance.IndexK;
-        int clk = SignalColorManager.Instance.IndexCLK;
+        // 3. Obtém qual paleta está ativa diretamente da regra de negócio
+        int activePaletteIndex = SignalColorManager.Instance.GetCurrentPaletteIndex();
 
-        int preset = SignalColorManager.Instance.IndexPreset;
-        int clear = SignalColorManager.Instance.IndexClear;
-
-        int success = SignalColorManager.Instance.IndexFeedbackSuccess;
-        int failure = SignalColorManager.Instance.IndexFeedbackFailure;
-
-        for (int i = 0; i < SignalColorManager.Palettes.Length; i++)
+        if (activePaletteIndex >= 0)
         {
-            var palette = SignalColorManager.Palettes[i];
-
-            if (
-                palette[0] == j &&
-                palette[1] == k &&
-                palette[2] == clk &&
-                palette[3] == preset &&
-                palette[4] == clear &&
-                palette[5] == success &&
-                palette[6] == failure
-            )
-            {
-                dropdownPaleta?.SetValueWithoutNotify(
-                    SignalColorManager.PaletteNames[i]
-                );
-
-                break;
-            }
+            // Se bate com uma paleta existente, define o texto correspondente ("Padrão", etc.)
+            dropdownPaleta?.SetValueWithoutNotify(SignalColorManager.PaletteNames[activePaletteIndex]);
+        }
+        else if (!isApplyingPreset)
+        {
+            // Se retornou -1 e não estamos no meio da transição de um clique, vira "Personalizado"
+            dropdownPaleta?.SetValueWithoutNotify("Personalizado");
         }
     }
 
@@ -561,9 +586,22 @@ public class ConfigManager : MonoBehaviour
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Abertura do overlay RGB
-    // -------------------------------------------------------------------------
+    private void ResetDefaultColors()
+    {
+        if (SignalColorManager.Instance == null) return;
+
+        // Aplica a Paleta 0 (geralmente a paleta padrão/original do jogo)
+        SignalColorManager.Instance.ApplyPalette(0);
+
+        // Sincroniza as bordas brancas, as cores dos quadradinhos e o dropdown
+        SyncColorUI();
+
+        PlayerPrefs.Save(); // Salva a mudança imediatamente
+    }
+
+    #endregion
+
+    #region RGB Overlay
 
     private void OpenCustomJ() => OpenRGBOverlay(SignalType.J);
     private void OpenCustomK() => OpenRGBOverlay(SignalType.K);
@@ -665,3 +703,5 @@ public class ConfigManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 }
+
+    #endregion

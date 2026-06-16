@@ -1,49 +1,56 @@
-## [0.9.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.9.1...v0.9.2) (2026-06-10)
+## [0.10.4](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.3...v0.10.4) (2026-06-15)
 
 
 ### Bug Fixes
 
-* Enhance signal label generation with async state handling for better real-time updates ([7e95e0a](https://github.com/Fredericodgv/FlipNflop/commit/7e95e0a5e7b9364bad9765c09bbb2f8fc7505b5f))
-* Ensure preset and clear signals are validated before use in JK and SR flip-flop simulations ([9454196](https://github.com/Fredericodgv/FlipNflop/commit/9454196f44b5fd6fa5d45d4b25b1ca4a2b2a12de))
-* Update ClockLineHint.cs for improved synchronous hint ([4c02b5d](https://github.com/Fredericodgv/FlipNflop/commit/4c02b5d5734c37e7dbd854f3ae754824aa6153ba))
+* player stops when finish level ([e94c51e](https://github.com/Fredericodgv/FlipNflop/commit/e94c51e60bac340a86f985ba0ff208402b7dd0c7))
 
 
 
-## [0.9.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.9.0...v0.9.1) (2026-05-25)
+## [0.10.3](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.2...v0.10.3) (2026-06-15)
 
 
 ### Bug Fixes
 
-* Update MainMenu layout to display buttons correctly ([fc95458](https://github.com/Fredericodgv/FlipNflop/commit/fc95458be54bd65486ecef4d3d37e06f26560089))
-* Update tutorial texts ([39c2a67](https://github.com/Fredericodgv/FlipNflop/commit/39c2a677249aacb09715ddb55a0e38f231ebcb4d))
+* Enhance audio and color configuration options ([53376f9](https://github.com/Fredericodgv/FlipNflop/commit/53376f9ca540b6bf3d993d12868ecee747b11316))
 
 
 
-# [0.9.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.8.2...v0.9.0) (2026-05-23)
+## [0.10.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.1...v0.10.2) (2026-06-14)
+
+
+### Bug Fixes
+
+* link level selection button with level files ([2d25240](https://github.com/Fredericodgv/FlipNflop/commit/2d25240c0b97378091d9e8d5e5c58e1f60840854))
+
+
+
+## [0.10.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.10.0...v0.10.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* Little adjustment to feedbacklines ([b09f33c](https://github.com/Fredericodgv/FlipNflop/commit/b09f33ce18d2c6ace94faf95f90501844a92d23a))
+
+
+
+# [0.10.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.9.2...v0.10.0) (2026-06-10)
+
+
+### Bug Fixes
+
+* Add english config menu ([5a1048c](https://github.com/Fredericodgv/FlipNflop/commit/5a1048c220e2434a8dfc445b5404b8d077dafbf0))
+* Add more signals color custom ([3d98344](https://github.com/Fredericodgv/FlipNflop/commit/3d983443430600b64374a3033fdbdbf60edc447c))
+* Enhance ConfigMenu with additional signal customization options ([85e0ff8](https://github.com/Fredericodgv/FlipNflop/commit/85e0ff8f320b42bcceaa32516652a101f9043392))
+* update ConfigMenu and GameMenu to match the Unity panel settings. ([ad0ea95](https://github.com/Fredericodgv/FlipNflop/commit/ad0ea95a708c562fd956febb4644e2aa11092752))
+* Update MainMenu buttons to use localized text and adjust layout margins ([5e042e0](https://github.com/Fredericodgv/FlipNflop/commit/5e042e0926899f3f815357ac18feb7b62e694fa7))
 
 
 ### Features
 
-* Remake main menu using Unity UIToolkit ([fb2dd41](https://github.com/Fredericodgv/FlipNflop/commit/fb2dd4116245d14191f7fdd56f0c01ea21057fda))
-
-
-
-## [0.8.2](https://github.com/Fredericodgv/FlipNflop/compare/v0.8.1...v0.8.2) (2026-05-21)
-
-
-### Bug Fixes
-
-* remove unused label Y positions in Custom.unity ([70039df](https://github.com/Fredericodgv/FlipNflop/commit/70039dfac6e87691aa88b4c2b8c7676cebe2f946))
-* update GenerateLabels to fix assynchrone phases ([d26f2db](https://github.com/Fredericodgv/FlipNflop/commit/d26f2db17a25bb5f0f7accf8c42c6ec334783155))
-
-
-
-## [0.8.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.8.0...v0.8.1) (2026-05-21)
-
-
-### Bug Fixes
-
-* add error handling for invalid flip-flop states in simulation ([ef4cc59](https://github.com/Fredericodgv/FlipNflop/commit/ef4cc59db8c5facb7999a381b52437d57a5c3b64))
+* add tutorial button to GameMenu.uxml ([43ca5ab](https://github.com/Fredericodgv/FlipNflop/commit/43ca5ab68e3a6ba3b9a4f214662d3968866e6860))
+* enhance MainMenu with tutorial and submenu functionality ([906bfad](https://github.com/Fredericodgv/FlipNflop/commit/906bfadabd6fd0af723c88aef2e70fd123985b10))
+* refactor GameMenu to improve submenu handling and UI structure ([aaae4f4](https://github.com/Fredericodgv/FlipNflop/commit/aaae4f4ae84cf2c2519a5a48b6aeac6031bdae6e))
 
 
 
