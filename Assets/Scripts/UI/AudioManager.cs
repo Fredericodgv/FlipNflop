@@ -18,8 +18,8 @@ public class AudioManager : MonoBehaviour
     private const string KEY_SFX = "AudioSons";
 
     public const float DEFAULT_MASTER = 1f;    // 100%
-    public const float DEFAULT_MUSIC = 0.50f; // 50%
-    public const float DEFAULT_SFX = 0.25f; // 50%
+    public const float DEFAULT_SFX = 1f; // 100%
+    public const float DEFAULT_MUSIC = 0.25f; // 25%
 
     public static AudioManager Instance { get; private set; }
 

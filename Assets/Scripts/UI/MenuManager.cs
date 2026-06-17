@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
@@ -75,7 +76,7 @@ public class MenuManager : MonoBehaviour
                 string nomeDoJson = arquivoJson.name; // Pega o nome do arquivo sem a extensão .json
                 string idDoBotao = $"Level{i + 1}";
 
-                ConfigurarBotaoNivel(root, idDoBotao, nomeDoJson);
+                ConfigurarBotaoNivel(root, idDoBotao, nomeDoJson, i);
             }
         }
     }
@@ -86,12 +87,18 @@ public class MenuManager : MonoBehaviour
             backBtn.clicked -= FecharSubmenuAtual;
     }
 
-    private void ConfigurarBotaoNivel(VisualElement root, string btnId, string jsonName)
+    private void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            FecharSubmenuAtual();
+    }
+    private void ConfigurarBotaoNivel(VisualElement root, string btnId, string jsonName, int levelIndex)
     {
         Button btn = root.Q<Button>(btnId);
         if (btn != null)
         {
-            btn.clicked += () => SelectLevelAndLoad(jsonName);
+            // MUDANÇA 3: Passamos o 'levelIndex' para o método
+            btn.clicked += () => SelectLevelAndLoad(jsonName, levelIndex);
         }
         else
         {
@@ -183,10 +190,12 @@ public class MenuManager : MonoBehaviour
 
     #region Carregamento JSON
 
-    public void SelectLevelAndLoad(string levelJsonName)
+    public void SelectLevelAndLoad(string levelJsonName, int levelIndex)
     {
+        LevelSequenceManager.CurrentLevelIndex = levelIndex;
+
         LevelToLoadJSON = levelJsonName;
-        Debug.Log("JSON Selecionado com sucesso: " + levelJsonName);
+        Debug.Log($"JSON Selecionado com sucesso: {levelJsonName} | Índice: {levelIndex}");
 
         SceneManager.LoadScene(customLevelName);
     }

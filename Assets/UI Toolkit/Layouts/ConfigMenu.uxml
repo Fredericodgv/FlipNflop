@@ -93,7 +93,7 @@
             </ui:VisualElement>
 
             <ui:VisualElement name="PanelControls" class="config-page config-controls-page" style="display: none;">
-                <ui:Label text="Mapeamento de Teclas" class="config-section-title"/>
+                <!-- <ui:Label text="Mapeamento de Teclas" class="config-section-title"/> -->
                 <ui:ScrollView name="ControlsScrollView" class="config-controls-scroll"/>
                 <ui:Button name="BtnRestoreControls" text="Restaurar Padrões" class="menu-button config-restore-button"/>
             </ui:VisualElement>
