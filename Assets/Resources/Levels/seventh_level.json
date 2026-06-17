@@ -1,8 +1,8 @@
 {
     "levelName": "seventh_level",
-    "levelDescription": "Implementa obstáculos mace com movimento vertical",
-    "levelID": "76278262",
-    "levelOrder": 60,
+    "levelDescription": "Implementa lógica assíncrona do Clear com sobreposição",
+    "levelID": "987607804",
+    "levelOrder": 70,
     "ffType": "JK",
     "clockCicles": 8,
     "activeClockEdge": "rising",  

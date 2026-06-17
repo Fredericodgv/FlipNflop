@@ -1,0 +1,68 @@
+{
+    "levelName": "ninth_level",
+    "levelDescription": "Fase difícil com reunião de todos os conceitos introduzidos",
+    "levelID": "2913914308",
+    "levelOrder": 90,
+    "ffType": "JK",
+    "clockCicles": 9,
+    "activeClockEdge": "rising",  
+    "jSignal": "000011 101101 110000 111100 000110 000110 000001 101110 000111 010100",
+    "kSignal": "000001 111000 111101 110001 110000 011100 011110 011001 110001 101100",
+    "presetSignal": "111111 111111 111111 100110 001111 101111 111111 111101 111100 000000",
+    "clearSignal": "111111 110001 111111 111111 111111 111101 111111 101111 111111 111111",
+    "asyncActive": "low",
+    "ceiling": "110001 111111 110001 111001 111111 111111 100001 111001 110011 111111",
+    "floor": "111111 111001 100111 111001 111111 111111 100001 110011 110011 111111",
+    "obstacles": [
+        {
+            "obstacleName": "Mace",
+            "startX": 3,
+            "startY": 1,
+            "speed": 0,
+            "horizontalDistance": 0,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "obstacleName": "Mace",
+            "startX": 16,
+            "startY": 3,
+            "speed": 2,
+            "horizontalDistance": 4,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-right",
+            "clockwise": true
+        },
+        {
+            "obstacleName": "Mace",
+            "startX": 27,
+            "startY": 1,
+            "speed": 4,
+            "horizontalDistance": 0,
+            "verticalDistance": 4,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "obstacleName": "Mace",
+            "startX": 34,
+            "startY": 4,
+            "speed": 2,
+            "horizontalDistance": 5,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "obstacleName": "Mace",
+            "startX": 42,
+            "startY": 3,
+            "speed": 5,
+            "horizontalDistance": 11,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        }
+    ]
+}

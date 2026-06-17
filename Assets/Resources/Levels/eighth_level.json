@@ -1,0 +1,58 @@
+{
+    "levelName": "eighth_level",
+    "levelDescription": "Fase fácil com reunião de todos os conceitos introduzidos",
+    "levelID": "97951360",
+    "levelOrder": 80,
+    "ffType": "JK",
+    "clockCicles": 9,
+    "activeClockEdge": "rising",  
+    "jSignal": "000011 111000 000001 111100 000111 111000 000111 100111 100000 000000",
+    "kSignal": "000000 001111 110011 111000 000000 110001 110011 111001 111100 000000",
+    "presetSignal": "111111 111111 111111 111111 111111 111111 110000 001111 111111 111111",
+    "clearSignal": "111111 111111 111111 111111 111111 100011 111111 111111 110011 111111",
+    "asyncActive": "low",
+    "ceiling": "111111 110011 100011 111111 110001 111111 111001 111111 111100 011111",
+    "floor": "111111 110011 100011 111111 110001 111111 111001 111111 111100 011111",
+    "obstacles": [
+        {
+            "obstacleName": "Mace",
+            "startX": 20,
+            "startY": 1,
+            "speed": 0,
+            "horizontalDistance": 0,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        },
+        {
+            "obstacleName": "Mace",
+            "startX": 26,
+            "startY": 3,
+            "speed": 0,
+            "horizontalDistance": 0,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-right",
+            "clockwise": true
+        },
+        {
+            "obstacleName": "Mace",
+            "startX": 33,
+            "startY": 1,
+            "speed": 2,
+            "horizontalDistance": 1,
+            "verticalDistance": 4,
+            "starterCorner": "bottom-left",
+            "clockwise": false
+        },
+        {
+            "obstacleName": "Mace",
+            "startX": 45,
+            "startY": 3,
+            "speed": 1,
+            "horizontalDistance": 5,
+            "verticalDistance": 0,
+            "starterCorner": "bottom-left",
+            "clockwise": true
+        }
+    ]
+}
