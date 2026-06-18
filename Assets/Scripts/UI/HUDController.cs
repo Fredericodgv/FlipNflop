@@ -85,6 +85,8 @@ public class HUDController : MonoBehaviour
         {
             GameObject panelRoot = clickedButton.transform.parent.gameObject;
             TogglePanelContentKeepButton(panelRoot);
+
+            EventSystem.current.SetSelectedGameObject(null);
         }
     }
 
