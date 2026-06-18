@@ -1,3 +1,12 @@
+## [0.12.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.12.0...v0.12.1) (2026-06-18)
+
+
+### Bug Fixes
+
+* Adjust hide button visibility ([0d0a25a](https://github.com/Fredericodgv/FlipNflop/commit/0d0a25ab55b556a67e205046b28e9274b2296e44))
+
+
+
 # [0.12.0](https://github.com/Fredericodgv/FlipNflop/compare/v0.11.4...v0.12.0) (2026-06-16)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * Align level select buttons ([58b6ed2](https://github.com/Fredericodgv/FlipNflop/commit/58b6ed28a766f45461996f0e850a707f388cf0fb))
-
-
-
-## [0.11.1](https://github.com/Fredericodgv/FlipNflop/compare/v0.11.0...v0.11.1) (2026-06-16)
-
-
-### Bug Fixes
-
-* minor adjusts in credits screen ([5a096ba](https://github.com/Fredericodgv/FlipNflop/commit/5a096ba568efe16ffaa7407cf5ad93c2015cf44d))
 
 
 
