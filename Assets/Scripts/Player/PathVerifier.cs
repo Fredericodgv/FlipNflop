@@ -182,10 +182,10 @@ public class PathVerifier : MonoBehaviour
         List<bool> cornerChecks = EvaluateCorrectCorners(signalPath.PathPoints);
         bool isPathCorrectOverall = !cornerChecks.Contains(false);
 
-        int gabaritoTotal = CountHorizontalGabaritoSegments();
+        int gabaritoTotal = correctCorners.Count - 1; ;
         DrawFeedbackLines(signalPath.PathPoints, out int correct, out int total);
         int coveredSegments = CountCoveredGabaritoSegments(signalPath.PathPoints);
-        ScoreController.Instance?.ReportResult(coveredSegments, gabaritoTotal);
+        ScoreController.Instance?.ReportResult(coveredSegments, gabaritoTotal, isPathCorrectOverall);
 
         if (enableDebugLogs)
         {
@@ -207,25 +207,12 @@ public class PathVerifier : MonoBehaviour
         int covered = 0;
         for (int i = 0; i < correctCorners.Count - 1; i++)
         {
-            if (Mathf.Abs(correctCorners[i].y - correctCorners[i + 1].y) > 0.1f) continue;
-
             Vector3 midpoint = (correctCorners[i] + correctCorners[i + 1]) / 2f;
             Vector3 closest = FindClosestPointOnFullPath(midpoint, playerPath);
             if (Vector3.Distance(midpoint, closest) <= cornerTolerance)
                 covered++;
         }
         return covered;
-    }
-
-    private int CountHorizontalGabaritoSegments()
-    {
-        int count = 0;
-        for (int i = 0; i < correctCorners.Count - 1; i++)
-        {
-            if (Mathf.Abs(correctCorners[i].y - correctCorners[i + 1].y) <= 0.1f)
-                count++;
-        }
-        return count;
     }
     private void DrawFeedbackLines(List<Vector3> playerPath, out int correctSegments, out int totalSegments)
     {

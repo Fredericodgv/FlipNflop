@@ -59,7 +59,7 @@ public class ScoreController : MonoBehaviour
     /// </summary>
     /// <param name="correctSegments">Number of path segments the player drew correctly.</param>
     /// <param name="gabaritoTotal">Total number of segments in the reference path.</param>
-    public void ReportResult(int correctSegments, int gabaritoTotal)
+    public void ReportResult(int correctSegments, int gabaritoTotal, bool success)
     {
         StopTimer();
 
@@ -70,7 +70,7 @@ public class ScoreController : MonoBehaviour
         if (scoreText != null)
         {
             scoreText.gameObject.SetActive(true);
-            string resultado = correctSegments >= gabaritoTotal ? "Diagrama Correto!" : "Diagrama Incorreto";
+            string resultado = success ? "Diagrama Correto!" : "Diagrama Incorreto";
             scoreText.text = $"{resultado}\nPontuação: {score}";
         }
     }
