@@ -56,6 +56,9 @@ public class SignalPath : MonoBehaviour
         {
             lastGravityInverted = playerController.IsGravityInverted;
             float oldY = playerController.IsGravityInverted ? groundY : ceilingY;
+
+            RemoveVerticalSegmentsAtX(currentX);
+
             AddPointToPath(new Vector3(currentX, oldY, 0));
             AddPointToPath(new Vector3(currentX, targetY, 0));
             return;
@@ -63,7 +66,6 @@ public class SignalPath : MonoBehaviour
 
         Vector3 currentTargetPosition = new Vector3(currentX, targetY, 0);
 
-        // Remove pontos se o player voltou para a esquerda
         if (currentX < lastPointPosition.x)
         {
             RemovePointsAfter(currentX);
@@ -158,5 +160,27 @@ public class SignalPath : MonoBehaviour
         {
             lineRenderer.colorGradient = newGradient;
         }
+    }
+
+    /// <summary>
+    /// Remove todos os pontos que formam segmentos verticais no X especificado.
+    /// Mantém o último ponto horizontal antes desse X como âncora.
+    /// </summary>
+    private void RemoveVerticalSegmentsAtX(float x)
+    {
+        // Encontra o índice do primeiro ponto nesse X
+        int firstAtX = pathPoints.FindIndex(p => Mathf.Abs(p.x - x) <= 0.01f);
+        if (firstAtX < 0) return;
+
+        // Remove todos os pontos a partir desse índice
+        int removeCount = pathPoints.Count - firstAtX;
+        pathPoints.RemoveRange(firstAtX, removeCount);
+        lineRenderer.positionCount = pathPoints.Count;
+
+        // Atualiza lastPointPosition para o ponto anterior
+        if (pathPoints.Count > 0)
+            lastPointPosition = pathPoints[pathPoints.Count - 1];
+        else
+            InitializePath();
     }
 }

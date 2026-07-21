@@ -155,7 +155,6 @@ public class PlayerController : MonoBehaviour
     {
         if (actionState == ActionState.Flipping && Time.time - flipStartTime > flipTimeout)
         {
-            Debug.LogWarning("[PlayerController] Flip timeout — resetando estado.");
             actionState = ActionState.None;
         }
     }
