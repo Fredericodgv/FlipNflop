@@ -1,119 +1,243 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:VisualElement name="ConfigContainer" class="config-container">
         <ui:VisualElement name="Header" class="config-header">
-            <ui:Label text="Configurações" name="TitleConfig" class="menu-title config-title"/>
+            <ui:Label text="Configurações" name="TitleConfig" class="menu-title config-title">
+                <Bindings>
+                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(84510293847)"/>
+                </Bindings>
+            </ui:Label>
         </ui:VisualElement>
-
         <ui:VisualElement name="TabsArea" class="config-tabs">
-            <ui:Button text="Cores" name="BtnTabColors" class="menu-button config-tab-button"/>
-            <ui:Button text="Áudio" name="BtnTabAudio" class="menu-button config-tab-button"/>
-            <ui:Button text="Vídeo" name="BtnTabVideo" class="menu-button config-tab-button"/>
-            <ui:Button text="Controles" name="BtnTabControls" class="menu-button config-tab-button"/>
+            <ui:Button text="Cores" name="BtnTabColors" class="menu-button config-tab-button">
+                <Bindings>
+                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(14583920174)"/>
+                </Bindings>
+            </ui:Button>
+            <ui:Button text="Áudio" name="BtnTabAudio" class="menu-button config-tab-button">
+                <Bindings>
+                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(57291038475)"/>
+                </Bindings>
+            </ui:Button>
+            <ui:Button text="Vídeo" name="BtnTabVideo" class="menu-button config-tab-button">
+                <Bindings>
+                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364510)"/>
+                </Bindings>
+            </ui:Button>
+            <ui:Button text="Controles" name="BtnTabControls" class="menu-button config-tab-button">
+                <Bindings>
+                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(38475619203)"/>
+                </Bindings>
+            </ui:Button>
         </ui:VisualElement>
-
         <ui:VisualElement name="PagesArea" class="config-pages">
             <ui:VisualElement name="PanelColor" class="config-page config-color-page" style="display: flex;">
-                <ui:Label text="Personalização dos Sinais" class="config-section-title"/>
-
+                <ui:Label text="Personalização dos Sinais" class="config-section-title">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91847561029)"/>
+                    </Bindings>
+                </ui:Label>
                 <ui:VisualElement class="config-palette-row">
-                    <ui:Label text="Paleta:" class="config-inline-label"/>
+                    <ui:Label text="Paleta:" class="config-inline-label">
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829104)"/>
+                        </Bindings>
+                    </ui:Label>
                     <ui:DropdownField name="DropdownPaleta" class="config-palette-dropdown"/>
                 </ui:VisualElement>
-
                 <ui:ScrollView name="ColorScrollView" class="config-color-scroll">
                     <ui:VisualElement class="config-color-row">
-                        <ui:Label text="J" class="config-signal-label"/>
+                        <ui:Label text="J" class="config-signal-label">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(84736291048)"/>
+                            </Bindings>
+                        </ui:Label>
                         <ui:VisualElement name="PreviewJ" class="config-color-preview"/>
                         <ui:VisualElement name="ContainerSwatchesJ" class="config-swatches"/>
-                        <ui:Button name="BtnCustomJ" text="+" class="menu-button config-plus-button"/>
+                        <ui:Button name="BtnCustomJ" text="+" class="menu-button config-plus-button">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829165)"/>
+                            </Bindings>
+                        </ui:Button>
                     </ui:VisualElement>
-
                     <ui:VisualElement class="config-color-row">
-                        <ui:Label text="K" class="config-signal-label"/>
+                        <ui:Label text="K" class="config-signal-label">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364591)"/>
+                            </Bindings>
+                        </ui:Label>
                         <ui:VisualElement name="PreviewK" class="config-color-preview"/>
                         <ui:VisualElement name="ContainerSwatchesK" class="config-swatches"/>
-                        <ui:Button name="BtnCustomK" text="+" class="menu-button config-plus-button"/>
+                        <ui:Button name="BtnCustomK" text="+" class="menu-button config-plus-button">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364055)"/>
+                            </Bindings>
+                        </ui:Button>
                     </ui:VisualElement>
-
                     <ui:VisualElement class="config-color-row">
-                        <ui:Label text="Preset" class="config-signal-label"/>
+                        <ui:Label text="Preset" class="config-signal-label">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(28374659102)"/>
+                            </Bindings>
+                        </ui:Label>
                         <ui:VisualElement name="PreviewPreset" class="config-color-preview"/>
                         <ui:VisualElement name="ContainerSwatchesPreset" class="config-swatches"/>
-                        <ui:Button name="BtnCustomPreset" text="+" class="menu-button config-plus-button"/>
+                        <ui:Button name="BtnCustomPreset" text="+" class="menu-button config-plus-button">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(84736291077)"/>
+                            </Bindings>
+                        </ui:Button>
                     </ui:VisualElement>
-
                     <ui:VisualElement class="config-color-row">
-                        <ui:Label text="Clear" class="config-signal-label"/>
+                        <ui:Label text="Clear" class="config-signal-label">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473820195)"/>
+                            </Bindings>
+                        </ui:Label>
                         <ui:VisualElement name="PreviewClear" class="config-color-preview"/>
                         <ui:VisualElement name="ContainerSwatchesClear" class="config-swatches"/>
-                        <ui:Button name="BtnCustomClear" text="+" class="menu-button config-plus-button"/>
+                        <ui:Button name="BtnCustomClear" text="+" class="menu-button config-plus-button">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(10293847588)"/>
+                            </Bindings>
+                        </ui:Button>
                     </ui:VisualElement>
-
                     <ui:VisualElement class="config-color-row">
-                        <ui:Label text="CLK" class="config-signal-label"/>
+                        <ui:Label text="CLK" class="config-signal-label">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(47561029384)"/>
+                            </Bindings>
+                        </ui:Label>
                         <ui:VisualElement name="PreviewCLK" class="config-color-preview"/>
                         <ui:VisualElement name="ContainerSwatchesCLK" class="config-swatches"/>
-                        <ui:Button name="BtnCustomCLK" text="+" class="menu-button config-plus-button"/>
+                        <ui:Button name="BtnCustomCLK" text="+" class="menu-button config-plus-button">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829188)"/>
+                            </Bindings>
+                        </ui:Button>
                     </ui:VisualElement>
-
-                    <ui:Label text="Feedback do Desenho" class="config-subsection-title"/>
-
+                    <ui:Label text="Feedback do Desenho" class="config-subsection-title">
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(10293847566)"/>
+                        </Bindings>
+                    </ui:Label>
                     <ui:VisualElement class="config-color-row">
-                        <ui:Label text="Certo" class="config-signal-label"/>
+                        <ui:Label text="Certo" class="config-signal-label">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364012)"/>
+                            </Bindings>
+                        </ui:Label>
                         <ui:VisualElement name="PreviewFeedbackSuccess" class="config-color-preview"/>
                         <ui:VisualElement name="ContainerSwatchesFeedbackSuccess" class="config-swatches"/>
-                        <ui:Button name="BtnCustomFeedbackSuccess" text="+" class="menu-button config-plus-button"/>
+                        <ui:Button name="BtnCustomFeedbackSuccess" text="+" class="menu-button config-plus-button">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364599)"/>
+                            </Bindings>
+                        </ui:Button>
                     </ui:VisualElement>
-
                     <ui:VisualElement class="config-color-row">
-                        <ui:Label text="Errado" class="config-signal-label"/>
+                        <ui:Label text="Errado" class="config-signal-label">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(38475612093)"/>
+                            </Bindings>
+                        </ui:Label>
                         <ui:VisualElement name="PreviewFeedbackFailure" class="config-color-preview"/>
                         <ui:VisualElement name="ContainerSwatchesFeedbackFailure" class="config-swatches"/>
-                        <ui:Button name="BtnCustomFeedbackFailure" text="+" class="menu-button config-plus-button"/>
+                        <ui:Button name="BtnCustomFeedbackFailure" text="+" class="menu-button config-plus-button">
+                            <Bindings>
+                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(38475619288)"/>
+                            </Bindings>
+                        </ui:Button>
                     </ui:VisualElement>
                 </ui:ScrollView>
             </ui:VisualElement>
-
             <ui:VisualElement name="PanelAudio" class="config-page config-audio-page" style="display: none;">
-                <ui:Label text="Volume Geral" class="config-field-label"/>
+                <ui:Label text="Volume Geral" class="config-field-label">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364077)"/>
+                    </Bindings>
+                </ui:Label>
                 <ui:Slider name="SliderMaster" high-value="1" low-value="0" class="config-slider"/>
-                <ui:Label text="Efeitos Sonoros" class="config-field-label"/>
+                <ui:Label text="Efeitos Sonoros" class="config-field-label">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829133)"/>
+                    </Bindings>
+                </ui:Label>
                 <ui:Slider name="SliderSons" high-value="1" low-value="0" class="config-slider"/>
-                <ui:Label text="Música" class="config-field-label"/>
+                <ui:Label text="Música" class="config-field-label">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(10293847511)"/>
+                    </Bindings>
+                </ui:Label>
                 <ui:Slider name="SliderMusica" high-value="1" low-value="0" class="config-slider"/>
                 <ui:Button name="BtnResetAudio" text="Restaurar Padrões" class="menu-button" style="align-self: center; margin-top: 10px;"/>
             </ui:VisualElement>
-
             <ui:VisualElement name="PanelVideo" class="config-page config-video-page" style="display: none;">
-                <ui:Label text="Contraste do Fundo" class="config-section-title"/>
+                <ui:Label text="Contraste do Fundo" class="config-section-title">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(84736291011)"/>
+                    </Bindings>
+                </ui:Label>
                 <ui:Slider name="SliderContrast" high-value="1" low-value="-1" class="config-slider"/>
                 <ui:VisualElement class="config-actions-row">
-                    <ui:Button name="BtnResetContrast" text="Resetar Contraste" class="menu-button config-action-button"/>
+                    <ui:Button name="BtnResetContrast" text="Restaurar Contraste" class="menu-button config-action-button">
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829155)"/>
+                        </Bindings>
+                    </ui:Button>
                 </ui:VisualElement>
             </ui:VisualElement>
-
             <ui:VisualElement name="PanelControls" class="config-page config-controls-page" style="display: none;">
-                <!-- <ui:Label text="Mapeamento de Teclas" class="config-section-title"/> -->
                 <ui:ScrollView name="ControlsScrollView" class="config-controls-scroll"/>
-                <ui:Button name="BtnRestoreControls" text="Restaurar Padrões" class="menu-button config-restore-button"/>
+                <ui:Button name="BtnRestoreControls" text="Restaurar Padrão" class="menu-button config-restore-button">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(10293847544)"/>
+                    </Bindings>
+                </ui:Button>
             </ui:VisualElement>
         </ui:VisualElement>
-
         <ui:VisualElement name="RGBOverlay" class="config-rgb-overlay" style="display: none;">
             <ui:VisualElement class="config-rgb-dialog">
-                <ui:Label text="Cor Personalizada" name="RGBTitle" class="config-section-title"/>
+                <ui:Label text="Cor Personalizada" name="RGBTitle" class="config-section-title">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829177)"/>
+                    </Bindings>
+                </ui:Label>
                 <ui:VisualElement name="RGBPreview" class="config-rgb-preview"/>
-                <ui:Label text="HEX" class="config-field-label"/>
+                <ui:Label text="HEX" class="config-field-label">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364566)"/>
+                    </Bindings>
+                </ui:Label>
                 <ui:TextField name="InputHex" class="config-hex-input"/>
-                <ui:Label text="R" class="config-field-label"/>
+                <ui:Label text="Vermelho" class="config-field-label">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(10293847599)"/>
+                    </Bindings>
+                </ui:Label>
                 <ui:Slider name="SliderR" low-value="0" high-value="255" class="config-slider"/>
-                <ui:Label text="G" class="config-field-label"/>
+                <ui:Label text="Verde" class="config-field-label">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(84736291066)"/>
+                    </Bindings>
+                </ui:Label>
                 <ui:Slider name="SliderG" low-value="0" high-value="255" class="config-slider"/>
-                <ui:Label text="B" class="config-field-label"/>
+                <ui:Label text="Azul" class="config-field-label">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829144)"/>
+                    </Bindings>
+                </ui:Label>
                 <ui:Slider name="SliderB" low-value="0" high-value="255" class="config-slider"/>
                 <ui:VisualElement class="config-actions-row">
-                    <ui:Button text="Cancelar" name="BtnCancelRGB" class="menu-button config-action-button"/>
-                    <ui:Button text="Confirmar" name="BtnConfirmRGB" class="menu-button config-action-button"/>
+                    <ui:Button text="Cancelar" name="BtnCancelRGB" class="menu-button config-action-button">
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(38475619255)"/>
+                        </Bindings>
+                    </ui:Button>
+                    <ui:Button text="Confirmar" name="BtnConfirmRGB" class="menu-button config-action-button">
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364522)"/>
+                        </Bindings>
+                    </ui:Button>
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

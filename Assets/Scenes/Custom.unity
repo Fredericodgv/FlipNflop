@@ -2672,7 +2672,7 @@ MonoBehaviour:
   inputTilemap: {fileID: 1489212623}
   terrainTilemap: {fileID: 518293364}
   clockTilemap: {fileID: 460694105}
-  levelFile: {fileID: 4900000, guid: a7aa602fe5529cc4a90bd46cd69f1923, type: 3}
+  levelFile: {fileID: 4900000, guid: 99ba21bd0a2f9254f9b04016833c26d2, type: 3}
   diagramTiles:
   - {fileID: 11400000, guid: f14421456d8d8574781262e667691d13, type: 2}
   - {fileID: 11400000, guid: 477b708c426c84449ac383aab54be103, type: 2}
@@ -4006,9 +4006,21 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 792765061534951494, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: m_Size.x
+      value: 1.6875
+      objectReference: {fileID: 0}
+    - target: {fileID: 792765061534951494, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: m_Size.y
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 792765061534951494, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: d5a3e5a9fd6306243a820e20b3a224db, type: 3}
+    - target: {fileID: 792765061534951494, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1160173156816950124, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -4194,6 +4206,14 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2569735990315611887, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: m_SpriteTilingProperty.newSize.x
+      value: 1.6875
+      objectReference: {fileID: 0}
+    - target: {fileID: 2569735990315611887, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: m_SpriteTilingProperty.newSize.y
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2569735990315611887, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
       value: 1.6875
       objectReference: {fileID: 0}
@@ -4228,6 +4248,10 @@ PrefabInstance:
     - target: {fileID: 6196048222136151847, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: m_SleepingMode
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6196048222136151847, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
+      propertyPath: m_AngularDamping
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 6196048222136151847, guid: 1d32c5024f5c1a9e2aa8a50b6d5e01e7, type: 3}
       propertyPath: m_CollisionDetection

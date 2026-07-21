@@ -31,6 +31,10 @@ MonoBehaviour:
     m_Key: dash
     m_Metadata:
       m_Items: []
+  - m_Id: 21331056344858624
+    m_Key: objective
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

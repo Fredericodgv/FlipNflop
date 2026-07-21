@@ -21,6 +21,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Locale-pt-BR
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 42e7d5321ca574a40b2da8f3ffff053a
+    m_Address: ConfigMenu_pt-BR
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-pt-BR
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5b033ef7a26ec0e47b75610c6f477ed6
     m_Address: GameHUD_pt-BR
     m_ReadOnly: 1
@@ -29,12 +35,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9423fae560f3de64e84ac08d2626d23d
     m_Address: Tutorial_pt-BR
-    m_ReadOnly: 1
-    m_SerializedLabels:
-    - Locale-pt-BR
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 42e7d5321ca574a40b2da8f3ffff053a
-    m_Address: ConfigMenu_pt-BR
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale-pt-BR

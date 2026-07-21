@@ -13,29 +13,29 @@
             <ui:VisualElement name="PanelMain" class="screen-panel">
                 <ui:VisualElement class="menu-card game-menu-card">
                     <ui:Button text="Continuar" name="Continue" class="menu-button action-button">
-<!--                        <Bindings>-->
-<!--                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(39482017465)"/>-->
-<!--                        </Bindings>-->
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(39482017465)"/>
+                        </Bindings>
                     </ui:Button>
                     <ui:Button text="Recomeçar" name="Retry" class="menu-button">
-<!--                        <Bindings>-->
-<!--                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(92017465139)"/>-->
-<!--                        </Bindings>-->
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(92017465139)"/>
+                        </Bindings>
                     </ui:Button>
                     <ui:Button text="Como Jogar" name="TutorialButton" class="menu-button">
-<!--                        <Bindings>-->
-<!--                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:036ba1f80a47b0447b1a810480fee168" entry="Id(497320624128)"/>-->
-<!--                        </Bindings>-->
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:036ba1f80a47b0447b1a810480fee168" entry="Id(497320624128)"/>
+                        </Bindings>
                     </ui:Button>
                     <ui:Button text="Opções" name="Options" class="menu-button">
-<!--                        <Bindings>-->
-<!--                            <UnityEngine.Localization.LocalizedString property="text" entry="Id(56102938472)" table="GUID:1335d71b210ede741858eb8a611103b6"/>-->
-<!--                        </Bindings>-->
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" entry="Id(56102938472)" table="GUID:1335d71b210ede741858eb8a611103b6"/>
+                        </Bindings>
                     </ui:Button>
                     <ui:Button text="Sair" name="Exit" class="menu-button">
-<!--                        <Bindings>-->
-<!--                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(47382019560)"/>-->
-<!--                        </Bindings>-->
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(47382019560)"/>
+                        </Bindings>
                     </ui:Button>
                 </ui:VisualElement>
             </ui:VisualElement>

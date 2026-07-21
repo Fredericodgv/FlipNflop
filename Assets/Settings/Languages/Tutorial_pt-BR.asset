@@ -29,9 +29,9 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 650081370112
-    m_Localized: "Use A / D (ou setas) para mover. Andar para a direita avan\xE7a
-      o tempo e desenha a sa\xEDda. Andar para a esquerda retrocede, apagando a linha
-      para corrigir erros."
+    m_Localized: "Use A/D ou as setas para esquerda/direita para movimentar horizontalmente
+      a personagem. Ao andar para a direita, a linha do sinal de sa\xEDda \xE9 desenhada.
+      Ao andar para a esquerda, a linha \xE9 apagada (permitindo corrigir erros)."
     m_Metadata:
       m_Items: []
   - m_Id: 596200044527616
@@ -39,6 +39,13 @@ MonoBehaviour:
       para o sinal de sa\xEDda do circuito. Analise os sinais de entrada e as transi\xE7\xF5es
       do clock para guiar a personagem, desenhando a linha de sa\xEDda adequada ao
       alternar entre as plataformas que representam os n\xEDveis l\xF3gicos 0 e 1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21331056344858624
+    m_Localized: "Seu objetivo \xE9 construir corretamente o diagrama de tempo do
+      sinal de sa\xEDda do Flip-Flop. Para isso, analise cuidadosamente o comportamento
+      dos sinais de entrada ao longo do tempo e movimente a personagem exatamente
+      pelo caminho em que voc\xEA deseja desenhar a linha do sinal de sa\xEDda.\""
     m_Metadata:
       m_Items: []
   references:
