@@ -50,40 +50,44 @@
                     <ui:ScrollView name="ScrollView" class="tutorial-scroll">
                         <ui:VisualElement name="Jogo" focusable="false" class="tutorial-item">
                             <ui:VisualElement name="Image" class="image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text" text="Seu objetivo é construir corretamente o diagrama de tempo do sinal de saída do Flip-Flop. Para isso, analise cuidadosamente o comportamento dos sinais de entrada ao longo do tempo e movimente a personagem exatamente pelo caminho em que você deseja desenhar a linha do sinal de saída."/>
+                            <ui:Label name="Text" text="Seu objetivo é construir corretamente o diagrama de tempo do sinal de saída do Flip-Flop. Para isso, analise cuidadosamente o comportamento dos sinais de entrada ao longo do tempo e movimente a personagem exatamente pelo caminho em que você deseja desenhar a linha do sinal de saída." class="tutorial-text"/>
                         </ui:VisualElement>
                         <ui:VisualElement name="Moviment" class="tutorial-item">
                             <ui:VisualElement name="Image" class="image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text" text="Use A/D ou as setas para esquerda/direita para movimentar horizontalmente a personagem. Ao andar para a direita, a linha do sinal de saída é desenhada. Ao andar para a esquerda, a linha é apagada (permitindo corrigir erros)."/>
+                            <ui:Label name="Text" text="Use A/D ou as setas para esquerda/direita para movimentar horizontalmente a personagem. Ao andar para a direita, a linha do sinal de saída é desenhada. Ao andar para a esquerda, a linha é apagada (permitindo corrigir erros)." class="tutorial-text"/>
                         </ui:VisualElement>
                         <ui:VisualElement name="VerticalMoviment" class="tutorial-item">
                             <ui:VisualElement name="Image" class="image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text" text="Use W/S ou as setas para cima/baixo para alternar entre as plataformas do piso e do teto. Esse movimento é equivalente à trocar o valor lógico do sinal de saída entre 0 e 1."/>
+                            <ui:Label name="Text" text="Use W/S ou as setas para cima/baixo para alternar entre as plataformas do piso e do teto. Esse movimento é equivalente à trocar o valor lógico do sinal de saída entre 0 e 1." class="tutorial-text"/>
                         </ui:VisualElement>
                         <ui:VisualElement name="Jump" class="tutorial-item">
                             <ui:VisualElement name="Image" class="image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text" text="Use espaço para pular buracos nas plataformas ou desviar de outros obstáculos sem a necessidade de alternar plataformas."/>
+                            <ui:Label name="Text" text="Use espaço para pular buracos nas plataformas ou desviar de outros obstáculos sem a necessidade de alternar plataformas." class="tutorial-text"/>
                         </ui:VisualElement>
                         <ui:VisualElement name="Dash" class="tutorial-item">
                             <ui:VisualElement name="Image" class="image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text" text="Use shift para correr por um breve instante de tempo e superar obstáculos mais desafiadores." />
+                            <ui:Label name="Text" text="Use shift para correr por um breve instante de tempo e superar obstáculos mais desafiadores." class="tutorial-text"/>
                         </ui:VisualElement>
                         <ui:VisualElement name="Linhas veticais" class="tutorial-item">
                             <ui:VisualElement name="Image" class="image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text" text="Use H para habilitar/desabilitar as linhas de ajuda para eventos síncronos e assíncronos" />
+                            <ui:Label name="Text" text="Use H para habilitar/desabilitar as linhas de ajuda para eventos síncronos e assíncronos" class="tutorial-text"/>
                         </ui:VisualElement>
                         <ui:VisualElement name="Dica" class="tutorial-item">
                             <ui:VisualElement name="Image" class="image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text" text="Use B para exibir dicas sobre a próxima operação síncrona" />
+                            <ui:Label name="Text" text="Use B para exibir dicas sobre a próxima operação síncrona" class="tutorial-text"/>
                         </ui:VisualElement>
                         <ui:VisualElement name="EndOfLevel" class="tutorial-item">
                             <ui:VisualElement name="Image" class="image-slot"/>
-                            <ui:Label name="Text" class="tutorial-text" text="Ao final da fase, verifique os acertos e erros no diagrama desenhado e a pontuação obtida." />
+                            <ui:Label name="Text" text="Ao final da fase, verifique os acertos e erros no diagrama desenhado e a pontuação obtida." class="tutorial-text"/>
                         </ui:VisualElement>
                     </ui:ScrollView>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:Button text="Voltar" name="BackButton" class="secondary-button hidden"/>
+            <ui:Button text="Voltar" name="BackButton" class="secondary-button hidden">
+                <Bindings>
+                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:036ba1f80a47b0447b1a810480fee168" entry="Id(29643145216)"/>
+                </Bindings>
+            </ui:Button>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

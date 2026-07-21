@@ -172,7 +172,7 @@
                 <ui:Button name="BtnResetAudio" text="Restaurar Padrões" class="menu-button" style="align-self: center; margin-top: 10px;"/>
             </ui:VisualElement>
             <ui:VisualElement name="PanelVideo" class="config-page config-video-page" style="display: none;">
-                <ui:Label text="Contraste do Fundo" class="config-section-title">
+                <ui:Label text="Contraste do Fundo" name="Label" class="config-section-title">
                     <Bindings>
                         <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(84736291011)"/>
                     </Bindings>
@@ -182,6 +182,11 @@
                     <ui:Button name="BtnResetContrast" text="Restaurar Contraste" class="menu-button config-action-button">
                         <Bindings>
                             <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(56473829155)"/>
+                        </Bindings>
+                    </ui:Button>
+                    <ui:Button name="BtnToggleLanguage" text="Trocar Idioma" class="menu-button config-action-button">
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(91827364533)"/>
                         </Bindings>
                     </ui:Button>
                 </ui:VisualElement>

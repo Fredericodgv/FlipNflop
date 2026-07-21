@@ -13,8 +13,36 @@ MonoBehaviour:
   m_Name: Controls Shared Data
   m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
   m_TableCollectionName: Controls
-  m_TableCollectionNameGuidString: 00000000000000000000000000000000
-  m_Entries: []
+  m_TableCollectionNameGuidString: 229e5976ae5cca94f990c72442131f3f
+  m_Entries:
+  - m_Id: 4955471872
+    m_Key: controls_move_right
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59800190976
+    m_Key: controls_move_left
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78460649472
+    m_Key: controls_flip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 80381640704
+    m_Key: controls_jump
+    m_Metadata:
+      m_Items: []
+  - m_Id: 82311020544
+    m_Key: controls_dash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119405445120
+    m_Key: controls_clock_lines
+    m_Metadata:
+      m_Items: []
+  - m_Id: 147683442688
+    m_Key: controls_hint
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

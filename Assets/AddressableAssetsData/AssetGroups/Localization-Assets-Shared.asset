@@ -25,13 +25,18 @@ MonoBehaviour:
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: bcdba3d027686d241b4c3261971aa0ab
-    m_Address: Assets/Settings/Languages/Tutorial Shared Data.asset
+  - m_GUID: 229e5976ae5cca94f990c72442131f3f
+    m_Address: Assets/Settings/Languages/Controls/Controls Shared Data.asset
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b078eccd26181e348bead05bd7da94cb
     m_Address: Assets/Settings/Languages/ConfigMenu Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bcdba3d027686d241b4c3261971aa0ab
+    m_Address: Assets/Settings/Languages/Tutorial Shared Data.asset
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
