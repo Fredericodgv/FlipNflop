@@ -1,15 +1,17 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 /// <summary>
-/// Estrutura que define uma ação configurável no menu de rebind.
+/// Define uma ação configurável no menu de rebind.
 /// </summary>
 [System.Serializable]
 public struct ActionRebindSetup
 {
-    [Tooltip("Nome exibido na interface.")]
-    public string labelText;
+    [Tooltip("Chave de localização para o nome exibido na interface.")]
+    public LocalizedString labelText;
 
     public InputActionReference inputAction;
 
@@ -18,7 +20,7 @@ public struct ActionRebindSetup
 }
 
 /// <summary>
-/// Gerencia a interface de remapeamento de teclas.
+/// Gerencia a interface de remapeamento de teclas com suporte a localização.
 /// </summary>
 [RequireComponent(typeof(UIDocument))]
 public class RebindManager : MonoBehaviour
@@ -35,26 +37,22 @@ public class RebindManager : MonoBehaviour
 
     private UIDocument uiDocument;
     private ScrollView controlsScrollView;
+    private Button restoreDefaultsButton;
 
     private InputActionRebindingExtensions.RebindingOperation currentRebindOperation;
 
-    private Button restoreDefaultsButton;
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
 
-    /// <summary>
-    /// Inicializa referências do componente.
-    /// </summary>
     private void Awake()
     {
         uiDocument = GetComponent<UIDocument>();
     }
 
-    /// <summary>
-    /// Inicializa a interface e carrega bindings salvos.
-    /// </summary>
     private void OnEnable()
     {
-        if (uiDocument == null)
-            return;
+        if (uiDocument == null) return;
 
         VisualElement root = uiDocument.rootVisualElement;
 
@@ -62,86 +60,97 @@ public class RebindManager : MonoBehaviour
         restoreDefaultsButton = root.Q<Button>(restoreButtonName);
 
         RegisterCallbacks();
-
         LoadBindings();
-        DrawUI();
+
+        // Aguarda localização estar pronta antes de gerar a UI
+        LocalizationSettings.InitializationOperation.Completed += _ => DrawUI();
+
+        // Se já estiver pronta, desenha imediatamente
+        if (LocalizationSettings.InitializationOperation.IsDone)
+            DrawUI();
+
+        // Redesenha quando o idioma mudar
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
     }
 
-    /// <summary>
-    /// Remove callbacks e encerra operações pendentes.
-    /// </summary>
     private void OnDisable()
     {
         UnregisterCallbacks();
 
-        if (currentRebindOperation != null)
-        {
-            currentRebindOperation.Dispose();
-            currentRebindOperation = null;
-        }
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+
+        currentRebindOperation?.Dispose();
+        currentRebindOperation = null;
     }
 
-    /// <summary>
-    /// Registra callbacks da interface.
-    /// </summary>
+    // -------------------------------------------------------------------------
+    // Callbacks
+    // -------------------------------------------------------------------------
+
     private void RegisterCallbacks()
     {
         if (restoreDefaultsButton != null)
             restoreDefaultsButton.clicked += RestoreDefaults;
     }
 
-    /// <summary>
-    /// Remove callbacks registrados.
-    /// </summary>
     private void UnregisterCallbacks()
     {
         if (restoreDefaultsButton != null)
             restoreDefaultsButton.clicked -= RestoreDefaults;
     }
 
+    private void OnLocaleChanged(Locale _) => DrawUI();
+
+    // -------------------------------------------------------------------------
+    // UI
+    // -------------------------------------------------------------------------
+
     /// <summary>
     /// Gera dinamicamente a lista de controles configuráveis.
     /// </summary>
     private void DrawUI()
     {
-        if (controlsScrollView == null || actionsToRebind == null)
-            return;
+        if (controlsScrollView == null || actionsToRebind == null) return;
 
         controlsScrollView.Clear();
 
         foreach (ActionRebindSetup setup in actionsToRebind)
         {
-            if (setup.inputAction == null || setup.inputAction.action == null)
-                continue;
+            if (setup.inputAction == null || setup.inputAction.action == null) continue;
 
-            VisualElement row = CreateRow(setup);
-
-            controlsScrollView.Add(row);
+            controlsScrollView.Add(CreateRow(setup));
         }
     }
 
     /// <summary>
-    /// Cria uma linha da interface de rebind.
+    /// Cria uma linha da interface de rebind com label localizado.
     /// </summary>
     private VisualElement CreateRow(ActionRebindSetup setup)
     {
-        VisualElement row = new VisualElement();
-
+        VisualElement row = new();
         row.style.flexDirection = FlexDirection.Row;
         row.style.justifyContent = Justify.Center;
         row.style.alignItems = Align.Center;
         row.style.marginBottom = 15;
         row.style.width = Length.Percent(100);
 
-        Label label = new Label(setup.labelText);
-
+        // Label localizado
+        Label label = new();
         label.style.color = Color.white;
         label.style.fontSize = 20;
         label.style.width = 300;
         label.style.unityTextAlign = TextAnchor.MiddleLeft;
 
-        Button button = new Button();
+        // Carrega o texto localizado de forma assíncrona e atualiza o label
+        var loadOp = setup.labelText.GetLocalizedStringAsync();
+        loadOp.Completed += op => label.text = op.Result;
 
+        // Fallback imediato enquanto carrega
+        if (loadOp.IsDone)
+            label.text = loadOp.Result;
+
+        // Botão de binding
+        Button button = new();
         button.AddToClassList("menu-button");
         button.style.width = 200;
         button.style.height = 50;
@@ -156,18 +165,16 @@ public class RebindManager : MonoBehaviour
         return row;
     }
 
-    /// <summary>
-    /// Inicia o processo de remapeamento de tecla.
-    /// </summary>
+    // -------------------------------------------------------------------------
+    // Rebind logic (inalterada)
+    // -------------------------------------------------------------------------
+
     private void StartRebind(ActionRebindSetup setup, Button button)
     {
-        if (currentRebindOperation != null)
-            return;
+        if (currentRebindOperation != null) return;
 
         InputAction action = setup.inputAction.action;
-
-        if (action == null)
-            return;
+        if (action == null) return;
 
         action.Disable();
 
@@ -180,14 +187,11 @@ public class RebindManager : MonoBehaviour
             .WithControlsExcluding("<Mouse>/delta")
             .WithCancelingThrough("<Keyboard>/escape")
             .OnMatchWaitForAnother(0.1f)
-            .OnComplete(operation => OnRebindComplete(operation, setup))
-            .OnCancel(operation => OnRebindCanceled(operation, setup, button))
+            .OnComplete(op => OnRebindComplete(op, setup))
+            .OnCancel(op => OnRebindCanceled(op, setup, button))
             .Start();
     }
 
-    /// <summary>
-    /// Finaliza um rebind concluído com sucesso.
-    /// </summary>
     private void OnRebindComplete(
         InputActionRebindingExtensions.RebindingOperation operation,
         ActionRebindSetup setup)
@@ -196,57 +200,38 @@ public class RebindManager : MonoBehaviour
         currentRebindOperation = null;
 
         InputAction action = setup.inputAction.action;
-
-        if (action == null)
-            return;
+        if (action == null) return;
 
         string newPath = action.bindings[setup.bindingIndex].effectivePath;
-
         ResolveConflicts(setup, newPath);
 
         action.Enable();
-
         SaveBindings();
-
         DrawUI();
     }
 
-    /// <summary>
-    /// Resolve conflitos entre bindings iguais.
-    /// </summary>
     private void ResolveConflicts(ActionRebindSetup changedSetup, string newPath)
     {
         foreach (ActionRebindSetup otherSetup in actionsToRebind)
         {
             InputAction otherAction = otherSetup.inputAction.action;
-
-            if (otherAction == null)
-                continue;
+            if (otherAction == null) continue;
 
             bool isSameBinding =
                 otherAction == changedSetup.inputAction.action &&
                 otherSetup.bindingIndex == changedSetup.bindingIndex;
 
-            if (isSameBinding)
-                continue;
-
-            if (otherSetup.bindingIndex >= otherAction.bindings.Count)
-                continue;
+            if (isSameBinding) continue;
+            if (otherSetup.bindingIndex >= otherAction.bindings.Count) continue;
 
             InputBinding binding = otherAction.bindings[otherSetup.bindingIndex];
-
-            string currentPath = binding.hasOverrides
-                ? binding.overridePath
-                : binding.path;
+            string currentPath = binding.hasOverrides ? binding.overridePath : binding.path;
 
             if (currentPath == newPath)
                 otherAction.ApplyBindingOverride(otherSetup.bindingIndex, string.Empty);
         }
     }
 
-    /// <summary>
-    /// Cancela um rebind em andamento.
-    /// </summary>
     private void OnRebindCanceled(
         InputActionRebindingExtensions.RebindingOperation operation,
         ActionRebindSetup setup,
@@ -255,32 +240,18 @@ public class RebindManager : MonoBehaviour
         operation.Dispose();
         currentRebindOperation = null;
 
-        InputAction action = setup.inputAction.action;
-
-        if (action != null)
-            action.Enable();
-
+        setup.inputAction.action?.Enable();
         UpdateButtonText(button, setup);
     }
 
-    /// <summary>
-    /// Atualiza o texto exibido em um botão de binding.
-    /// </summary>
     private void UpdateButtonText(Button button, ActionRebindSetup setup)
     {
         InputAction action = setup.inputAction.action;
-
-        if (action == null)
-            return;
-
-        if (setup.bindingIndex >= action.bindings.Count)
-            return;
+        if (action == null) return;
+        if (setup.bindingIndex >= action.bindings.Count) return;
 
         InputBinding binding = action.bindings[setup.bindingIndex];
-
-        string path = binding.hasOverrides
-            ? binding.overridePath
-            : binding.path;
+        string path = binding.hasOverrides ? binding.overridePath : binding.path;
 
         button.text = string.IsNullOrEmpty(path)
             ? "---"
@@ -289,41 +260,28 @@ public class RebindManager : MonoBehaviour
                 InputControlPath.HumanReadableStringOptions.OmitDevice);
     }
 
-    /// <summary>
-    /// Salva os bindings customizados.
-    /// </summary>
+    // -------------------------------------------------------------------------
+    // Save / Load
+    // -------------------------------------------------------------------------
+
     private void SaveBindings()
     {
-        if (inputAsset == null)
-            return;
-
-        string json = inputAsset.SaveBindingOverridesAsJson();
-
-        PlayerPrefs.SetString(SaveKey, json);
+        if (inputAsset == null) return;
+        PlayerPrefs.SetString(SaveKey, inputAsset.SaveBindingOverridesAsJson());
         PlayerPrefs.Save();
     }
 
-    /// <summary>
-    /// Carrega bindings salvos.
-    /// </summary>
     private void LoadBindings()
     {
-        if (inputAsset == null)
-            return;
-
+        if (inputAsset == null) return;
         string json = PlayerPrefs.GetString(SaveKey, string.Empty);
-
         if (!string.IsNullOrEmpty(json))
             inputAsset.LoadBindingOverridesFromJson(json);
     }
 
-    /// <summary>
-    /// Restaura os bindings padrão.
-    /// </summary>
     private void RestoreDefaults()
     {
-        if (currentRebindOperation != null)
-            currentRebindOperation.Cancel();
+        currentRebindOperation?.Cancel();
 
         if (inputAsset != null)
         {

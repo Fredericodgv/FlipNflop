@@ -3435,29 +3435,88 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RebindManager
   inputAsset: {fileID: -944628639613478452, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
   actionsToRebind:
-  - labelText: Andar para direita
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: GUID:b078eccd26181e348bead05bd7da94cb
+      m_TableEntryReference:
+        m_KeyId: 91827364077
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
     inputAction: {fileID: -1680190386980627800, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     bindingIndex: 2
-  - labelText: Andar para esquerda
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: 
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
     inputAction: {fileID: -1680190386980627800, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     bindingIndex: 1
-  - labelText: Inverter plataforma
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: 
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
     inputAction: {fileID: 3506434624590365720, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     bindingIndex: 0
-  - labelText: Pular
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: 
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
     inputAction: {fileID: -2099379676528639254, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     bindingIndex: 0
-  - labelText: Dash
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: 
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
     inputAction: {fileID: -7093669063402427910, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     bindingIndex: 0
-  - labelText: Linhas verticais
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: 
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
     inputAction: {fileID: -4774699295614695227, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     bindingIndex: 0
-  - labelText: Dicas
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: 
+      m_TableEntryReference:
+        m_KeyId: 0
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
     inputAction: {fileID: 9063628408651508475, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
     bindingIndex: 0
   scrollViewName: ControlsScrollView
   restoreButtonName: BtnRestoreControls
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &1285681113
 GameObject:
   m_ObjectHideFlags: 0
