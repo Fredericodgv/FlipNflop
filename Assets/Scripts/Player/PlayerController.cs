@@ -86,8 +86,17 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool jumpInput;
     private bool gravityFlipInput;
-    private bool isFlipping;
-    private bool isDashing;
+    private enum ActionState { None, Flipping, Dashing }
+    private ActionState actionState = ActionState.None;
+
+    [Header("Safety")]
+    [Tooltip("Tempo máximo que o flip pode durar antes de ser resetado automaticamente.")]
+    [SerializeField] private float flipTimeout = 1f;
+    private float flipStartTime;
+
+    // Propriedades de conveniência que substituem os usos anteriores:
+    private bool isFlipping => actionState == ActionState.Flipping;
+    private bool isDashing => actionState == ActionState.Dashing;
     private float dashEndTime;
     private float nextDashTime;
     private float dashDir = 1f;
@@ -139,6 +148,16 @@ public class PlayerController : MonoBehaviour
     {
         UpdateAnimator();
         CheckWinAndLoseConditions();
+        CheckFlipTimeout(); // novo
+    }
+
+    private void CheckFlipTimeout()
+    {
+        if (actionState == ActionState.Flipping && Time.time - flipStartTime > flipTimeout)
+        {
+            Debug.LogWarning("[PlayerController] Flip timeout — resetando estado.");
+            actionState = ActionState.None;
+        }
     }
 
     /// <summary>
@@ -307,7 +326,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void HandleJump()
     {
-        if (jumpInput && isGrounded)
+        // Flip tem prioridade — bloqueia pulo durante flip ou dash
+        if (jumpInput && isGrounded && actionState == ActionState.None)
         {
             float jumpDirection = IsGravityInverted ? -1f : 1f;
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce * jumpDirection);
@@ -323,9 +343,14 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void HandleGravityFlip()
     {
-        if (gravityFlipInput && isGrounded && !isDashing && !isFlipping)
+        if (gravityFlipInput && isGrounded && actionState == ActionState.None)
         {
-            isFlipping = true;
+            actionState = ActionState.Flipping;
+            flipStartTime = Time.time;
+
+            // Cancela qualquer velocidade vertical pendente do pulo
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+            jumpInput = false;
 
             rb.gravityScale *= -1;
             isGravityInvertedState = !isGravityInvertedState;
@@ -343,7 +368,7 @@ public class PlayerController : MonoBehaviour
         transform.Rotate(0f, 0f, 180f);
         spriteRenderer.flipX = !spriteRenderer.flipX;
 
-        isFlipping = false;
+        actionState = ActionState.None;
     }
 
     /// <summary>
@@ -352,6 +377,7 @@ public class PlayerController : MonoBehaviour
     private void TryStartDash()
     {
         if (Time.time < nextDashTime) return;
+        if (actionState == ActionState.Flipping) return;
 
         if (Mathf.Abs(horizontalInput) > 0.01f)
             dashDir = Mathf.Sign(horizontalInput);
@@ -370,7 +396,7 @@ public class PlayerController : MonoBehaviour
         rb.constraints = preDashConstraints | RigidbodyConstraints2D.FreezePositionY;
         rb.linearVelocity = new Vector2(dashDir * dashSpeed, 0f);
 
-        isDashing = true;
+        actionState = ActionState.Dashing;
         dashEndTime = Time.time + dashDuration;
         nextDashTime = Time.time + dashCooldown;
     }
@@ -385,7 +411,7 @@ public class PlayerController : MonoBehaviour
         if (!isDashing) return;
         if (Time.time >= dashEndTime)
         {
-            isDashing = false;
+            actionState = ActionState.None; // substitui isDashing = false
             rb.gravityScale = preDashGravityScale;
             rb.constraints = preDashConstraints;
 
