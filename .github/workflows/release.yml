@@ -12,27 +12,41 @@ jobs:
     name: Versioning & Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Essencial para ler e escrever no repo
+      contents: write
       issues: write
       pull-requests: write
       id-token: write
 
     steps:
-      # 1. Faz o checkout do código do seu repositório
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Necessário para analisar todo o histórico de commits
+          fetch-depth: 0
 
-      # 3. Determina a próxima versão com base em Conventional Commits
       - name: Generate Changelog and Version
         id: changelog
         uses: TriPSs/conventional-changelog-action@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          skip-version-file: true # Não queremos que ele crie um arquivo de versão, nós mesmos vamos atualizar
+          skip-version-file: true
 
-      # 4. Cria um Release simples com a nova versão (sem anexos)
+      # NOVO: atualiza o bundleVersion no ProjectSettings.asset da Unity
+      - name: Update Unity ProjectSettings version
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        run: |
+          sed -i "s/^  bundleVersion: .*/  bundleVersion: ${{ steps.changelog.outputs.version }}/" ProjectSettings/ProjectSettings.asset
+          grep "bundleVersion" ProjectSettings/ProjectSettings.asset
+
+      # NOVO: commita e envia essa alteração de volta
+      - name: Commit Unity version bump
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ProjectSettings/ProjectSettings.asset
+          git commit -m "chore: bump Unity bundleVersion to ${{ steps.changelog.outputs.version }} [skip ci]"
+          git push
+
       - name: Create GitHub Release
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         uses: softprops/action-gh-release@v2
@@ -40,4 +54,3 @@ jobs:
           tag_name: ${{ steps.changelog.outputs.tag }}
           name: Release ${{ steps.changelog.outputs.version }}
           body: "Automated release created by CI"
-  
