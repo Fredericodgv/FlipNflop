@@ -1,4 +1,5 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="TutorialMenu" src="project://database/Assets/UI%20Toolkit/Layouts/TutorialMenu.uxml?fileID=9197481963319205126&amp;guid=bc0db67d26e0fe54f90c3c6cc9e71f26&amp;type=3#TutorialMenu"/>
     <Style src="project://database/Assets/UI%20Toolkit/Styles/MainMenu.uss?fileID=7433441132597879392&amp;guid=914addff2ff73d644a3f7eeeebd54bb4&amp;type=3#MainMenu"/>
     <ui:VisualElement class="screen bg-main">
         <ui:VisualElement class="overlay"/>
@@ -84,71 +85,7 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="Tutorial" class="panel hidden">
-            <ui:VisualElement class="page tutorial-page">
-                <ui:Label text="Como Jogar" name="Title" class="title">
-                    <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(497320624200)"/>
-                    </Bindings>
-                </ui:Label>
-                <ui:ScrollView name="ScrollView" class="tutorial-scroll">
-                    <ui:VisualElement name="Jogo" focusable="false" class="tutorial-item">
-                        <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" text="O seu objetivo é construir corretamente o diagrama de tempo para o sinal de saída do circuito. Analise os sinais de entrada e as transições do clock para guiar a personagem, desenhando a linha de saída adequada ao alternar entre as plataformas que representam os níveis lógicos 0 e 1." class="tutorial-text">
-                            <Bindings>
-                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(596200044527616)"/>
-                            </Bindings>
-                        </ui:Label>
-                    </ui:VisualElement>
-                    <ui:VisualElement name="Moviment" class="tutorial-item">
-                        <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" text="Use A/D ou as setas para esquerda/direita para movimentar horizontalmente a personagem. Ao andar para a direita, a linha do sinal de saída é desenhada. Ao andar para a esquerda, a linha é apagada (permitindo corrigir erros)." class="tutorial-text">
-                            <Bindings>
-                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(650081370112)"/>
-                            </Bindings>
-                        </ui:Label>
-                    </ui:VisualElement>
-                    <ui:VisualElement name="VerticalMoviment" class="tutorial-item">
-                        <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" text="Use W ou a seta para cima para alternar entre as plataformas do piso e do teto, trocando o nível lógico do sinal de saída entre 0 e 1." class="tutorial-text">
-                            <Bindings>
-                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(29643145500)"/>
-                            </Bindings>
-                        </ui:Label>
-                    </ui:VisualElement>
-                    <ui:VisualElement name="Jump" class="tutorial-item">
-                        <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" text="Use Espaço para pular. Permite desviar de obstáculos no chão sem alterar o nível lógico da linha desenhada." class="tutorial-text">
-                            <Bindings>
-                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(682767581184)"/>
-                            </Bindings>
-                        </ui:Label>
-                    </ui:VisualElement>
-                    <ui:VisualElement name="Dash" class="tutorial-item">
-                        <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" text="Use Shift para arrancar (dash). Um impulso rápido que garante agilidade para ultrapassar pedras e perigos." class="tutorial-text">
-                            <Bindings>
-                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(698110345216)"/>
-                            </Bindings>
-                        </ui:Label>
-                    </ui:VisualElement>
-                    <ui:VisualElement name="Help" class="tutorial-item">
-                        <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" text="Use H para habilitar/desabilitar as linhas de ajuda para eventos síncronos e assíncronos." class="tutorial-text">
-                            <Bindings>
-                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(119405445200)"/>
-                            </Bindings>
-                        </ui:Label>
-                    </ui:VisualElement>
-                    <ui:VisualElement name="EndOfLevel" class="tutorial-item">
-                        <ui:VisualElement name="Image" class="image-slot"/>
-                        <ui:Label name="Text" text="Ao final da fase, verifique os acertos e erros no diagrama desenhado e a pontuação obtida." class="tutorial-text">
-                            <Bindings>
-                                <UnityEngine.Localization.LocalizedString property="text" table="GUID:b078eccd26181e348bead05bd7da94cb" entry="Id(29643145600)"/>
-                            </Bindings>
-                        </ui:Label>
-                    </ui:VisualElement>
-                </ui:ScrollView>
-            </ui:VisualElement>
+            <ui:Instance template="TutorialMenu" name="TemplateContainer" style="flex-grow: 1; align-items: center; align-self: center; justify-content: center; width: 100%; height: 100%;"/>
         </ui:VisualElement>
         <ui:Button text="Voltar" name="BackButton" class="btn back hidden">
             <Bindings>
