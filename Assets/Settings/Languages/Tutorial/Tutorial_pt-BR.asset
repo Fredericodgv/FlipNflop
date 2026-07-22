@@ -41,11 +41,20 @@ MonoBehaviour:
       alternar entre as plataformas que representam os n\xEDveis l\xF3gicos 0 e 1."
     m_Metadata:
       m_Items: []
-  - m_Id: 21331056344858624
-    m_Localized: "Seu objetivo \xE9 construir corretamente o diagrama de tempo do
-      sinal de sa\xEDda do Flip-Flop. Para isso, analise cuidadosamente o comportamento
-      dos sinais de entrada ao longo do tempo e movimente a personagem exatamente
-      pelo caminho em que voc\xEA deseja desenhar a linha do sinal de sa\xEDda.\""
+  - m_Id: 29643145500
+    m_Localized: "Use W ou a seta para cima para alternar entre as plataformas do
+      piso e do teto, trocando o n\xEDvel l\xF3gico do sinal de sa\xEDda entre 0
+      e 1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119405445200
+    m_Localized: "Use H para habilitar/desabilitar as linhas de ajuda para eventos
+      s\xEDncronos e ass\xEDncronos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145600
+    m_Localized: "Ao final da fase, verifique os acertos e erros no diagrama desenhado
+      e a pontua\xE7\xE3o obtida."
     m_Metadata:
       m_Items: []
   references:

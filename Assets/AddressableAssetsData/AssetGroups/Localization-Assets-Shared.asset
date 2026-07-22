@@ -15,11 +15,6 @@ MonoBehaviour:
   m_GroupName: Localization-Assets-Shared
   m_GUID: ae9b7809047397e49a76afdbbfbfdbfb
   m_SerializeEntries:
-  - m_GUID: 036ba1f80a47b0447b1a810480fee168
-    m_Address: Assets/Settings/Languages/MenuStrings Shared Data.asset
-    m_ReadOnly: 1
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1335d71b210ede741858eb8a611103b6
     m_Address: Assets/Settings/Languages/GameHUD Shared Data.asset
     m_ReadOnly: 1

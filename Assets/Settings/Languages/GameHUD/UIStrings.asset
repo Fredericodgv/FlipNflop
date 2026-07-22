@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5be51871efa6c3e4eae1703925c8f5ac, type: 3}
-  m_Name: MenuStrings
+  m_Name: UIStrings
   m_EditorClassIdentifier: Unity.Localization.Editor::UnityEditor.Localization.StringTableCollection
-  m_SharedTableData: {fileID: 11400000, guid: 036ba1f80a47b0447b1a810480fee168, type: 2}
+  m_SharedTableData: {fileID: 11400000, guid: 1335d71b210ede741858eb8a611103b6, type: 2}
   m_Tables:
-  - {fileID: 11400000, guid: 071fae06aca035242823b60a5a9d08af, type: 2}
-  - {fileID: 11400000, guid: e2d88f47835d6e543b0033380b8c85aa, type: 2}
+  - {fileID: 11400000, guid: 5b033ef7a26ec0e47b75610c6f477ed6, type: 2}
+  - {fileID: 11400000, guid: 1509a9c5a85152b459dcc407d81d8767, type: 2}
   m_Extensions: []
   m_Group: String Table
   references:

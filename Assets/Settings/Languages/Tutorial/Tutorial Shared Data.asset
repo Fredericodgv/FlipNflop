@@ -15,24 +15,32 @@ MonoBehaviour:
   m_TableCollectionName: Tutorial
   m_TableCollectionNameGuidString: bcdba3d027686d241b4c3261971aa0ab
   m_Entries:
+  - m_Id: 596200044527616
+    m_Key: tutorial_game
+    m_Metadata:
+      m_Items: []
   - m_Id: 650081370112
-    m_Key: moviment
+    m_Key: tutorial_moviment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145500
+    m_Key: tutorial_flip
     m_Metadata:
       m_Items: []
   - m_Id: 682767581184
-    m_Key: jump
-    m_Metadata:
-      m_Items: []
-  - m_Id: 596200044527616
-    m_Key: game
+    m_Key: tutorial_jump
     m_Metadata:
       m_Items: []
   - m_Id: 698110345216
-    m_Key: dash
+    m_Key: tutorial_dash
     m_Metadata:
       m_Items: []
-  - m_Id: 21331056344858624
-    m_Key: objective
+  - m_Id: 119405445200
+    m_Key: tutorial_hints
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145600
+    m_Key: tutorial_end
     m_Metadata:
       m_Items: []
   m_Metadata:

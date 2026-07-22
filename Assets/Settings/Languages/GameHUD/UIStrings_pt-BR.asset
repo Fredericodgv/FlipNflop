@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
-  m_Name: GameHUD_pt-BR
+  m_Name: UIStrings_pt-BR
   m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
   m_LocaleId:
     m_Code: pt-BR
@@ -40,6 +40,50 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 47382019560
     m_Localized: Sair
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145216
+    m_Localized: Voltar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 308182679552
+    m_Localized: Jogar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350805196800
+    m_Localized: Upload
+    m_Metadata:
+      m_Items: []
+  - m_Id: 438717808640
+    m_Localized: "Cr\xE9ditos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 497320624128
+    m_Localized: Como Jogar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364522
+    m_Localized: Confirmar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38475619255
+    m_Localized: Cancelar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145300
+    m_Localized: Selecione a fase
+    m_Metadata:
+      m_Items: []
+  - m_Id: 84510293847
+    m_Localized: "Configura\xE7\xF5es"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 438717808700
+    m_Localized: "Cr\xE9ditos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 497320624200
+    m_Localized: Como Jogar
     m_Metadata:
       m_Items: []
   references:

@@ -15,10 +15,6 @@ MonoBehaviour:
   m_TableCollectionName: ConfigMenu
   m_TableCollectionNameGuidString: b078eccd26181e348bead05bd7da94cb
   m_Entries:
-  - m_Id: 84510293847
-    m_Key: config_title
-    m_Metadata:
-      m_Items: []
   - m_Id: 14583920174
     m_Key: tab_colors
     m_Metadata:
@@ -43,8 +39,16 @@ MonoBehaviour:
     m_Key: palette_label
     m_Metadata:
       m_Items: []
-  - m_Id: 10293847566
-    m_Key: feedback_title
+  - m_Id: 10928374655
+    m_Key: palette_default
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56473892011
+    m_Key: palette_colorblind
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364577
+    m_Key: palette_highcontrast
     m_Metadata:
       m_Items: []
   - m_Id: 84736291048
@@ -67,6 +71,14 @@ MonoBehaviour:
     m_Key: signal_clear
     m_Metadata:
       m_Items: []
+  - m_Id: 56473829165
+    m_Key: btn_custom_color
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10293847566
+    m_Key: feedback_title
+    m_Metadata:
+      m_Items: []
   - m_Id: 91827364012
     m_Key: feedback_correct
     m_Metadata:
@@ -75,44 +87,40 @@ MonoBehaviour:
     m_Key: feedback_wrong
     m_Metadata:
       m_Items: []
-  - m_Id: 10928374655
-    m_Key: palette_default
+  - m_Id: 91827364077
+    m_Key: audio_master
     m_Metadata:
       m_Items: []
-  - m_Id: 56473892011
-    m_Key: palette_colorblind
+  - m_Id: 56473829133
+    m_Key: audio_sfx
     m_Metadata:
       m_Items: []
-  - m_Id: 91827364577
-    m_Key: palette_highcontrast
+  - m_Id: 10293847511
+    m_Key: audio_music
     m_Metadata:
       m_Items: []
-  - m_Id: 56473829165
-    m_Key: btn_custom_j
+  - m_Id: 29643145400
+    m_Key: btn_reset_audio
     m_Metadata:
       m_Items: []
-  - m_Id: 91827364055
-    m_Key: btn_custom_k
+  - m_Id: 84736291011
+    m_Key: video_contrast
     m_Metadata:
       m_Items: []
-  - m_Id: 84736291077
-    m_Key: btn_custom_preset
+  - m_Id: 56473829155
+    m_Key: btn_reset_contrast
     m_Metadata:
       m_Items: []
-  - m_Id: 10293847588
-    m_Key: btn_custom_clear
+  - m_Id: 91827364533
+    m_Key: btn_toggle_language
     m_Metadata:
       m_Items: []
-  - m_Id: 56473829188
-    m_Key: btn_custom_clk
+  - m_Id: 38475619211
+    m_Key: controls_section_title
     m_Metadata:
       m_Items: []
-  - m_Id: 91827364599
-    m_Key: btn_custom_feedback_success
-    m_Metadata:
-      m_Items: []
-  - m_Id: 38475619288
-    m_Key: btn_custom_feedback_failure
+  - m_Id: 10293847544
+    m_Key: btn_restore_controls
     m_Metadata:
       m_Items: []
   - m_Id: 56473829177
@@ -133,50 +141,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 56473829144
     m_Key: rgb_blue_label
-    m_Metadata:
-      m_Items: []
-  - m_Id: 91827364522
-    m_Key: btn_confirm_rgb
-    m_Metadata:
-      m_Items: []
-  - m_Id: 38475619255
-    m_Key: btn_cancel_rgb
-    m_Metadata:
-      m_Items: []
-  - m_Id: 91827364077
-    m_Key: audio_master
-    m_Metadata:
-      m_Items: []
-  - m_Id: 56473829133
-    m_Key: audio_sfx
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10293847511
-    m_Key: audio_music
-    m_Metadata:
-      m_Items: []
-  - m_Id: 84736291011
-    m_Key: video_contrast
-    m_Metadata:
-      m_Items: []
-  - m_Id: 56473829155
-    m_Key: btn_reset_contrast
-    m_Metadata:
-      m_Items: []
-  - m_Id: 91827364533
-    m_Key: btn_toggle_language
-    m_Metadata:
-      m_Items: []
-  - m_Id: 38475619211
-    m_Key: controls_title
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10293847544
-    m_Key: controls_restore
-    m_Metadata:
-      m_Items: []
-  - m_Id: 91827364588
-    m_Key: btn_back
     m_Metadata:
       m_Items: []
   m_Metadata:

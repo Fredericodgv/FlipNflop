@@ -10,17 +10,29 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
-  m_Name: GameHUD Shared Data
+  m_Name: UIStrings Shared Data
   m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
-  m_TableCollectionName: GameHUD
+  m_TableCollectionName: UIStrings
   m_TableCollectionNameGuidString: 1335d71b210ede741858eb8a611103b6
   m_Entries:
-  - m_Id: 12584910848
-    m_Key: btn_menu
+  - m_Id: 29643145216
+    m_Key: btn_back
     m_Metadata:
       m_Items: []
-  - m_Id: 84920173621
-    m_Key: lbl_title_menu
+  - m_Id: 308182679552
+    m_Key: btn_play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350805196800
+    m_Key: btn_upload
+    m_Metadata:
+      m_Items: []
+  - m_Id: 438717808640
+    m_Key: btn_credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 497320624128
+    m_Key: btn_tutorial
     m_Metadata:
       m_Items: []
   - m_Id: 39482017465
@@ -37,6 +49,38 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 47382019560
     m_Key: btn_exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364522
+    m_Key: btn_confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38475619255
+    m_Key: btn_cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12584910848
+    m_Key: btn_menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 84920173621
+    m_Key: title_menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145300
+    m_Key: level_select
+    m_Metadata:
+      m_Items: []
+  - m_Id: 84510293847
+    m_Key: settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 438717808700
+    m_Key: credits_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 497320624200
+    m_Key: tutorial_title
     m_Metadata:
       m_Items: []
   m_Metadata:

@@ -29,8 +29,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 650081370112
-    m_Localized: Use A / D (or arrows) to move. Moving right advances time and draws
-      the output. Moving left rewinds, erasing the line to fix mistakes.
+    m_Localized: Use A/D or the arrow keys to move horizontally. Moving right draws
+      the output signal line. Moving left erases it, allowing you to correct mistakes.
     m_Metadata:
       m_Items: []
   - m_Id: 596200044527616
@@ -38,6 +38,21 @@ MonoBehaviour:
       the circuit's output signal. Analyze the input signals and clock transitions
       to guide the character, drawing the appropriate output line by switching between
       platforms that represent logic levels 0 and 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145500
+    m_Localized: Use W or the up arrow to switch between floor and ceiling platforms,
+      toggling the output signal logic level between 0 and 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119405445200
+    m_Localized: Use H to enable/disable hint lines for synchronous and asynchronous
+      events.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145600
+    m_Localized: At the end of the level, check the hits and misses in the drawn
+      diagram and your final score.
     m_Metadata:
       m_Items: []
   references:
