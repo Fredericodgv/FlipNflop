@@ -83,6 +83,30 @@ MonoBehaviour:
     m_Key: lbl_tutorial_title
     m_Metadata:
       m_Items: []
+  - m_Id: 51234567890
+    m_Key: credits_desc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51234567891
+    m_Key: credits_devs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51234567892
+    m_Key: credits_artists
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51234567893
+    m_Key: credits_art_role
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51234567894
+    m_Key: credits_music_role
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51234567895
+    m_Key: credits_mentors
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

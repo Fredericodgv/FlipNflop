@@ -32,6 +32,7 @@
                 </ui:Button>
             </ui:VisualElement>
         </ui:VisualElement>
+        
         <ui:VisualElement name="About" class="panel hidden">
             <ui:VisualElement class="page about-page">
                 <ui:Label text="Créditos" name="Title" class="title">
@@ -41,22 +42,46 @@
                 </ui:Label>
                 <ui:ScrollView name="CreditsScrollView" mode="Vertical" horizontal-scroller-visibility="Hidden" class="credits">
                     <ui:Label text="Flip n&apos; Flop" name="Subtitle" class="subtitle"/>
-                    <ui:Label text="Um jogo educacional digital criado para apoiar o aprendizado de diagramas de tempo de flip-flops, combinando lógica digital, desafios interativos e progressão por fases." class="text" style="white-space: normal;"/>
+                    <ui:Label text="Um jogo educacional digital criado para apoiar o aprendizado de diagramas de tempo de flip-flops, combinando lógica digital, desafios interativos e progressão por fases." class="text" style="white-space: normal;">
+                        <Bindings>
+                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(51234567890)"/>
+                        </Bindings>
+                    </ui:Label>
                     <ui:VisualElement name="Credits" class="credits-list">
                         <ui:VisualElement class="credit-section">
-                            <ui:Label text="Desenvolvedores (Alunos)" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;"/>
+                            <ui:Label text="Desenvolvedores (Alunos)" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;">
+                                <Bindings>
+                                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(51234567891)"/>
+                                </Bindings>
+                            </ui:Label>
                             <ui:Label text="Diogo Amarante" class="text"/>
                             <ui:Label text="Frederico Dôndici" class="text"/>
                             <ui:Label text="João Vitor Fernandes" class="text"/>
                             <ui:Label text="Pedro Crawford" class="text"/>
                         </ui:VisualElement>
                         <ui:VisualElement class="credit-section">
-                            <ui:Label text="Artistas voluntários" class="subtitle" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;"/>
-                            <ui:Label text="Diego Ângelo (Arte da Personagem)" class="text"/>
-                            <ui:Label text="Luis Felipe &quot;Koreano&quot; Resende (Música)" class="text" style="white-space: normal;"/>
+                            <ui:Label text="Artistas voluntários" class="subtitle" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;">
+                                <Bindings>
+                                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(51234567892)"/>
+                                </Bindings>
+                            </ui:Label>
+                            <ui:Label text="Diego Ângelo (Arte da Personagem)" class="text">
+                                <Bindings>
+                                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(51234567893)"/>
+                                </Bindings>
+                            </ui:Label>
+                            <ui:Label text="Luis Felipe &quot;Koreano&quot; Resende (Música)" class="text" style="white-space: normal;">
+                                <Bindings>
+                                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(51234567894)"/>
+                                </Bindings>
+                            </ui:Label>
                         </ui:VisualElement>
                         <ui:VisualElement class="credit-section">
-                            <ui:Label text="Orientadores (Professores)" class="subtitle" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;"/>
+                            <ui:Label text="Orientadores (Professores)" class="subtitle" style="color: rgb(255, 215, 0); -unity-font-style: bold; font-size: 20px; margin-top: 15px; margin-bottom: 5px;">
+                                <Bindings>
+                                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(51234567895)"/>
+                                </Bindings>
+                            </ui:Label>
                             <ui:Label text="Luciano Chaves" class="text"/>
                             <ui:Label text="Marcelo Caniato" class="text"/>
                         </ui:VisualElement>
@@ -64,6 +89,7 @@
                 </ui:ScrollView>
             </ui:VisualElement>
         </ui:VisualElement>
+
         <ui:VisualElement name="LevelSelect" class="panel hidden">
             <ui:VisualElement class="page">
                 <ui:Label text="Selecione a fase" name="Title" class="title">

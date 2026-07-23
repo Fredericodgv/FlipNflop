@@ -86,6 +86,32 @@ MonoBehaviour:
     m_Localized: "C\xF3mo Jugar"
     m_Metadata:
       m_Items: []
+  - m_Id: 51234567890
+    m_Localized: "Un juego educativo digital creado para apoyar el aprendizaje de
+      diagramas de tiempo de flip-flops, combinando l\xF3gica digital, desaf\xEDos
+      interactivos y progresi\xF3n por fases."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51234567891
+    m_Localized: Desarrolladores (Estudiantes)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51234567892
+    m_Localized: Artistas voluntarios
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51234567893
+    m_Localized: "Diego \xC2ngelo (Arte del Personaje)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51234567894
+    m_Localized: "Luis Felipe \"Koreano\" Resende (M\xFAsica)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51234567895
+    m_Localized: Orientadores (Profesores)
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
