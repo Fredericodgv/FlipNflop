@@ -131,7 +131,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 91827364533
-    m_Localized: Language
+    m_Localized: Language (English)
     m_Metadata:
       m_Items: []
   - m_Id: 38475619211
@@ -144,6 +144,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29643145400
     m_Localized: Restore Defaults
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10928374699
+    m_Localized: Custom
     m_Metadata:
       m_Items: []
   references:

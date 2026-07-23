@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
 [RequireComponent(typeof(UIDocument))]
@@ -130,6 +131,9 @@ public class ConfigManager : MonoBehaviour
         InitColorSettings();
 
         ShowTab(panelVideo);
+
+        // Se inscreve para escutar quando o idioma mudar
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
     }
 
     /// <summary>
@@ -138,6 +142,15 @@ public class ConfigManager : MonoBehaviour
     private void OnDisable()
     {
         UnregisterCallbacks();
+
+        // Remove a inscrição para evitar memory leaks
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+    }
+
+    private void OnLocaleChanged(Locale newLocale)
+    {
+        RefreshPaletteDropdown();
+        SyncColorUI();
     }
 
     /// <summary>
@@ -434,25 +447,30 @@ public class ConfigManager : MonoBehaviour
 
         if (dropdownPaleta != null)
         {
-            List<string> choices = new List<string>(SignalColorManager.PaletteNames);
-            if (!choices.Contains("Personalizado"))
-            {
-                choices.Add("Personalizado");
-            }
-            dropdownPaleta.choices = choices;
+            RefreshPaletteDropdown();
 
             dropdownPaleta.RegisterValueChangedCallback(evt =>
             {
-                if (evt.newValue == "Personalizado" || isApplyingPreset)
+                string localizedCustomName = SignalColorManager.GetLocalizedPaletteName(SignalColorManager.CUSTOM_INDEX);
+
+                if (evt.newValue == localizedCustomName || isApplyingPreset)
                     return;
 
-                int index = System.Array.IndexOf(SignalColorManager.PaletteNames, evt.newValue);
+                int selectedIndex = -1;
+                for (int i = 0; i < SignalColorManager.Palettes.Length; i++)
+                {
+                    if (evt.newValue == SignalColorManager.GetLocalizedPaletteName(i))
+                    {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
 
-                if (index >= 0)
+                if (selectedIndex >= 0)
                 {
                     isApplyingPreset = true;
 
-                    SignalColorManager.Instance.ApplyPalette(index);
+                    SignalColorManager.Instance.ApplyPalette(selectedIndex);
                     SyncColorUI();
 
                     dropdownPaleta.SetValueWithoutNotify(evt.newValue);
@@ -461,7 +479,6 @@ public class ConfigManager : MonoBehaviour
                 }
             });
         }
-
 
         GenerateSwatches(containerSwatchesJ, swatchesJ, SignalType.J);
         GenerateSwatches(containerSwatchesK, swatchesK, SignalType.K);
@@ -472,6 +489,33 @@ public class ConfigManager : MonoBehaviour
         GenerateSwatches(containerSwatchesFeedbackFailure, swatchesFeedbackFailure, SignalType.FeedbackFailure);
 
         SyncColorUI();
+    }
+
+    private void RefreshPaletteDropdown()
+    {
+        if (dropdownPaleta == null || SignalColorManager.Instance == null)
+            return;
+
+        string localizedCustomName = SignalColorManager.GetLocalizedPaletteName(SignalColorManager.CUSTOM_INDEX);
+
+        List<string> choices = new List<string>();
+        for (int i = 0; i < SignalColorManager.Palettes.Length; i++)
+        {
+            choices.Add(SignalColorManager.GetLocalizedPaletteName(i));
+        }
+        choices.Add(localizedCustomName);
+
+        dropdownPaleta.choices = choices;
+
+        int activePaletteIndex = SignalColorManager.Instance.GetCurrentPaletteIndex();
+        if (activePaletteIndex >= 0)
+        {
+            dropdownPaleta.SetValueWithoutNotify(SignalColorManager.GetLocalizedPaletteName(activePaletteIndex));
+        }
+        else
+        {
+            dropdownPaleta.SetValueWithoutNotify(localizedCustomName);
+        }
     }
 
     /// <summary>
@@ -529,7 +573,7 @@ public class ConfigManager : MonoBehaviour
         }
     }
 
-    //// <summary>
+    /// <summary>
     /// Sincroniza toda a UI de cores com o estado atual do SignalColorManager.
     /// </summary>
     private void SyncColorUI()
@@ -560,13 +604,11 @@ public class ConfigManager : MonoBehaviour
 
         if (activePaletteIndex >= 0)
         {
-            // Se bate com uma paleta existente, define o texto correspondente ("Padrão", etc.)
-            dropdownPaleta?.SetValueWithoutNotify(SignalColorManager.PaletteNames[activePaletteIndex]);
+            dropdownPaleta?.SetValueWithoutNotify(SignalColorManager.GetLocalizedPaletteName(activePaletteIndex));
         }
         else if (!isApplyingPreset)
         {
-            // Se retornou -1 e não estamos no meio da transição de um clique, vira "Personalizado"
-            dropdownPaleta?.SetValueWithoutNotify("Personalizado");
+            dropdownPaleta?.SetValueWithoutNotify(SignalColorManager.GetLocalizedPaletteName(SignalColorManager.CUSTOM_INDEX));
         }
     }
 

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using UnityEngine.Localization.Settings;
 
 public class SignalColorManager : MonoBehaviour
 {
@@ -40,12 +41,6 @@ public class SignalColorManager : MonoBehaviour
         new Color(0.73f, 0.27f, 1.00f),         // 9 Roxo
     };
 
-    public static readonly string[] PresetColorNames = new string[]
-    {
-        "Branco", "Amarelo", "Ciano", "Laranja", "Verde",
-        "Magenta", "Azul", "Vermelho", "Rosa", "Roxo"
-    };
-
     // ─── Paletas de acessibilidade ───────────────────────────────────────────
     public static readonly int[][] Palettes = new int[][]
     {
@@ -58,7 +53,6 @@ public class SignalColorManager : MonoBehaviour
         // Alto Contraste
         new[] { 1, 5, 3, 2, 6, 4, 7 },
     };
-    public static readonly string[] PaletteNames = { "Padrão", "Daltonismo", "Alto Contraste" };
 
     // ─── Índices padrão ──────────────────────────────────────────────────────
     private const int DEFAULT_J_IDX = 0;
@@ -108,14 +102,28 @@ public class SignalColorManager : MonoBehaviour
         }
     }
 
+    // Método para buscar o nome traduzido da paleta direto da tabela do Addressables
+    public static string GetLocalizedPaletteName(int index)
+    {
+        // NOME DA SUA TABELA: ConfigSettings
+        string tableName = "ConfigMenu";
+
+        string key = index switch
+        {
+            0 => "palette_default",
+            1 => "palette_colorblind",
+            2 => "palette_highcontrast",
+            _ => "palette_custom"
+        };
+
+        // Puxa a string traduzida no idioma atual
+        return LocalizationSettings.StringDatabase.GetLocalizedString(tableName, key);
+    }
+
     #endregion
 
     #region Aplicar Paleta
 
-    /// <summary>
-    /// Aplica uma paleta de acessibilidade nos sinais J, K e CLK.
-    /// Preset, Clear e Feedback não são afetados pelas paletas.
-    /// </summary>
     public void ApplyPalette(int paletteIndex)
     {
         if (paletteIndex < 0 || paletteIndex >= Palettes.Length)
@@ -125,17 +133,15 @@ public class SignalColorManager : MonoBehaviour
 
         SetColorByIndex("J", palette[0]);
         SetColorByIndex("K", palette[1]);
-
         SetColorByIndex("Preset", palette[2]);
         SetColorByIndex("Clear", palette[3]);
-
         SetColorByIndex("CLK", palette[4]);
-
         SetColorByIndex("FeedbackSuccess", palette[5]);
         SetColorByIndex("FeedbackFailure", palette[6]);
 
         NotifyAndSave();
     }
+
     #endregion
 
     #region Definir Cor por Índice (preset)
@@ -290,17 +296,12 @@ public class SignalColorManager : MonoBehaviour
         OnColorsChanged?.Invoke();
     }
 
-    /// <summary>
-    /// Compara os índices atuais com as paletas registradas e retorna o índice da paleta ativa.
-    /// Se as cores não baterem com nenhuma paleta oficial, retorna -1 (Personalizado).
-    /// </summary>
     public int GetCurrentPaletteIndex()
     {
         for (int i = 0; i < Palettes.Length; i++)
         {
             int[] palette = Palettes[i];
 
-            // Checagem seguindo a ordem exata de atribuição do ApplyPalette
             if (palette[0] == IndexJ &&
                 palette[1] == IndexK &&
                 palette[2] == IndexPreset &&
@@ -309,11 +310,11 @@ public class SignalColorManager : MonoBehaviour
                 palette[5] == IndexFeedbackSuccess &&
                 palette[6] == IndexFeedbackFailure)
             {
-                return i; // Encontrou a paleta correspondente
+                return i;
             }
         }
 
-        return CUSTOM_INDEX; // Retorna -1 se for uma combinação personalizada
+        return CUSTOM_INDEX;
     }
 
     #endregion

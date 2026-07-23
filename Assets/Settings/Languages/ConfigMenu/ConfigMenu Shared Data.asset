@@ -51,6 +51,10 @@ MonoBehaviour:
     m_Key: palette_highcontrast
     m_Metadata:
       m_Items: []
+  - m_Id: 10928374699
+    m_Key: palette_custom
+    m_Metadata:
+      m_Items: []
   - m_Id: 84736291048
     m_Key: signal_j
     m_Metadata:
