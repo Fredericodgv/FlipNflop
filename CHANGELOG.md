@@ -1,3 +1,15 @@
+## [0.12.4](https://github.com/flip-n-flop/game/compare/v0.12.3...v0.12.4) (2026-07-23)
+
+
+### Bug Fixes
+
+* Add credits localization ([f297187](https://github.com/flip-n-flop/game/commit/f297187a0d8c9bcbbb76d88c8a3de8b07a4c854f))
+* Add Spanish supports ([04842e9](https://github.com/flip-n-flop/game/commit/04842e9cdd100fb043d412667989a7e1ce478cab))
+* Adjust color pallet localization ([eca7508](https://github.com/flip-n-flop/game/commit/eca75081d2a833955ca79e6d2e23a387e21f8f97))
+* create tutorial template ([a6a995a](https://github.com/flip-n-flop/game/commit/a6a995aa5f692847ae9fd95a905e1d7852dfc271))
+
+
+
 ## [0.12.3](https://github.com/flip-n-flop/game/compare/v0.12.2...v0.12.3) (2026-07-22)
 
 
@@ -36,15 +48,6 @@
 ### Features
 
 * Add new control mapping ([759914e](https://github.com/flip-n-flop/game/commit/759914e5d212f2d4555f61a669a5beb7e85f5384))
-
-
-
-## [0.11.4](https://github.com/flip-n-flop/game/compare/v0.11.3...v0.11.4) (2026-06-16)
-
-
-### Bug Fixes
-
-* Update UI elements and audio settings for improved user experience ([87d3c5f](https://github.com/flip-n-flop/game/commit/87d3c5f9c7da4d92b01cc725cc79b136376c80a4))
 
 
 
