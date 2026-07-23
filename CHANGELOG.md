@@ -1,3 +1,12 @@
+## [0.12.3](https://github.com/flip-n-flop/game/compare/v0.12.2...v0.12.3) (2026-07-22)
+
+
+### Bug Fixes
+
+* Localization adjusts ([effc86b](https://github.com/flip-n-flop/game/commit/effc86b5edbf10207c949564d7769d7216f0e5eb))
+
+
+
 ## [0.12.2](https://github.com/flip-n-flop/game/compare/v0.12.1...v0.12.2) (2026-07-22)
 
 
@@ -36,15 +45,6 @@
 ### Bug Fixes
 
 * Update UI elements and audio settings for improved user experience ([87d3c5f](https://github.com/flip-n-flop/game/commit/87d3c5f9c7da4d92b01cc725cc79b136376c80a4))
-
-
-
-## [0.11.3](https://github.com/flip-n-flop/game/compare/v0.11.2...v0.11.3) (2026-06-16)
-
-
-### Bug Fixes
-
-* Comment out unused buttons in MainMenu ([e6aa6eb](https://github.com/flip-n-flop/game/commit/e6aa6eb1264e3a51b43a59672c28c312d3cd9348))
 
 
 
