@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Controls_es
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: es
+  m_SharedData: {fileID: 11400000, guid: 229e5976ae5cca94f990c72442131f3f, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 4955471872
+    m_Localized: Mover a la derecha
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59800190976
+    m_Localized: Mover a la izquierda
+    m_Metadata:
+      m_Items: []
+  - m_Id: 78460649472
+    m_Localized: Invertir plataforma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 80381640704
+    m_Localized: Saltar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 82311020544
+    m_Localized: Dash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119405445120
+    m_Localized: "L\xEDneas verticales"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 147683442688
+    m_Localized: "Pista de operaci\xF3n"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

@@ -10,39 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: Localization-String-Tables-Portuguese (Brazil) (pt-BR)
+  m_Name: Localization-String-Tables-Spanish (es)
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
-  m_GroupName: Localization-String-Tables-Portuguese (Brazil) (pt-BR)
-  m_GUID: 28f08fe2e8d18ea41bdd51ef210cb706
+  m_GroupName: Localization-String-Tables-Spanish (es)
+  m_GUID: 3d05f5feca2ec3f4690e5d96b94161d2
   m_SerializeEntries:
-  - m_GUID: 2d284606a20180a43af3d84fa9019563
-    m_Address: Controls_pt-BR
+  - m_GUID: 5190dc3bfe109ed4b93e518ae510febd
+    m_Address: Controls_es
     m_ReadOnly: 1
     m_SerializedLabels:
-    - Locale-pt-BR
+    - Locale-es
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 42e7d5321ca574a40b2da8f3ffff053a
-    m_Address: ConfigMenu_pt-BR
+  - m_GUID: 786a09f68d4635b44a975af8b9d91488
+    m_Address: ConfigMenu_es
     m_ReadOnly: 1
     m_SerializedLabels:
-    - Locale-pt-BR
+    - Locale-es
     - Preload
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 5b033ef7a26ec0e47b75610c6f477ed6
-    m_Address: UIStrings_pt-BR
+  - m_GUID: 7f1c81a2abf821d4f880d2f4c98be653
+    m_Address: UIStrings_es
     m_ReadOnly: 1
     m_SerializedLabels:
-    - Locale-pt-BR
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9423fae560f3de64e84ac08d2626d23d
-    m_Address: Tutorial_pt-BR
-    m_ReadOnly: 1
-    m_SerializedLabels:
-    - Locale-pt-BR
+    - Locale-es
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: cb163caadce02a747889fda2a70b2e68, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: 5c2d5c518472c124888cabe0656e41e0, type: 2}
-    - {fileID: 11400000, guid: 67abc27ff066d5e4388a78d32c8a32c2, type: 2}
+    - {fileID: 11400000, guid: 91af66593bcc5c145a25bf7bf806304d, type: 2}
+    - {fileID: 11400000, guid: 00796079f6d08364fa0e86fe7be19b87, type: 2}

@@ -64,23 +64,23 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 84920173621
-    m_Key: title_menu
+    m_Key: lbl_title_menu
     m_Metadata:
       m_Items: []
   - m_Id: 29643145300
-    m_Key: level_select
+    m_Key: lbl_level_select
     m_Metadata:
       m_Items: []
   - m_Id: 84510293847
-    m_Key: settings
+    m_Key: lbl_settings
     m_Metadata:
       m_Items: []
   - m_Id: 438717808700
-    m_Key: credits_title
+    m_Key: lbl_credits_title
     m_Metadata:
       m_Items: []
   - m_Id: 497320624200
-    m_Key: tutorial_title
+    m_Key: lbl_tutorial_title
     m_Metadata:
       m_Items: []
   m_Metadata:

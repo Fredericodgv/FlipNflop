@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: UIStrings_es
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: es
+  m_SharedData: {fileID: 11400000, guid: 1335d71b210ede741858eb8a611103b6, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 12584910848
+    m_Localized: "Men\xFA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 84920173621
+    m_Localized: "Men\xFA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39482017465
+    m_Localized: Continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 92017465139
+    m_Localized: Reiniciar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56102938472
+    m_Localized: Opciones
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47382019560
+    m_Localized: Salir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145216
+    m_Localized: Volver
+    m_Metadata:
+      m_Items: []
+  - m_Id: 308182679552
+    m_Localized: Jugar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 350805196800
+    m_Localized: Subir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 438717808640
+    m_Localized: "Cr\xE9ditos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 497320624128
+    m_Localized: "C\xF3mo Jugar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 91827364522
+    m_Localized: Confirmar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38475619255
+    m_Localized: Cancelar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145300
+    m_Localized: Seleccionar nivel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 84510293847
+    m_Localized: Configuraciones
+    m_Metadata:
+      m_Items: []
+  - m_Id: 438717808700
+    m_Localized: "Cr\xE9ditos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 497320624200
+    m_Localized: "C\xF3mo Jugar"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

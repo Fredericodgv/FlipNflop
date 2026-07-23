@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Tutorial_es
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: es
+  m_SharedData: {fileID: 11400000, guid: bcdba3d027686d241b4c3261971aa0ab, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 682767581184
+    m_Localized: "Usa Espacio para saltar. Permite esquivar obst\xE1culos en el suelo
+      sin cambiar el nivel l\xF3gico de la l\xEDnea dibujada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 698110345216
+    m_Localized: "Usa Shift para acelerar (dash). Un impulso r\xE1pido que garantiza
+      agilidad para superar piedras y peligros."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 650081370112
+    m_Localized: "Usa A/D o las flechas de izquierda/derecha para mover horizontalmente
+      al personaje. Al caminar hacia la derecha, se dibuja la l\xEDnea de la se\xF1al
+      de salida. Al caminar hacia la izquierda, la l\xEDnea se borra (permitiendo
+      corregir errores)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 596200044527616
+    m_Localized: "Tu objetivo es construir correctamente el diagrama de tiempo para
+      la se\xF1al de salida del circuito. Analiza las se\xF1ales de entrada y las
+      transiciones del reloj para guiar al personaje, dibujando la l\xEDnea de salida
+      adecuada al alternar entre las plataformas que representan los niveles l\xF3gicos
+      0 y 1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145500
+    m_Localized: "Usa W o la flecha hacia arriba para alternar entre las plataformas
+      del suelo y del techo, cambiando el nivel l\xF3gico de la se\xF1al de salida
+      entre 0 y 1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 119405445200
+    m_Localized: "Usa H para habilitar/deshabilitar las l\xEDneas de ayuda para eventos
+      s\xEDncronos y as\xEDncronos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29643145600
+    m_Localized: "Al final de la fase, comprueba los aciertos y errores en el diagrama
+      dibujado y la puntuaci\xF3n obtenida."
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
