@@ -112,6 +112,30 @@ MonoBehaviour:
     m_Localized: Orientadores (Professores)
     m_Metadata:
       m_Items: []
+  - m_Id: 88800000001
+    m_Localized: Diagrama Correto!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000002
+    m_Localized: Diagrama Incorreto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000003
+    m_Localized: "Pontua\xE7\xE3o:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000004
+    m_Localized: 'Tempo:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000007
+    m_Localized: Esconder painel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000008
+    m_Localized: Exibir painel
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

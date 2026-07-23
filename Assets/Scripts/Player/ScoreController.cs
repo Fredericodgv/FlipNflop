@@ -64,15 +64,19 @@ public class ScoreController : MonoBehaviour
         StopTimer();
 
         int score = ComputeScore(correctSegments, gabaritoTotal, elapsedTime);
+        int misses = gabaritoTotal - correctSegments;
+        if (misses < 0) misses = 0;
 
-        Debug.Log($"[ScoreController] correct:{correctSegments}/{gabaritoTotal} | time:{elapsedTime:F1}s | score:{score}");
+        int m = Mathf.FloorToInt(elapsedTime / 60f);
+        int s = Mathf.FloorToInt(elapsedTime % 60f);
+        string timeString = $"{m:00}:{s:00}";
 
-        if (scoreText != null)
-        {
-            scoreText.gameObject.SetActive(true);
-            string resultado = success ? "Diagrama Correto!" : "Diagrama Incorreto";
-            scoreText.text = $"{resultado}\nPontuação: {score}";
-        }
+        Debug.Log($"[ScoreController] correct:{correctSegments}/{gabaritoTotal} | time:{timeString} | score:{score}");
+
+        ResultScreenController.Instance.SetResultData(
+            score.ToString(),
+            timeString
+        );
     }
 
     /// <summary>
