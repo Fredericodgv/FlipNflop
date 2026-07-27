@@ -1,8 +1,10 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:Template name="TutorialMenu" src="project://database/Assets/UI%20Toolkit/Layouts/TutorialMenu.uxml?fileID=9197481963319205126&amp;guid=bc0db67d26e0fe54f90c3c6cc9e71f26&amp;type=3#TutorialMenu"/>
     <Style src="project://database/Assets/UI%20Toolkit/Styles/MainMenu.uss?fileID=7433441132597879392&amp;guid=914addff2ff73d644a3f7eeeebd54bb4&amp;type=3#MainMenu"/>
+    
     <ui:VisualElement class="screen bg-main">
         <ui:VisualElement class="overlay"/>
+        
         <ui:VisualElement name="MainMenu" class="panel" style="display: flex;">
             <ui:VisualElement class="card menu-card-small">
                 <ui:Button text="Jogar" name="PlayButton" class="btn">
@@ -10,11 +12,13 @@
                         <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(308182679552)"/>
                     </Bindings>
                 </ui:Button>
+                
                 <ui:Button text="Upload" name="UploadButton" class="btn">
                     <Bindings>
                         <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(350805196800)"/>
                     </Bindings>
                 </ui:Button>
+                
                 <ui:Button text="Como Jogar" name="TutorialButton" class="btn">
                     <Bindings>
                         <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(497320624128)"/>
@@ -41,7 +45,7 @@
                     </Bindings>
                 </ui:Label>
                 <ui:ScrollView name="CreditsScrollView" mode="Vertical" horizontal-scroller-visibility="Hidden" class="credits">
-                    <ui:Label text="Flip n&apos; Flop" name="Subtitle" class="subtitle"/>
+                    <ui:Label text="Flip n' Flop" name="Subtitle" class="subtitle"/>
                     <ui:Label text="Um jogo educacional digital criado para apoiar o aprendizado de diagramas de tempo de flip-flops, combinando lógica digital, desafios interativos e progressão por fases." class="text" style="white-space: normal;">
                         <Bindings>
                             <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(51234567890)"/>
@@ -110,13 +114,29 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
+
         <ui:VisualElement name="Tutorial" class="panel hidden">
             <ui:Instance template="TutorialMenu" name="TemplateContainer" style="flex-grow: 1; align-items: center; align-self: center; justify-content: center; width: 100%; height: 100%;"/>
         </ui:VisualElement>
+
+        <ui:VisualElement name="PanelUpload" class="panel hidden">
+            <ui:VisualElement class="page" style="flex-direction: column;">
+                <ui:Label text="Gerenciador de Fases (API)" class="title" />
+                
+                <ui:ScrollView name="LevelListScrollView" mode="Vertical" style="flex-grow: 1; min-height: 300px; background-color: rgba(0, 0, 0, 0.4); border-radius: 10px; margin: 15px 0px; padding: 15px;" />
+                
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-top: auto;">
+                    <ui:Button text="Atualizar Fases da API" name="BtnFetchLevels" class="btn" style="width: 48%; margin: 0px;" />
+                    <ui:Button text="Enviar Nova Fase" name="BtnPostLevel" class="btn" style="width: 48%; margin: 0px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
         <ui:Button text="Voltar" name="BackButton" class="btn back hidden">
             <Bindings>
                 <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(29643145216)"/>
             </Bindings>
         </ui:Button>
+        
     </ui:VisualElement>
 </ui:UXML>
