@@ -184,7 +184,7 @@ public class PathVerifier : MonoBehaviour
             Debug.Log($"<color=yellow>[PathVerifier] Resultado: {correctCount}/{totalCount} quinas atingidas</color>");
         }
 
-        ResultScreenController.Instance?.Show(false);
+        ResultScreenController.Instance?.Show(isPathCorrectOverall);
     }
 
     private int CountCoveredGabaritoSegments(List<Vector3> playerPath)

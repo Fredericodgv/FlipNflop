@@ -3337,10 +3337,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0667e2135ea526842a4a981af5307451, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HUDController
-  menuSceneName: MenuWEB
-  nextLevelSceneName: 
-  currentLevelSceneName: Custom
-  hideButtonName: HideButton
 --- !u!114 &1289131810
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3354,7 +3350,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ResultScreenController
   customLevelName: Custom
-  mainMenuSceneName: MainMenu
+  mainMenuSceneName: MenuWEB
 --- !u!114 &1289131811
 MonoBehaviour:
   m_ObjectHideFlags: 0
