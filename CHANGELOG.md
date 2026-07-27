@@ -1,3 +1,13 @@
+## [0.12.5](https://github.com/flip-n-flop/game/compare/v0.12.4...v0.12.5) (2026-07-27)
+
+
+### Bug Fixes
+
+* adjust feedback text ([de1aba9](https://github.com/flip-n-flop/game/commit/de1aba9ce88e711ac530fc6595f5006c39ebab35))
+* change feedback panel from canvas to UItoolkit ([78b9a7d](https://github.com/flip-n-flop/game/commit/78b9a7d6c36fc957aa252231c7ceb3ac66ac6eb1))
+
+
+
 ## [0.12.4](https://github.com/flip-n-flop/game/compare/v0.12.3...v0.12.4) (2026-07-23)
 
 
@@ -39,15 +49,6 @@
 ### Bug Fixes
 
 * Adjust hide button visibility ([0d0a25a](https://github.com/flip-n-flop/game/commit/0d0a25ab55b556a67e205046b28e9274b2296e44))
-
-
-
-# [0.12.0](https://github.com/flip-n-flop/game/compare/v0.11.4...v0.12.0) (2026-06-16)
-
-
-### Features
-
-* Add new control mapping ([759914e](https://github.com/flip-n-flop/game/commit/759914e5d212f2d4555f61a669a5beb7e85f5384))
 
 
 
