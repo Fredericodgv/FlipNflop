@@ -1,0 +1,30 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/Panel.uss?fileID=7433441132597879392&amp;guid=5b6ccb061d6f6e54b939846c701d8098&amp;type=3#Panel"/>
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/MainMenu.uss?fileID=7433441132597879392&amp;guid=914addff2ff73d644a3f7eeeebd54bb4&amp;type=3#MainMenu"/>
+    <ui:VisualElement name="ResultScreen" class="hidden" style="position: absolute; width: 100%; height: 100%; justify-content: space-between;">
+        <ui:VisualElement style="flex-grow: 1; justify-content: center; align-items: center; margin-bottom: 60px;">
+            <ui:VisualElement name="PanelResult" class="menu-card game-menu-card" style="width: 420px; padding: 30px; align-items: center; border-radius: 15px; background-color: rgba(30, 30, 30, 0.95);">
+                <ui:Label text="Diagrama Correto!" name="ResultText" class="result-title" style="font-size: 26px; -unity-font-style: bold; margin-bottom: 5px; white-space: normal; -unity-text-align: middle-center; color: rgb(255, 255, 255);"/>
+                <ui:Label text="Pontuação: 00000" name="ScoreText" class="result-score" style="font-size: 18px; margin-bottom: 25px; -unity-text-align: middle-center; color: rgb(255, 255, 255);"/>
+                <ui:Button text="Continuar" name="ContinuButton" class="menu-button action-button" style="width: 100%;">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(39482017465)"/>
+                    </Bindings>
+                </ui:Button>
+                <ui:Button text="Tentar Novamente" name="TryAgainButton" class="menu-button" style="width: 100%;">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(92017465139)"/>
+                    </Bindings>
+                </ui:Button>
+                <ui:Button text="Menu Principal" name="MenuButton" class="menu-button" style="width: 100%; margin-top: 10px;">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(12584910848)"/>
+                    </Bindings>
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement style="width: 100%; flex-direction: row; justify-content: flex-end; padding: 20px;">
+            <ui:Button text="Ver Desenho" name="HideButton" class="menu-button" style="width: auto; padding: 10px 20px; font-size: 18px; margin: 0;"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

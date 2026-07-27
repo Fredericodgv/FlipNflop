@@ -16,9 +16,6 @@ public class PathVerifier : MonoBehaviour
 
     [Header("Additional References")]
     [SerializeField] private SignalPath signalPath;
-    [SerializeField] private GameObject resultPanel;
-    [SerializeField] private GameObject continueButton;
-    [SerializeField] private GameObject retryButton;
     [SerializeField] private float cornerTolerance = 1.0f;
 
     [Header("Visual Feedback Settings")]
@@ -61,8 +58,6 @@ public class PathVerifier : MonoBehaviour
 
     private void Start()
     {
-        if (resultPanel != null) resultPanel.SetActive(false);
-
         if (signalPath != null)
             signalLineRenderer = signalPath.GetComponent<LineRenderer>();
 
@@ -159,12 +154,7 @@ public class PathVerifier : MonoBehaviour
         if (signalPath == null || signalPath.PathPoints.Count < 2)
         {
             Debug.LogError("Caminho do jogador inválido ou não definido!");
-            if (resultPanel != null)
-            {
-                ActivateWithParent(resultPanel);
-                if (continueButton != null) continueButton.SetActive(false);
-                if (retryButton != null) retryButton.SetActive(true);
-            }
+            ResultScreenController.Instance?.Show(false);
             return;
         }
 
@@ -194,12 +184,7 @@ public class PathVerifier : MonoBehaviour
             Debug.Log($"<color=yellow>[PathVerifier] Resultado: {correctCount}/{totalCount} quinas atingidas</color>");
         }
 
-        if (resultPanel != null)
-        {
-            ActivateWithParent(resultPanel);
-            if (continueButton != null) continueButton.SetActive(isPathCorrectOverall);
-            if (retryButton != null) retryButton.SetActive(!isPathCorrectOverall);
-        }
+        ResultScreenController.Instance?.Show(isPathCorrectOverall);
     }
 
     private int CountCoveredGabaritoSegments(List<Vector3> playerPath)

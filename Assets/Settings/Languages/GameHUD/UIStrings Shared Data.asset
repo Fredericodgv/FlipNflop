@@ -107,6 +107,30 @@ MonoBehaviour:
     m_Key: credits_mentors
     m_Metadata:
       m_Items: []
+  - m_Id: 88800000001
+    m_Key: result_correct
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000002
+    m_Key: result_incorrect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000003
+    m_Key: lbl_score
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000004
+    m_Key: lbl_time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000007
+    m_Key: btn_hide_panel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000008
+    m_Key: btn_show_panel
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

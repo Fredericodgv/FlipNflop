@@ -13,6 +13,9 @@ public static class LevelSequenceManager
 
     public static bool HasNextLevel()
     {
+        if (Levels == null || Levels.Length == 0)
+            return false;
+
         return CurrentLevelIndex + 1 < Levels.Length;
     }
 }

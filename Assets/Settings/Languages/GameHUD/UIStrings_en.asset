@@ -112,6 +112,30 @@ MonoBehaviour:
     m_Localized: Mentors (Professors)
     m_Metadata:
       m_Items: []
+  - m_Id: 88800000001
+    m_Localized: Correct Diagram!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000002
+    m_Localized: Incorrect Diagram
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000003
+    m_Localized: 'Score:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000004
+    m_Localized: 'Time:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000007
+    m_Localized: Hide panel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 88800000008
+    m_Localized: Show panel
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
