@@ -387,15 +387,6 @@ public class PathVerifier : MonoBehaviour
         }
         return false;
     }
-    private void ActivateWithParent(GameObject target)
-    {
-        if (target == null) return;
-        Transform parent = target.transform.parent;
-        if (parent != null && !parent.gameObject.activeSelf)
-            parent.gameObject.SetActive(true);
-        if (!target.activeSelf) target.SetActive(true);
-    }
-
     private List<bool> EvaluateCorrectCorners(List<Vector3> playerPath)
     {
         var checks = new List<bool>();
