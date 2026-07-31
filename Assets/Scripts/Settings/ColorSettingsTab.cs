@@ -1,14 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEngine.Localization;
-using UnityEngine.Localization.Settings;
 
-[RequireComponent(typeof(UIDocument))]
-public class ConfigManager : MonoBehaviour
+/// <summary>
+/// Encapsula toda a lógica da aba "Cores" do menu de configurações,
+/// incluindo o overlay RGB para cor personalizada.
+/// </summary>
+public class ColorSettingsTab : ISettingsTab
 {
-    private const string ContrastSaveKey = "ContrastValue";
-
     private enum SignalType
     {
         J,
@@ -19,38 +18,6 @@ public class ConfigManager : MonoBehaviour
         FeedbackSuccess,
         FeedbackFailure
     }
-
-    [Header("Vídeo")]
-    [Tooltip("Overlay usado para aplicar contraste visual.")]
-    [SerializeField] private SpriteRenderer contrastOverlaySprite;
-
-    private UIDocument uiDocument;
-    private VisualElement root;
-
-    // Navegação
-    private Button btnTabColors;
-    private Button btnTabAudio;
-    private Button btnTabVideo;
-    private Button btnTabControls;
-    private Button btnBack;
-
-    private VisualElement panelColor;
-    private VisualElement panelAudio;
-    private VisualElement panelVideo;
-    private VisualElement panelControls;
-
-    private readonly List<VisualElement> panels = new();
-
-    // Áudio
-    private Slider sliderMaster;
-    private Slider sliderSons;
-    private Slider sliderMusica;
-    private Button btnResetAudio;
-
-    // Vídeo
-    private Slider sliderContrast;
-    private Button btnResetContrast;
-    private Button btnToggleLanguage;
 
     // Cores — sinais
     private DropdownField dropdownPaleta;
@@ -105,89 +72,66 @@ public class ConfigManager : MonoBehaviour
     private readonly List<Button> swatchesFeedbackSuccess = new();
     private readonly List<Button> swatchesFeedbackFailure = new();
 
-    /// <summary>
-    /// Inicializa referências obrigatórias.
-    /// </summary>
-    private void Awake()
+    public void Init(VisualElement root)
     {
-        uiDocument = GetComponent<UIDocument>();
-    }
-
-    /// <summary>
-    /// Busca elementos da UI e registra callbacks.
-    /// </summary>
-    private void OnEnable()
-    {
-        if (uiDocument == null)
-            return;
-
-        root = uiDocument.rootVisualElement;
-
-        CacheUIElements();
-        RegisterCallbacks();
-
-        InitAudioSliders();
-        InitVideoSettings();
+        CacheElements(root);
         InitColorSettings();
-
-        ShowTab(panelVideo);
-
-        // Se inscreve para escutar quando o idioma mudar
-        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
     }
 
-    /// <summary>
-    /// Remove callbacks registrados.
-    /// </summary>
-    private void OnDisable()
+    public void RegisterCallbacks()
     {
-        UnregisterCallbacks();
+        if (btnCustomJ != null) btnCustomJ.clicked += OpenCustomJ;
+        if (btnCustomK != null) btnCustomK.clicked += OpenCustomK;
+        if (btnCustomCLK != null) btnCustomCLK.clicked += OpenCustomCLK;
+        if (btnCustomPreset != null) btnCustomPreset.clicked += OpenCustomPreset;
+        if (btnCustomClear != null) btnCustomClear.clicked += OpenCustomClear;
+        if (btnCustomFeedbackSuccess != null) btnCustomFeedbackSuccess.clicked += OpenCustomFeedbackSuccess;
+        if (btnCustomFeedbackFailure != null) btnCustomFeedbackFailure.clicked += OpenCustomFeedbackFailure;
 
-        // Remove a inscrição para evitar memory leaks
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        if (btnConfirmRGB != null) btnConfirmRGB.clicked += ConfirmRGBColor;
+        if (btnCancelRGB != null) btnCancelRGB.clicked += CloseRGBOverlay;
+
+        if (btnResetColors != null) btnResetColors.clicked += ResetDefaultColors;
+
+        sliderR?.RegisterValueChangedCallback(OnRGBSliderChanged);
+        sliderG?.RegisterValueChangedCallback(OnRGBSliderChanged);
+        sliderB?.RegisterValueChangedCallback(OnRGBSliderChanged);
+
+        inputHex?.RegisterValueChangedCallback(OnHexInputChanged);
     }
 
-    private void OnLocaleChanged(Locale newLocale)
+    public void UnregisterCallbacks()
+    {
+        if (btnCustomJ != null) btnCustomJ.clicked -= OpenCustomJ;
+        if (btnCustomK != null) btnCustomK.clicked -= OpenCustomK;
+        if (btnCustomCLK != null) btnCustomCLK.clicked -= OpenCustomCLK;
+        if (btnCustomPreset != null) btnCustomPreset.clicked -= OpenCustomPreset;
+        if (btnCustomClear != null) btnCustomClear.clicked -= OpenCustomClear;
+        if (btnCustomFeedbackSuccess != null) btnCustomFeedbackSuccess.clicked -= OpenCustomFeedbackSuccess;
+        if (btnCustomFeedbackFailure != null) btnCustomFeedbackFailure.clicked -= OpenCustomFeedbackFailure;
+
+        if (btnConfirmRGB != null) btnConfirmRGB.clicked -= ConfirmRGBColor;
+        if (btnCancelRGB != null) btnCancelRGB.clicked -= CloseRGBOverlay;
+
+        if (btnResetColors != null) btnResetColors.clicked -= ResetDefaultColors;
+
+        sliderR?.UnregisterValueChangedCallback(OnRGBSliderChanged);
+        sliderG?.UnregisterValueChangedCallback(OnRGBSliderChanged);
+        sliderB?.UnregisterValueChangedCallback(OnRGBSliderChanged);
+
+        inputHex?.UnregisterValueChangedCallback(OnHexInputChanged);
+    }
+
+    public void OnLocaleChanged()
     {
         RefreshPaletteDropdown();
         SyncColorUI();
     }
 
-    /// <summary>
-    /// Busca todos os elementos da interface.
-    /// </summary>
-    private void CacheUIElements()
+    #region Cache
+
+    private void CacheElements(VisualElement root)
     {
-        // Navegação
-        btnTabColors = root.Q<Button>("BtnTabColors");
-        btnTabAudio = root.Q<Button>("BtnTabAudio");
-        btnTabVideo = root.Q<Button>("BtnTabVideo");
-        btnTabControls = root.Q<Button>("BtnTabControls");
-        btnBack = root.Q<Button>("BtnBack");
-
-        panelColor = root.Q<VisualElement>("PanelColor");
-        panelAudio = root.Q<VisualElement>("PanelAudio");
-        panelVideo = root.Q<VisualElement>("PanelVideo");
-        panelControls = root.Q<VisualElement>("PanelControls");
-
-        panels.Clear();
-        panels.Add(panelColor);
-        panels.Add(panelAudio);
-        panels.Add(panelVideo);
-        panels.Add(panelControls);
-
-        // Áudio
-        sliderMaster = root.Q<Slider>("SliderMaster");
-        sliderSons = root.Q<Slider>("SliderSons");
-        sliderMusica = root.Q<Slider>("SliderMusica");
-        btnResetAudio = root.Q<Button>("BtnResetAudio");
-
-        // Vídeo
-        sliderContrast = root.Q<Slider>("SliderContrast");
-        btnResetContrast = root.Q<Button>("BtnResetContrast");
-        btnToggleLanguage = root.Q<Button>("BtnToggleLanguage");
-
-        // Cores
         dropdownPaleta = root.Q<DropdownField>("DropdownPaleta");
         btnResetColors = root.Q<Button>("BtnResetColors");
 
@@ -215,7 +159,6 @@ public class ConfigManager : MonoBehaviour
         btnCustomFeedbackSuccess = root.Q<Button>("BtnCustomFeedbackSuccess");
         btnCustomFeedbackFailure = root.Q<Button>("BtnCustomFeedbackFailure");
 
-        // RGB
         rgbOverlay = root.Q<VisualElement>("RGBOverlay");
         rgbTitle = root.Q<Label>("RGBTitle");
         rgbPreview = root.Q<VisualElement>("RGBPreview");
@@ -228,212 +171,6 @@ public class ConfigManager : MonoBehaviour
 
         btnConfirmRGB = root.Q<Button>("BtnConfirmRGB");
         btnCancelRGB = root.Q<Button>("BtnCancelRGB");
-    }
-
-    /// <summary>
-    /// Registra callbacks da interface.
-    /// </summary>
-    private void RegisterCallbacks()
-    {
-        if (btnTabColors != null) btnTabColors.clicked += ShowColorsTab;
-        if (btnTabAudio != null) btnTabAudio.clicked += ShowAudioTab;
-        if (btnTabVideo != null) btnTabVideo.clicked += ShowVideoTab;
-        if (btnTabControls != null) btnTabControls.clicked += ShowControlsTab;
-        if (btnBack != null) btnBack.clicked += OnBackClicked;
-
-        if (btnResetContrast != null) btnResetContrast.clicked += ResetContrast;
-        if (btnToggleLanguage != null) btnToggleLanguage.clicked += ToggleLanguage;
-
-        if (btnCustomJ != null) btnCustomJ.clicked += OpenCustomJ;
-        if (btnCustomK != null) btnCustomK.clicked += OpenCustomK;
-        if (btnCustomCLK != null) btnCustomCLK.clicked += OpenCustomCLK;
-        if (btnCustomPreset != null) btnCustomPreset.clicked += OpenCustomPreset;
-        if (btnCustomClear != null) btnCustomClear.clicked += OpenCustomClear;
-        if (btnCustomFeedbackSuccess != null) btnCustomFeedbackSuccess.clicked += OpenCustomFeedbackSuccess;
-        if (btnCustomFeedbackFailure != null) btnCustomFeedbackFailure.clicked += OpenCustomFeedbackFailure;
-
-        if (btnConfirmRGB != null) btnConfirmRGB.clicked += ConfirmRGBColor;
-        if (btnCancelRGB != null) btnCancelRGB.clicked += CloseRGBOverlay;
-
-        if (btnResetColors != null) btnResetColors.clicked += ResetDefaultColors;
-        if (btnResetAudio != null) btnResetAudio.clicked += ResetDefaultAudio;
-
-        sliderR?.RegisterValueChangedCallback(OnRGBSliderChanged);
-        sliderG?.RegisterValueChangedCallback(OnRGBSliderChanged);
-        sliderB?.RegisterValueChangedCallback(OnRGBSliderChanged);
-
-        inputHex?.RegisterValueChangedCallback(OnHexInputChanged);
-    }
-
-    /// <summary>
-    /// Remove callbacks registrados.
-    /// </summary>
-    private void UnregisterCallbacks()
-    {
-        if (btnTabColors != null) btnTabColors.clicked -= ShowColorsTab;
-        if (btnTabAudio != null) btnTabAudio.clicked -= ShowAudioTab;
-        if (btnTabVideo != null) btnTabVideo.clicked -= ShowVideoTab;
-        if (btnTabControls != null) btnTabControls.clicked -= ShowControlsTab;
-        if (btnBack != null) btnBack.clicked -= OnBackClicked;
-
-        if (btnResetContrast != null) btnResetContrast.clicked -= ResetContrast;
-        if (btnToggleLanguage != null) btnToggleLanguage.clicked -= ToggleLanguage;
-
-        if (btnCustomJ != null) btnCustomJ.clicked -= OpenCustomJ;
-        if (btnCustomK != null) btnCustomK.clicked -= OpenCustomK;
-        if (btnCustomCLK != null) btnCustomCLK.clicked -= OpenCustomCLK;
-        if (btnCustomPreset != null) btnCustomPreset.clicked -= OpenCustomPreset;
-        if (btnCustomClear != null) btnCustomClear.clicked -= OpenCustomClear;
-        if (btnCustomFeedbackSuccess != null) btnCustomFeedbackSuccess.clicked -= OpenCustomFeedbackSuccess;
-        if (btnCustomFeedbackFailure != null) btnCustomFeedbackFailure.clicked -= OpenCustomFeedbackFailure;
-
-        if (btnConfirmRGB != null) btnConfirmRGB.clicked -= ConfirmRGBColor;
-        if (btnCancelRGB != null) btnCancelRGB.clicked -= CloseRGBOverlay;
-
-        sliderMaster?.UnregisterValueChangedCallback(OnMasterVolumeChanged);
-        sliderSons?.UnregisterValueChangedCallback(OnSFXVolumeChanged);
-        sliderMusica?.UnregisterValueChangedCallback(OnMusicVolumeChanged);
-
-        sliderContrast?.UnregisterValueChangedCallback(OnContrastChanged);
-
-        sliderR?.UnregisterValueChangedCallback(OnRGBSliderChanged);
-        sliderG?.UnregisterValueChangedCallback(OnRGBSliderChanged);
-        sliderB?.UnregisterValueChangedCallback(OnRGBSliderChanged);
-
-        inputHex?.UnregisterValueChangedCallback(OnHexInputChanged);
-    }
-
-    private void ShowColorsTab() => ShowTab(panelColor);
-    private void ShowAudioTab() => ShowTab(panelAudio);
-    private void ShowVideoTab() => ShowTab(panelVideo);
-    private void ShowControlsTab() => ShowTab(panelControls);
-
-    /// <summary>
-    /// Exibe apenas o painel informado.
-    /// </summary>
-    private void ShowTab(VisualElement activePanel)
-    {
-        foreach (var panel in panels)
-        {
-            if (panel != null)
-                panel.style.display = DisplayStyle.None;
-        }
-
-        if (activePanel != null)
-            activePanel.style.display = DisplayStyle.Flex;
-    }
-
-    /// <summary>
-    /// Retorna ao menu principal.
-    /// </summary>
-    private void OnBackClicked()
-    {
-        var panelOptions = root.Q<VisualElement>("PanelOptions");
-        var panelMain = root.Q<VisualElement>("PanelMain");
-
-        if (panelOptions != null) panelOptions.style.display = DisplayStyle.None;
-        if (panelMain != null) panelMain.style.display = DisplayStyle.Flex;
-
-        root.Q<Button>("Options")?.Focus();
-    }
-
-    #region Audio
-
-    private void InitAudioSliders()
-    {
-        if (AudioManager.Instance == null)
-            return;
-
-        if (sliderMaster != null)
-        {
-            sliderMaster.SetValueWithoutNotify(AudioManager.Instance.GetMasterVolume());
-            sliderMaster.RegisterValueChangedCallback(OnMasterVolumeChanged);
-        }
-
-        if (sliderSons != null)
-        {
-            sliderSons.SetValueWithoutNotify(AudioManager.Instance.GetSFXVolume());
-            sliderSons.RegisterValueChangedCallback(OnSFXVolumeChanged);
-        }
-
-        if (sliderMusica != null)
-        {
-            sliderMusica.SetValueWithoutNotify(AudioManager.Instance.GetMusicVolume());
-            sliderMusica.RegisterValueChangedCallback(OnMusicVolumeChanged);
-        }
-    }
-
-    private void OnMasterVolumeChanged(ChangeEvent<float> evt) => AudioManager.Instance?.SetMasterVolume(evt.newValue);
-    private void OnSFXVolumeChanged(ChangeEvent<float> evt) => AudioManager.Instance?.SetSFXVolume(evt.newValue);
-    private void OnMusicVolumeChanged(ChangeEvent<float> evt) => AudioManager.Instance?.SetMusicVolume(evt.newValue);
-
-    private void ResetDefaultAudio()
-    {
-        if (AudioManager.Instance == null) return;
-
-        // Busca os valores padrão diretamente do AudioManager
-        sliderMaster?.SetValueWithoutNotify(AudioManager.DEFAULT_MASTER);
-        sliderMusica?.SetValueWithoutNotify(AudioManager.DEFAULT_MUSIC);
-        sliderSons?.SetValueWithoutNotify(AudioManager.DEFAULT_SFX);
-
-        // Aplica no sistema de som
-        AudioManager.Instance.SetMasterVolume(AudioManager.DEFAULT_MASTER);
-        AudioManager.Instance.SetMusicVolume(AudioManager.DEFAULT_MUSIC);
-        AudioManager.Instance.SetSFXVolume(AudioManager.DEFAULT_SFX);
-
-        PlayerPrefs.Save();
-    }
-
-    #endregion
-
-    #region Video   
-
-    private void InitVideoSettings()
-    {
-        if (sliderContrast == null)
-            return;
-
-        float savedContrast = PlayerPrefs.GetFloat(ContrastSaveKey, 0f);
-
-        sliderContrast.SetValueWithoutNotify(savedContrast);
-        ApplyContrast(savedContrast);
-
-        sliderContrast.RegisterValueChangedCallback(OnContrastChanged);
-    }
-
-    private void OnContrastChanged(ChangeEvent<float> evt) => ApplyContrast(evt.newValue);
-
-    private void ApplyContrast(float value)
-    {
-        if (contrastOverlaySprite == null)
-            return;
-
-        Color overlayColor = value switch
-        {
-            > 0f => new Color(1f, 1f, 1f, value),
-            < 0f => new Color(0f, 0f, 0f, -value),
-            _ => Color.clear
-        };
-
-        contrastOverlaySprite.color = overlayColor;
-
-        PlayerPrefs.SetFloat(ContrastSaveKey, value);
-    }
-
-    private void ResetContrast()
-    {
-        if (sliderContrast != null)
-            sliderContrast.value = 0f;
-    }
-
-    private void ToggleLanguage()
-    {
-        var locales = LocalizationSettings.AvailableLocales.Locales;
-
-        int currentIndex = locales.IndexOf(LocalizationSettings.SelectedLocale);
-        int nextIndex = (currentIndex + 1) % locales.Count;
-
-        LocalizationSettings.SelectedLocale = locales[nextIndex];
     }
 
     #endregion
@@ -740,10 +477,5 @@ public class ConfigManager : MonoBehaviour
         CloseRGBOverlay();
     }
 
-    private void OnApplicationQuit()
-    {
-        PlayerPrefs.Save();
-    }
-}
-
     #endregion
+}
