@@ -20,9 +20,9 @@
                         <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(497320624128)"/>
                     </Bindings>
                 </ui:Button>
-                <ui:Button text="Configurações" name="SettingsButton" class="btn">
+                <ui:Button text="Opções" name="SettingsButton" class="btn">
                     <Bindings>
-                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(84510293847)"/>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(56102938472)"/>
                     </Bindings>
                 </ui:Button>
                 <ui:Button text="Créditos" name="AboutButton" class="btn">
