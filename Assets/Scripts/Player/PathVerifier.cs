@@ -4,16 +4,6 @@ using UnityEngine;
 /// <summary>
 /// MonoBehaviour orquestrador da pipeline de verificação do caminho.
 /// Também é responsável por desenhar o feedback visual (linhas sólidas e tracejadas).
-///
-/// Pipeline ao finalizar a fase:
-///   SignalPath.FinalizePath()
-///       ↓ List&lt;Vector3&gt; playerPath
-///   PathChecker.Evaluate(correctCorners, playerPath)
-///       ↓ PathCheckResult (IsCorrect, CoveredSegments, GabaritoTotal, MissedCorners)
-///   DrawFeedback(playerPath, correctCorners)
-///       ↓ GameObjects de LineRenderer (efeito visual)
-///   ScoreController.ReportResult(coveredSegments, gabaritoTotal, isCorrect)
-///   ResultScreenController.Show(isCorrect)
 /// </summary>
 public class PathVerifier : MonoBehaviour
 {
