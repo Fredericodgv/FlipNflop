@@ -2582,7 +2582,7 @@ MonoBehaviour:
   clockStepX: 6
   nextLevel: 
   menu: 
-  levelAtual: Custom
+  currentLevel: Custom
 --- !u!114 &992803105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3296,7 +3296,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1289131808}
-  - component: {fileID: 1289131809}
   - component: {fileID: 1289131811}
   - component: {fileID: 1289131810}
   m_Layer: 5
@@ -3325,18 +3324,6 @@ RectTransform:
   m_AnchoredPosition: {x: 489.3736, y: 263.60034}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1289131809
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1289131807}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0667e2135ea526842a4a981af5307451, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HUDController
 --- !u!114 &1289131810
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3804,7 +3791,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 106.4998, y: -36.601257}
+  m_AnchoredPosition: {x: 106.5, y: -36.60132}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &1599267013

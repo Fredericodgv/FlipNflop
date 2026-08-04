@@ -1,10 +1,11 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
 /// <summary>
 /// Manages GameObject-based pause menu activation and scene navigation.
-/// Interacts with <see cref="SceneManager"/> for loading the menu scene and controls <see cref="Time.timeScale"/>.
+/// Interacts with <see cref="SceneManager"/> for loading the menu scene, <see cref="Keyboard"/> for toggle keys, and controls <see cref="Time.timeScale"/>.
 /// </summary>
 public class PauseManager : MonoBehaviour
 {
@@ -24,10 +25,11 @@ public class PauseManager : MonoBehaviour
 
     /// <summary>
     /// Listens for key inputs (P or Escape) to toggle pause state and pause time scale.
+    /// Interacts with Unity's <see cref="Keyboard"/> API.
     /// </summary>
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
+        if (Keyboard.current != null && (Keyboard.current.pKey.wasPressedThisFrame || Keyboard.current.escapeKey.wasPressedThisFrame))
         {
             if (pauseMenu != null && !pauseMenu.gameObject.activeSelf)
             {

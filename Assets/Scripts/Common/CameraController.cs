@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Controls camera movement, supporting automatic player tracking and manual horizontal control.
@@ -167,11 +168,20 @@ public class CameraController : MonoBehaviour
     }
 
     /// <summary>
-    /// Handles horizontal manual camera movement based on raw input axes.
+    /// Handles horizontal manual camera movement based on keyboard input.
+    /// Interacts with Unity's <see cref="Keyboard"/> API.
     /// </summary>
     private void HandleManualControl()
     {
-        float horizontalInput = Input.GetAxisRaw("Horizontal");
+        float horizontalInput = 0f;
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
+                horizontalInput += 1f;
+            if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)
+                horizontalInput -= 1f;
+        }
+
         Vector3 movement = new Vector3(horizontalInput * manualMoveSpeed * Time.deltaTime, 0, 0);
         Vector3 newPosition = transform.position + movement;
         newPosition.x = ClampCameraX(newPosition.x);
