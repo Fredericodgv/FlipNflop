@@ -2,10 +2,13 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 /// <summary>
-/// Handles all tilemap rendering operations for diagrams, terrain, and clock patterns.
+/// Handles tilemap rendering operations for diagrams, terrain bands, and clock patterns.
+/// Instantiated and managed by <see cref="LevelJsonLoader"/>.
 /// </summary>
 public class TilemapRenderer
 {
+    #region Constructor & Fields
+
     private readonly Tilemap inputTilemap;
     private readonly Tilemap terrainTilemap;
     private readonly Tilemap clockTilemap;
@@ -16,6 +19,18 @@ public class TilemapRenderer
     private readonly bool flipCeilingY;
     private readonly int startX;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TilemapRenderer"/> class with target tilemaps and tile assets.
+    /// </summary>
+    /// <param name="inputTilemap">Tilemap target for input diagram signals.</param>
+    /// <param name="terrainTilemap">Tilemap target for floor/ceiling/wall terrain elements.</param>
+    /// <param name="clockTilemap">Tilemap target for clock waveform signals.</param>
+    /// <param name="diagramTiles">Array of diagram tiles indexed by bitwise pattern (0..7).</param>
+    /// <param name="floorTile">Tile asset for floor terrain.</param>
+    /// <param name="ceilingTile">Tile asset for ceiling terrain.</param>
+    /// <param name="wallTile">Tile asset for left boundary wall.</param>
+    /// <param name="flipCeilingY">Whether to flip ceiling tile graphics on the Y axis.</param>
+    /// <param name="startX">Starting X tile coordinate offset.</param>
     public TilemapRenderer(
         Tilemap inputTilemap,
         Tilemap terrainTilemap,
@@ -38,8 +53,12 @@ public class TilemapRenderer
         this.startX = startX;
     }
 
+    #endregion
+
+    #region Public API
+
     /// <summary>
-    /// Clears all configured tilemaps.
+    /// Clears all tiles from input, clock, and terrain tilemaps.
     /// </summary>
     public void ClearAllTilemaps()
     {
@@ -49,8 +68,11 @@ public class TilemapRenderer
     }
 
     /// <summary>
-    /// Renders a signal diagram on the input tilemap.
+    /// Renders a signal line diagram on the input tilemap at the specified row and colors it.
     /// </summary>
+    /// <param name="signal">Boolean array representing signal waveform over time.</param>
+    /// <param name="yRow">Y tile row index.</param>
+    /// <param name="color">Color tint to apply to signal tiles.</param>
     public void RenderDiagram(bool[] signal, int yRow, Color color)
     {
         if (inputTilemap == null || signal == null) return;
@@ -66,8 +88,11 @@ public class TilemapRenderer
     }
 
     /// <summary>
-    /// Renders the clock pattern on the clock tilemap.
+    /// Renders the clock signal pattern on the clock tilemap.
     /// </summary>
+    /// <param name="clockPattern">Integer array representing clock high/low pattern.</param>
+    /// <param name="yRow">Y tile row index.</param>
+    /// <param name="clockColor">Color tint for clock tiles.</param>
     public void RenderClock(int[] clockPattern, int yRow, Color clockColor)
     {
         if (clockTilemap == null || clockPattern == null) return;
@@ -77,8 +102,13 @@ public class TilemapRenderer
     }
 
     /// <summary>
-    /// Renders floor and ceiling bands on the terrain tilemap.
+    /// Renders floor and ceiling bands on the terrain tilemap based on boolean layout arrays.
     /// </summary>
+    /// <param name="floorBand">Boolean array defining floor tile presence.</param>
+    /// <param name="ceilingBand">Boolean array defining ceiling tile presence.</param>
+    /// <param name="floorYRow">Y tile row index for floor.</param>
+    /// <param name="ceilingYRow">Y tile row index for ceiling.</param>
+    /// <param name="extendRight">Number of tiles to extend terrain past the end of signals.</param>
     public void RenderTerrain(bool[] floorBand, bool[] ceilingBand, int floorYRow, int ceilingYRow, int extendRight = 3)
     {
         if (terrainTilemap == null) return;
@@ -95,13 +125,14 @@ public class TilemapRenderer
     }
 
     /// <summary>
-    /// Completes static scenery (left wall and edge tiles).
+    /// Places static scenery elements including the left boundary wall and edge floor/ceiling tiles.
     /// </summary>
+    /// <param name="floorYRow">Y tile row index for floor.</param>
+    /// <param name="ceilingYRow">Y tile row index for ceiling.</param>
     public void CompleteStaticScenery(int floorYRow, int ceilingYRow)
     {
         if (terrainTilemap == null) return;
 
-        // Render left wall
         if (wallTile != null)
         {
             int yMin = Mathf.Min(floorYRow, ceilingYRow);
@@ -116,14 +147,12 @@ public class TilemapRenderer
             }
         }
 
-        // Render edge floor tile
         if (floorTile != null)
         {
             int xFloor = startX - 1;
             SetTileWithFlip(terrainTilemap, new Vector3Int(xFloor, floorYRow, 0), floorTile, false);
         }
 
-        // Render edge ceiling tile
         if (ceilingTile != null)
         {
             int xCeil = startX - 1;
@@ -132,16 +161,17 @@ public class TilemapRenderer
         }
     }
 
-    #region Private Rendering Methods
+    #endregion
+
+    #region Private Rendering Helpers
 
     /// <summary>
-    /// Renders a 0/1 band at the given row with optional extension beyond the last '1'.
+    /// Renders a boolean band row at the given Y position with optional trailing tile extension.
     /// </summary>
     private void RenderBand(bool[] band, int yRow, TileBase tile, bool flipY, int extendRight)
     {
         if (band == null || tile == null) return;
 
-        // Render the band from the signal array
         for (int i = 0; i < band.Length; i++)
         {
             if (!band[i]) continue;
@@ -149,7 +179,6 @@ public class TilemapRenderer
             SetTileWithFlip(terrainTilemap, pos, tile, flipY);
         }
 
-        // Extend band a few tiles after the last '1'
         if (extendRight > 0)
         {
             int lastIdx = -1;
@@ -174,8 +203,7 @@ public class TilemapRenderer
     }
 
     /// <summary>
-    /// Generalized pattern renderer for both inputs and clock.
-    /// Pattern codes: 0 = low, 1 = high.
+    /// Draws pattern tiles using bitwise neighbor lookup (prev, curr, next) into <see cref="diagramTiles"/>.
     /// </summary>
     private void DrawPattern(Tilemap map, int[] pattern, int yRow, int xStart)
     {
@@ -196,7 +224,7 @@ public class TilemapRenderer
     }
 
     /// <summary>
-    /// Sets a tile at the specified position with optional Y-axis flip.
+    /// Sets a tile on a target tilemap with optional vertical flipping transformation matrix.
     /// </summary>
     private void SetTileWithFlip(Tilemap targetMap, Vector3Int position, TileBase tile, bool flipY)
     {
@@ -211,7 +239,7 @@ public class TilemapRenderer
     }
 
     /// <summary>
-    /// Applies color to a row of tiles.
+    /// Colors a horizontal row of tiles on a tilemap.
     /// </summary>
     private void ColorRow(Tilemap map, int length, int yRow, int baseX, Color color)
     {
@@ -226,7 +254,7 @@ public class TilemapRenderer
     }
 
     /// <summary>
-    /// Safely retrieves a tile from the diagram tiles array.
+    /// Safely retrieves a tile from <see cref="diagramTiles"/> by index.
     /// </summary>
     private TileBase SafeTile(int idx)
     {

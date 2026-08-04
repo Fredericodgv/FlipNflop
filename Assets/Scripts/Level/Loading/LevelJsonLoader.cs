@@ -6,11 +6,13 @@ using UnityEngine.Tilemaps;
 using Newtonsoft.Json;
 
 /// <summary>
-/// Loads level JSON, configures scene, renders diagrams/terrain, and spawns obstacles.
+/// Main component responsible for loading level JSON data, parsing signals, configuring level settings,
+/// rendering signal/terrain tilemaps via <see cref="TilemapRenderer"/>, spawning obstacles via <see cref="ObstacleSpawner"/>,
+/// and simulating flip-flop logic using <see cref="FlipFlopSimulator"/>.
 /// </summary>
 public class LevelJsonLoader : MonoBehaviour
 {
-    #region Fields
+    #region Serialized Fields
 
     [Header("Tilemaps")]
     [SerializeField] private Tilemap inputTilemap;
@@ -51,50 +53,116 @@ public class LevelJsonLoader : MonoBehaviour
     #endregion
 
     #region Components & Cache
+
     private TilemapRenderer tilemapRenderer;
     private ObstacleSpawner obstacleSpawner;
 
-    // Cacheados no RenderLevel para uso no ApplySignalColors
+    /// <summary>
+    /// Cached level length in tiles, used when reapplying signal colors via <see cref="ApplySignalColors"/>.
+    /// </summary>
     private int _cachedLevelLength;
+
+    /// <summary>
+    /// Cached Y coordinate for J signal line.
+    /// </summary>
     private int _cachedJ_Y;
+
+    /// <summary>
+    /// Cached Y coordinate for K signal line.
+    /// </summary>
     private int _cachedK_Y;
+
+    /// <summary>
+    /// Cached Y coordinate for Clock signal line.
+    /// </summary>
     private int _cachedClock_Y;
+
+    /// <summary>
+    /// Cached Y coordinate for Preset signal line.
+    /// </summary>
     private int _cachedPresetY;
+
+    /// <summary>
+    /// Cached Y coordinate for Clear signal line.
+    /// </summary>
     private int _cachedClearY;
+
+    /// <summary>
+    /// Flag indicating if Preset signal was provided in the loaded level data.
+    /// </summary>
     private bool _hasPreset;
+
+    /// <summary>
+    /// Flag indicating if Clear signal was provided in the loaded level data.
+    /// </summary>
     private bool _hasClear;
+
     #endregion
 
     #region Parsed Signals
+
+    /// <summary>
+    /// Gets the parsed boolean sequence for the J input signal.
+    /// </summary>
     public bool[] ParsedJSignal { get; private set; }
+
+    /// <summary>
+    /// Gets the parsed boolean sequence for the K input signal.
+    /// </summary>
     public bool[] ParsedKSignal { get; private set; }
+
+    /// <summary>
+    /// Gets the parsed boolean sequence for the asynchronous Preset input signal.
+    /// </summary>
     public bool[] ParsedPresetSignal { get; private set; }
+
+    /// <summary>
+    /// Gets the parsed boolean sequence for the asynchronous Clear input signal.
+    /// </summary>
     public bool[] ParsedClearSignal { get; private set; }
+
+    /// <summary>
+    /// Gets the computed boolean output timeline for the level's flip-flop simulator.
+    /// </summary>
     public bool[] OutputTimeline { get; private set; }
+
+    /// <summary>
+    /// Gets whether asynchronous signals are active high (true) or active low (false).
+    /// </summary>
     public bool asyncActiveHigh { get; private set; }
 
     [SerializeField] private string[] outputOpsPerTile;
+
     #endregion
 
-    #region Lifecycle & Events
+    #region Unity Lifecycle
 
+    /// <summary>
+    /// Subscribes to the <see cref="SignalColorManager.OnColorsChanged"/> event to update line colors in real time.
+    /// </summary>
     private void OnEnable()
     {
-        // Inscreve no evento da branch develop para mudar cores em tempo real
         SignalColorManager.OnColorsChanged += ApplySignalColors;
     }
 
+    /// <summary>
+    /// Unsubscribes from the <see cref="SignalColorManager.OnColorsChanged"/> event.
+    /// </summary>
     private void OnDisable()
     {
         SignalColorManager.OnColorsChanged -= ApplySignalColors;
     }
 
+    /// <summary>
+    /// Initializes level data source, parses JSON, configures <see cref="LevelManager"/>,
+    /// simulates flip-flop operations via <see cref="FlipFlopSimulator"/>, and renders tilemaps and obstacles.
+    /// </summary>
     private void Awake()
     {
         string json = ResolveJsonSource();
         if (string.IsNullOrWhiteSpace(json))
         {
-            Debug.LogError("LevelJsonLoader: nenhuma fonte de JSON disponível.");
+            Debug.LogError("LevelJsonLoader: No JSON source available.");
             return;
         }
 
@@ -115,6 +183,10 @@ public class LevelJsonLoader : MonoBehaviour
 
     #region Initialization Helpers
 
+    /// <summary>
+    /// Resolves the raw JSON string source from <see cref="UploadedLevelJson"/>, <see cref="MenuManager"/>, or default <see cref="levelFile"/>.
+    /// </summary>
+    /// <returns>Raw JSON string or null if unassigned.</returns>
     private string ResolveJsonSource()
     {
         if (!string.IsNullOrEmpty(UploadedLevelJson.Content))
@@ -128,7 +200,7 @@ public class LevelJsonLoader : MonoBehaviour
         {
             var asset = Resources.Load<TextAsset>("Levels/" + MenuManager.LevelToLoadJSON);
             if (asset != null) return asset.text;
-            Debug.LogError($"LevelJsonLoader: arquivo '{MenuManager.LevelToLoadJSON}' não encontrado em Resources/Levels/.");
+            Debug.LogError($"LevelJsonLoader: File '{MenuManager.LevelToLoadJSON}' not found in Resources/Levels/.");
         }
 
         if (levelFile != null && !string.IsNullOrWhiteSpace(levelFile.text))
@@ -137,6 +209,11 @@ public class LevelJsonLoader : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Deserializes a raw JSON string into a <see cref="LevelData"/> object.
+    /// </summary>
+    /// <param name="json">Raw JSON string.</param>
+    /// <returns>Deserialized <see cref="LevelData"/> object, or null on error.</returns>
     private LevelData ParseJson(string json)
     {
         try
@@ -150,11 +227,14 @@ public class LevelJsonLoader : MonoBehaviour
         }
         catch (JsonException ex)
         {
-            Debug.LogError($"LevelJsonLoader: erro ao parsear JSON — {ex.Message}");
+            Debug.LogError($"LevelJsonLoader: Error parsing JSON — {ex.Message}");
             return null;
         }
     }
 
+    /// <summary>
+    /// Instantiates helper components <see cref="TilemapRenderer"/> and <see cref="ObstacleSpawner"/>.
+    /// </summary>
     private void InitComponents()
     {
         tilemapRenderer = new TilemapRenderer(
@@ -167,6 +247,10 @@ public class LevelJsonLoader : MonoBehaviour
             startX, floorYRow, obstacleYRelativeToFloor);
     }
 
+    /// <summary>
+    /// Loads input signal arrays from <see cref="LevelData"/> and invokes <see cref="FlipFlopSimulator.SimulateJK"/> to compute output.
+    /// </summary>
+    /// <param name="data">Loaded level data structure.</param>
     private void LoadSignals(LevelData data)
     {
         ParsedJSignal = data.JSignal;
@@ -187,7 +271,7 @@ public class LevelJsonLoader : MonoBehaviour
         }
         catch (InvalidOperationException ex)
         {
-            Debug.LogError($"LevelJsonLoader: erro ao simular flip-flop — {ex.Message}");
+            Debug.LogError($"LevelJsonLoader: Error simulating flip-flop — {ex.Message}");
             OutputTimeline = null;
             outputOpsPerTile = null;
             return;
@@ -199,6 +283,11 @@ public class LevelJsonLoader : MonoBehaviour
             Debug.Log($"LevelJsonLoader: Output timeline ({OutputTimeline?.Length ?? 0}): {debugOutputVector}");
     }
 
+    /// <summary>
+    /// Renders diagrams, clock lines, terrain tilemaps via <see cref="TilemapRenderer"/>,
+    /// spawns obstacles via <see cref="ObstacleSpawner"/>, and configures HUD labels via <see cref="SignalLabelRenderer"/>.
+    /// </summary>
+    /// <param name="data">Loaded level data structure.</param>
     private void RenderLevel(LevelData data)
     {
         tilemapRenderer.ClearAllTilemaps();
@@ -210,13 +299,11 @@ public class LevelJsonLoader : MonoBehaviour
         int clearY = 6;
         int clockY = 4;
 
-        // Dentro de RenderLevel, após definir presetY e clearY:
         _hasPreset = ParsedPresetSignal != null;
         _hasClear = ParsedClearSignal != null;
         _cachedPresetY = presetY;
         _cachedClearY = clearY;
 
-        // Verifica se o SignalColorManager (develop) existe, senão usa a cor do JSON (Refactor)
         Color jColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorJ : data.JSignalColor;
         Color kColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorK : data.KSignalColor;
         Color presetColor = SignalColorManager.Instance != null ? SignalColorManager.Instance.ColorPreset : data.PresetSignalColor;
@@ -233,7 +320,6 @@ public class LevelJsonLoader : MonoBehaviour
             ? Mathf.RoundToInt(LevelManager.Instance.levelEndX)
             : 6 * data.ClockCycles;
 
-        // Atualiza o cache para uso futuro pelo ApplySignalColors
         _cachedLevelLength = levelLength + clockStep;
         _cachedJ_Y = jY;
         _cachedK_Y = kY;
@@ -253,24 +339,23 @@ public class LevelJsonLoader : MonoBehaviour
         {
             bool asyncIsHigh = data.AsyncActive == 1;
 
-            // O risingEdge já foi calculado ali em cima! É só passá-lo direto.
             signalLabelRenderer.GenerateLabels(
                 jY, kY, presetY, clearY, clockY,
                 ParsedPresetSignal != null,
                 ParsedClearSignal != null,
-                asyncIsHigh,  // Passa para o Preset e Clear
-                risingEdge    // Passa para o Clock (já existia no seu código)
+                asyncIsHigh,
+                risingEdge
             );
         }
     }
 
     #endregion
 
-    #region Real-time Color Update (from develop)
+    #region Real-time Color Updates
 
     /// <summary>
-    /// Reapplies signal line colors to tilemaps when user changes
-    /// the colors in the menu. Called via the SignalColorManager.OnColorsChanged event.
+    /// Reapplies signal line colors to tilemaps when custom user colors are modified in settings.
+    /// Responds to the <see cref="SignalColorManager.OnColorsChanged"/> event.
     /// </summary>
     private void ApplySignalColors()
     {
@@ -282,12 +367,10 @@ public class LevelJsonLoader : MonoBehaviour
         Color kColor = SignalColorManager.Instance.ColorK;
         Color clkColor = SignalColorManager.Instance.ColorCLK;
 
-        // J, K e CLK (como antes)
         ColorRow(inputTilemap, _cachedLevelLength, _cachedJ_Y, startX, jColor);
         ColorRow(inputTilemap, _cachedLevelLength, _cachedK_Y, startX, kColor);
         ColorRow(clockTilemap, _cachedLevelLength, _cachedClock_Y, startX, clkColor);
 
-        // Preset e Clear (novas adições)
         if (_hasPreset)
         {
             Color presetColor = SignalColorManager.Instance.ColorPreset;
@@ -301,6 +384,14 @@ public class LevelJsonLoader : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Recolors a specified horizontal row of tiles in a tilemap.
+    /// </summary>
+    /// <param name="map">Target tilemap.</param>
+    /// <param name="length">Length of the tile row to color.</param>
+    /// <param name="yRow">Y tile coordinate row.</param>
+    /// <param name="baseX">Starting X tile coordinate.</param>
+    /// <param name="color">New color to apply.</param>
     private void ColorRow(Tilemap map, int length, int yRow, int baseX, Color color)
     {
         if (map == null || length <= 0) return;
@@ -316,6 +407,11 @@ public class LevelJsonLoader : MonoBehaviour
 
     #region Public API
 
+    /// <summary>
+    /// Computes and returns output state transition events based on parsed signals.
+    /// Invokes <see cref="FlipFlopSimulator.SimulateJK"/> and converts output events for <see cref="PathVerifier"/>.
+    /// </summary>
+    /// <returns>List of signal transition events for path verification.</returns>
     public List<PathVerifier.SignalEvent> ComputeOutputEventsFromParsedSignals()
     {
         int diagramLen = GetDiagramLength();
@@ -338,6 +434,9 @@ public class LevelJsonLoader : MonoBehaviour
 
     #region Helpers & Validations
 
+    /// <summary>
+    /// Gets clock step and sampling offset parameters based on <see cref="LevelManager.Instance"/>.
+    /// </summary>
     private void GetClockSamplingParameters(out int step, out int startOffset)
     {
         float stepF = (LevelManager.Instance != null && LevelManager.Instance.clockStepX > 0f)
@@ -347,6 +446,9 @@ public class LevelJsonLoader : MonoBehaviour
         startOffset = step;
     }
 
+    /// <summary>
+    /// Calculates the diagram length from <see cref="LevelManager.Instance"/> or input signal arrays.
+    /// </summary>
     private int GetDiagramLength()
     {
         int len = LevelManager.Instance != null
@@ -357,13 +459,16 @@ public class LevelJsonLoader : MonoBehaviour
             : FlipFlopSimulator.MaxLen(ParsedJSignal, ParsedKSignal, ParsedPresetSignal, ParsedClearSignal);
     }
 
+    /// <summary>
+    /// Applies level boundaries and parameters from <see cref="LevelData"/> into <see cref="LevelManager.Instance"/>.
+    /// </summary>
     private void ApplyLevelConfig(LevelData data)
     {
         if (LevelManager.Instance == null) return;
 
         if (data.ClockCycles <= 0)
         {
-            Debug.LogWarning($"LevelJsonLoader: clockCycles={data.ClockCycles} inválido. Usando 10.");
+            Debug.LogWarning($"LevelJsonLoader: clockCycles={data.ClockCycles} invalid. Defaulting to 10.");
             data.ClockCycles = 10;
         }
 
@@ -374,27 +479,33 @@ public class LevelJsonLoader : MonoBehaviour
         LevelManager.Instance.levelEndX = LevelManager.Instance.diagramEndX;
     }
 
+    /// <summary>
+    /// Validates all required inspector fields and level data before rendering.
+    /// </summary>
     private bool ValidateAll(LevelData data)
     {
         if (data == null)
-        { Debug.LogError("LevelJsonLoader: LevelData nulo (falha no parse do JSON)."); return false; }
+        { Debug.LogError("LevelJsonLoader: Null LevelData (JSON parse failure)."); return false; }
 
         if (inputTilemap == null || terrainTilemap == null || clockTilemap == null)
-        { Debug.LogError("LevelJsonLoader: uma ou mais referências de Tilemap ausentes."); return false; }
+        { Debug.LogError("LevelJsonLoader: One or more Tilemap references missing."); return false; }
 
         if (diagramTiles == null || diagramTiles.Length < 8)
-        { Debug.LogError("LevelJsonLoader: diagramTiles precisa de 8 entradas (0..7)."); return false; }
+        { Debug.LogError("LevelJsonLoader: diagramTiles array requires 8 elements (0..7)."); return false; }
 
         for (int i = 0; i < 8; i++)
             if (diagramTiles[i] == null)
-            { Debug.LogError($"LevelJsonLoader: diagramTiles[{i}] não atribuído."); return false; }
+            { Debug.LogError($"LevelJsonLoader: diagramTiles[{i}] is unassigned."); return false; }
 
         if (floorTile == null || ceilingTile == null)
-        { Debug.LogError("LevelJsonLoader: floorTile ou ceilingTile não atribuído."); return false; }
+        { Debug.LogError("LevelJsonLoader: floorTile or ceilingTile unassigned."); return false; }
 
         return true;
     }
 
+    /// <summary>
+    /// Updates the debug string representation of the output binary timeline.
+    /// </summary>
     private void UpdateDebugOutputVectorString()
     {
         if (OutputTimeline == null) { debugOutputVector = "(null)"; return; }
@@ -404,10 +515,14 @@ public class LevelJsonLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// Builds clock signal pattern.
-    /// Falling edge: 000111 (transition 1→0)
-    /// Rising edge: 111000 (transition 0→1)
+    /// Builds the repetitive clock signal pattern array.
+    /// Falling edge: 000111 (transition 1->0).
+    /// Rising edge: 111000 (transition 0->1).
     /// </summary>
+    /// <param name="totalLength">Total totalLength in tiles.</param>
+    /// <param name="step">Clock step width in tiles.</param>
+    /// <param name="risingEdge">Whether clock active edge is rising or falling.</param>
+    /// <returns>Integer pattern array for clock rendering.</returns>
     public static int[] BuildClockPattern(int totalLength, int step, bool risingEdge = false)
     {
         if (totalLength <= 0 || step <= 0) return null;
@@ -429,6 +544,9 @@ public class LevelJsonLoader : MonoBehaviour
 
     #region Context Menu Debug
 
+    /// <summary>
+    /// Context menu option to log the binary output vector string in the Unity Console.
+    /// </summary>
     [ContextMenu("Log Output Vector (0/1)")]
     private void LogOutputVectorContext()
     {
@@ -443,6 +561,9 @@ public class LevelJsonLoader : MonoBehaviour
         Debug.Log($"LevelJsonLoader: Output timeline ({OutputTimeline?.Length ?? 0}): {debugOutputVector}");
     }
 
+    /// <summary>
+    /// Context menu option to log flip-flop operation tokens in the Unity Console.
+    /// </summary>
     [ContextMenu("Log Output Ops")]
     private void LogOutputOpsContext()
     {

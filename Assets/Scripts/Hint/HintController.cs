@@ -2,24 +2,34 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Owns all hint-related input actions and delegates to the appropriate hint components.
-/// Remove hint input handling from PlayerController and assign it here instead.
+/// Owns all hint-related input actions and delegates commands to <see cref="ClockLineHint"/> and <see cref="OperationHint"/> components.
+/// Listens to input events configured via Unity Input System <see cref="InputActionReference"/>.
 /// </summary>
 public class HintController : MonoBehaviour
 {
+    #region Serialized Fields
+
     [Header("Hint Components")]
+    [Tooltip("Reference to the ClockLineHint component for toggling grid line visual modes.")]
     [SerializeField] private ClockLineHint clockLineHint;
+
+    [Tooltip("Reference to the OperationHint component for displaying flip-flop operation labels.")]
     [SerializeField] private OperationHint operationHint;
 
     [Header("Input Actions")]
-    [Tooltip("Action that toggles clock line hints (previously in PlayerController).")]
+    [Tooltip("Action reference that toggles clock line hints.")]
     [SerializeField] private InputActionReference toggleClockLinesAction;
 
-    [Tooltip("Action that triggers the operation hint (J/K/Op labels).")]
+    [Tooltip("Action reference that triggers the operation hint labels.")]
     [SerializeField] private InputActionReference showOperationHintAction;
 
+    #endregion
+
+    #region Unity Lifecycle
+
     /// <summary>
-    /// Subscribes to input actions on enable and unsubscribes on disable.
+    /// Subscribes to input action events on enable.
+    /// Interacts with <see cref="InputActionReference"/> event callbacks.
     /// </summary>
     private void OnEnable()
     {
@@ -37,7 +47,8 @@ public class HintController : MonoBehaviour
     }
 
     /// <summary>
-    /// Unsubscribes from input actions to prevent memory leaks and unintended behavior when the object is disabled.
+    /// Unsubscribes from input action events on disable to prevent memory leaks.
+    /// Interacts with <see cref="InputActionReference"/> event callbacks.
     /// </summary>
     private void OnDisable()
     {
@@ -54,9 +65,14 @@ public class HintController : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Event Handlers
+
     /// <summary>
-    /// Toggles the clock line hint mode
+    /// Event handler that toggles the clock line hint mode on the associated <see cref="ClockLineHint"/> component.
     /// </summary>
+    /// <param name="ctx">Input action callback context.</param>
     private void OnToggleClockLines(InputAction.CallbackContext ctx)
     {
         if (clockLineHint != null)
@@ -64,11 +80,14 @@ public class HintController : MonoBehaviour
     }
 
     /// <summary>
-    /// Shows the operation hint (J/K/Op labels) 
+    /// Event handler that triggers the operation hint on the associated <see cref="OperationHint"/> component.
     /// </summary>
+    /// <param name="ctx">Input action callback context.</param>
     private void OnShowOperationHint(InputAction.CallbackContext ctx)
     {
         if (operationHint != null)
             operationHint.ShowHint();
     }
+
+    #endregion
 }

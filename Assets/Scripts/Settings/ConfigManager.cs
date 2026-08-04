@@ -5,42 +5,85 @@ using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
 /// <summary>
-/// Orquestra as abas do menu de configurações.
-/// Responsável apenas por: cachear os 4 painéis, trocar de aba (ShowTab),
-/// voltar ao menu e delegar toda a lógica específica para os módulos de settings.
+/// Orchestrates the settings menu tabs and panel navigation.
+/// Responsible for caching navigation UI elements, toggling active tab panels, returning to main menu,
+/// and delegating tab-specific logic to <see cref="ISettingsTab"/> implementations (<see cref="AudioSettingsTab"/>, <see cref="VideoSettingsTab"/>, <see cref="ColorSettingsTab"/>).
+/// Interacts with <see cref="UIDocument"/> and Unity <see cref="LocalizationSettings"/>.
 /// </summary>
 [RequireComponent(typeof(UIDocument))]
 public class ConfigManager : MonoBehaviour
 {
-    [Header("Vídeo")]
-    [Tooltip("Overlay usado para aplicar contraste visual.")]
-    [SerializeField] private SpriteRenderer contrastOverlaySprite;
-
-    private UIDocument uiDocument;
-    private VisualElement root;
-
-    // Navegação
-    private Button btnTabColors;
-    private Button btnTabAudio;
-    private Button btnTabVideo;
-    private Button btnTabControls;
-    private Button btnBack;
-
-    private VisualElement panelColor;
-    private VisualElement panelAudio;
-    private VisualElement panelVideo;
-    private VisualElement panelControls;
-
-    private readonly List<VisualElement> panels = new();
-
-    // Módulos delegados
-    private readonly List<ISettingsTab> tabs = new();
-    private AudioSettingsTab audioTab;
-    private VideoSettingsTab videoTab;
-    private ColorSettingsTab colorTab;
+    #region Inspector Fields
 
     /// <summary>
-    /// Inicializa referências obrigatórias.
+    /// Sprite overlay reference used by <see cref="VideoSettingsTab"/> to adjust visual contrast.
+    /// </summary>
+    [Header("Video")]
+    [Tooltip("Overlay used to apply visual contrast.")]
+    [SerializeField] private SpriteRenderer contrastOverlaySprite;
+
+    #endregion
+
+    #region Private Fields
+
+    /// <summary>
+    /// Reference to the <see cref="UIDocument"/> component attached to this GameObject.
+    /// </summary>
+    private UIDocument uiDocument;
+
+    /// <summary>
+    /// Root visual element container extracted from <see cref="UIDocument"/>.
+    /// </summary>
+    private VisualElement root;
+
+    /// <summary>Tab navigation button for Colors panel.</summary>
+    private Button btnTabColors;
+
+    /// <summary>Tab navigation button for Audio panel.</summary>
+    private Button btnTabAudio;
+
+    /// <summary>Tab navigation button for Video panel.</summary>
+    private Button btnTabVideo;
+
+    /// <summary>Tab navigation button for Controls panel.</summary>
+    private Button btnTabControls;
+
+    /// <summary>Button to navigate back to the main menu.</summary>
+    private Button btnBack;
+
+    /// <summary>Visual element container for the Colors settings panel.</summary>
+    private VisualElement panelColor;
+
+    /// <summary>Visual element container for the Audio settings panel.</summary>
+    private VisualElement panelAudio;
+
+    /// <summary>Visual element container for the Video settings panel.</summary>
+    private VisualElement panelVideo;
+
+    /// <summary>Visual element container for the Controls settings panel.</summary>
+    private VisualElement panelControls;
+
+    /// <summary>List of all tab panel visual elements for bulk visibility toggling.</summary>
+    private readonly List<VisualElement> panels = new();
+
+    /// <summary>List of active <see cref="ISettingsTab"/> module implementations.</summary>
+    private readonly List<ISettingsTab> tabs = new();
+
+    /// <summary>Delegated Audio settings tab handler.</summary>
+    private AudioSettingsTab audioTab;
+
+    /// <summary>Delegated Video settings tab handler.</summary>
+    private VideoSettingsTab videoTab;
+
+    /// <summary>Delegated Colors settings tab handler.</summary>
+    private ColorSettingsTab colorTab;
+
+    #endregion
+
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Initializes required component references (<see cref="UIDocument"/>).
     /// </summary>
     private void Awake()
     {
@@ -48,7 +91,8 @@ public class ConfigManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Busca elementos da UI e registra callbacks.
+    /// Extracts UI root element, caches panels, initializes tab modules, registers UI callbacks,
+    /// displays the default Video tab, and subscribes to locale changes via <see cref="LocalizationSettings.SelectedLocaleChanged"/>.
     /// </summary>
     private void OnEnable()
     {
@@ -63,29 +107,42 @@ public class ConfigManager : MonoBehaviour
 
         ShowTab(panelVideo);
 
-        // Se inscreve para escutar quando o idioma mudar
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
     }
 
     /// <summary>
-    /// Remove callbacks registrados.
+    /// Unregisters UI callbacks and unsubscribes from <see cref="LocalizationSettings.SelectedLocaleChanged"/> event to prevent memory leaks.
     /// </summary>
     private void OnDisable()
     {
         UnregisterCallbacks();
 
-        // Remove a inscrição para evitar memory leaks
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
     }
 
+    #endregion
+
+    #region Localization Event Handlers
+
+    /// <summary>
+    /// Callback triggered when the active localization locale is changed.
+    /// Notifies all registered <see cref="ISettingsTab"/> modules.
+    /// </summary>
+    /// <param name="newLocale">The newly selected <see cref="Locale"/>.</param>
     private void OnLocaleChanged(Locale newLocale)
     {
         foreach (var tab in tabs)
             tab.OnLocaleChanged();
     }
 
+    #endregion
+
+    #region UI Initialization & Caching
+
     /// <summary>
-    /// Cacheia apenas os elementos de navegação (botões de aba e painéis).
+    /// Queries and caches navigation buttons and panel visual elements from UI root.
+    /// Queries: "BtnTabColors", "BtnTabAudio", "BtnTabVideo", "BtnTabControls", "BtnBack",
+    /// "PanelColor", "PanelAudio", "PanelVideo", "PanelControls".
     /// </summary>
     private void CachePanels()
     {
@@ -108,7 +165,8 @@ public class ConfigManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Cria e inicializa os módulos delegados.
+    /// Instantiates delegated settings tab modules (<see cref="AudioSettingsTab"/>, <see cref="VideoSettingsTab"/>, <see cref="ColorSettingsTab"/>)
+    /// and initializes them with the root visual element.
     /// </summary>
     private void InitTabs()
     {
@@ -125,8 +183,12 @@ public class ConfigManager : MonoBehaviour
             tab.Init(root);
     }
 
+    #endregion
+
+    #region Callback Registration
+
     /// <summary>
-    /// Registra callbacks de navegação e delega para os módulos.
+    /// Registers click event handlers for tab navigation buttons and delegates callback registration to tab modules.
     /// </summary>
     private void RegisterCallbacks()
     {
@@ -141,7 +203,7 @@ public class ConfigManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Remove callbacks de navegação e dos módulos.
+    /// Unregisters click event handlers for tab navigation buttons and delegates callback unregistration to tab modules.
     /// </summary>
     private void UnregisterCallbacks()
     {
@@ -155,14 +217,26 @@ public class ConfigManager : MonoBehaviour
             tab.UnregisterCallbacks();
     }
 
+    #endregion
+
+    #region Navigation & Tab Display
+
+    /// <summary>Shows the Colors settings panel.</summary>
     private void ShowColorsTab() => ShowTab(panelColor);
+
+    /// <summary>Shows the Audio settings panel.</summary>
     private void ShowAudioTab() => ShowTab(panelAudio);
+
+    /// <summary>Shows the Video settings panel.</summary>
     private void ShowVideoTab() => ShowTab(panelVideo);
+
+    /// <summary>Shows the Controls settings panel.</summary>
     private void ShowControlsTab() => ShowTab(panelControls);
 
     /// <summary>
-    /// Exibe apenas o painel informado.
+    /// Hides all tab panels and displays only the specified active panel element.
     /// </summary>
+    /// <param name="activePanel">The <see cref="VisualElement"/> panel to show.</param>
     private void ShowTab(VisualElement activePanel)
     {
         foreach (var panel in panels)
@@ -176,7 +250,8 @@ public class ConfigManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Retorna ao menu principal.
+    /// Navigates back from options menu to the main menu by toggling panel displays ("PanelOptions" and "PanelMain")
+    /// and refocusing the Options button.
     /// </summary>
     private void OnBackClicked()
     {
@@ -189,8 +264,17 @@ public class ConfigManager : MonoBehaviour
         root.Q<Button>("Options")?.Focus();
     }
 
+    #endregion
+
+    #region Application Event Handlers
+
+    /// <summary>
+    /// Ensures all unsaved <see cref="PlayerPrefs"/> data is saved when the application quits.
+    /// </summary>
     private void OnApplicationQuit()
     {
         PlayerPrefs.Save();
     }
+
+    #endregion
 }

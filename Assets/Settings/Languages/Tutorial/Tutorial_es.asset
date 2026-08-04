@@ -59,6 +59,10 @@ MonoBehaviour:
       dibujado y la puntuaci\xF3n obtenida."
     m_Metadata:
       m_Items: []
+  - m_Id: 26358571719360512
+    m_Localized: "Pulsa B para ver pistas sobre la siguiente operaci\xF3n s\xEDncrona"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -2,158 +2,288 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
+/// <summary>
+/// Controls main menu navigation, panel switching, level selection, and WebGL json uploads.
+/// Interacts with <see cref="UIDocument"/> for UI Toolkit elements, <see cref="UploadMenuManager"/> for level file uploads,
+/// <see cref="LevelSequenceManager"/> to track current level index, and <see cref="SceneManager"/> for scene loading.
+/// </summary>
 public class MenuManager : MonoBehaviour
 {
-    [Header("Navegação de Cenas")]
+    #region Fields & Properties
+
+    [Header("Scene Navigation")]
+    [Tooltip("Name of the scene loaded when a level is selected.")]
     [SerializeField] private string customLevelName = "Custom";
 
-    [Header("Arquivos das Fases (JSON)")]
-    [Tooltip("Arraste os arquivos .json das fases para cá")]
-    [SerializeField] private TextAsset[] arquivosDasFases = new TextAsset[9];
+    [Header("Level JSON Files")]
+    [Tooltip("Drag the level .json files here.")]
+    [FormerlySerializedAs("arquivosDasFases")]
+    [SerializeField] private TextAsset[] levelFiles = new TextAsset[9];
 
+    /// <summary>
+    /// Static identifier of the JSON level file name to be loaded by LevelJsonLoader.
+    /// Interacts with <see cref="LevelJsonLoader"/> and <see cref="ResultScreenController"/>.
+    /// </summary>
     public static string LevelToLoadJSON = "";
 
-    // Elementos de UI
+    /// <summary>
+    /// Cached reference to the attached UIDocument component.
+    /// </summary>
     private UIDocument uiDocument;
-    private VisualElement painelMenuInicial;
-    private VisualElement painelSobre;
-    private VisualElement painelLevelSelect;
-    private VisualElement painelTutorial;
+
+    /// <summary>
+    /// Root main menu visual element container.
+    /// </summary>
+    private VisualElement mainMenuPanel;
+
+    /// <summary>
+    /// About info panel visual element.
+    /// </summary>
+    private VisualElement aboutPanel;
+
+    /// <summary>
+    /// Level selection panel visual element.
+    /// </summary>
+    private VisualElement levelSelectPanel;
+
+    /// <summary>
+    /// Tutorial panel visual element.
+    /// </summary>
+    private VisualElement tutorialPanel;
+
+    /// <summary>
+    /// Cached reference to the attached UploadMenuManager component.
+    /// </summary>
     private UploadMenuManager uploadManager;
-    private Button backBtn;
+
+    /// <summary>
+    /// Navigation back button to return to main menu from submenus.
+    /// </summary>
+    private Button backButton;
+
+    /// <summary>
+    /// Currently active submenu panel, or null if on main menu.
+    /// </summary>
     private VisualElement activeSubmenu;
+
+    /// <summary>
+    /// List containing all registered submenu visual elements.
+    /// </summary>
     private readonly List<VisualElement> submenus = new();
 
+    #endregion
+
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Caches UI elements, attaches button listeners, and configures level select buttons.
+    /// Interacts with <see cref="UIDocument"/> and <see cref="UploadMenuManager"/>.
+    /// </summary>
     private void OnEnable()
     {
         uiDocument = GetComponent<UIDocument>();
-        uploadManager = GetComponent<UploadMenuManager>(); // Puxa o componente
-        var root = uiDocument.rootVisualElement;
+        uploadManager = GetComponent<UploadMenuManager>();
 
-        // 1. Buscando os painéis
-        painelMenuInicial = root.Q<VisualElement>("MainMenu");
-        painelSobre = root.Q<VisualElement>("About");
-        painelLevelSelect = root.Q<VisualElement>("LevelSelect");
-        painelTutorial = root.Q<VisualElement>("Tutorial"); // Use o ID exato do seu painel
-        backBtn = root.Q<Button>("BackButton");
+        if (uiDocument == null)
+            return;
+
+        VisualElement root = uiDocument.rootVisualElement;
+
+        mainMenuPanel = root.Q<VisualElement>("MainMenu");
+        aboutPanel = root.Q<VisualElement>("About");
+        levelSelectPanel = root.Q<VisualElement>("LevelSelect");
+        tutorialPanel = root.Q<VisualElement>("Tutorial");
+        backButton = root.Q<Button>("BackButton");
 
         submenus.Clear();
-        submenus.Add(painelSobre);
-        submenus.Add(painelLevelSelect);
-        submenus.Add(painelTutorial);
+        submenus.Add(aboutPanel);
+        submenus.Add(levelSelectPanel);
+        submenus.Add(tutorialPanel);
 
-        if (backBtn != null)
-            backBtn.clicked += FecharSubmenuAtual;
+        if (backButton != null)
+            backButton.clicked += CloseActiveSubmenu;
 
-        // 2. Botões do Menu Principal
-        Button btnPlay = root.Q<Button>("PlayButton");
-        if (btnPlay != null) btnPlay.clicked += AbrirSelecaoDeNiveis;
+        Button playButton = root.Q<Button>("PlayButton");
+        if (playButton != null)
+            playButton.clicked += OpenLevelSelect;
 
-        Button btnUpload = root.Q<Button>("UploadButton");
-        if (btnUpload != null && uploadManager != null)
+        Button uploadButton = root.Q<Button>("UploadButton");
+        if (uploadButton != null && uploadManager != null)
+            uploadButton.clicked += uploadManager.OnClickUpload;
+
+        Button tutorialButton = root.Q<Button>("TutorialButton");
+        if (tutorialButton != null)
+            tutorialButton.clicked += OpenTutorial;
+
+        Button aboutButton = root.Q<Button>("AboutButton");
+        if (aboutButton != null)
+            aboutButton.clicked += OpenAbout;
+
+        for (int i = 0; i < levelFiles.Length; i++)
         {
-            // Chama a função do seu script de WebGL!
-            btnUpload.clicked += uploadManager.OnClickUpload;
-        }
-
-        // Botão que abre o tutorial no Menu Principal
-        Button btnTutorial = root.Q<Button>("TutorialButton");
-        if (btnTutorial != null) btnTutorial.clicked += AbrirTutorial;
-
-        Button btnAbout = root.Q<Button>("AboutButton");
-        if (btnAbout != null) btnAbout.clicked += AbrirSobre;
-
-        // 4. Conectando os 9 botões usando TextAsset
-        for (int i = 0; i < arquivosDasFases.Length; i++)
-        {
-            TextAsset arquivoJson = arquivosDasFases[i];
-
-            // Só tenta conectar se você tiver arrastado um arquivo para o slot
-            if (arquivoJson != null)
+            TextAsset jsonFile = levelFiles[i];
+            if (jsonFile != null)
             {
-                string nomeDoJson = arquivoJson.name; // Pega o nome do arquivo sem a extensão .json
-                string idDoBotao = $"Level{i + 1}";
+                string jsonName = jsonFile.name;
+                string buttonId = $"Level{i + 1}";
 
-                ConfigurarBotaoNivel(root, idDoBotao, nomeDoJson, i);
+                ConfigureLevelButton(root, buttonId, jsonName, i);
             }
         }
     }
 
+    /// <summary>
+    /// Unsubscribes back button click events.
+    /// </summary>
     private void OnDisable()
     {
-        if (backBtn != null)
-            backBtn.clicked -= FecharSubmenuAtual;
+        if (backButton != null)
+            backButton.clicked -= CloseActiveSubmenu;
     }
 
+    /// <summary>
+    /// Checks for escape key press to close active submenus.
+    /// Interacts with <see cref="Keyboard.current"/>.
+    /// </summary>
     private void Update()
     {
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            FecharSubmenuAtual();
+            CloseActiveSubmenu();
     }
-    private void ConfigurarBotaoNivel(VisualElement root, string btnId, string jsonName, int levelIndex)
+
+    #endregion
+
+    #region Level Button Setup
+
+    /// <summary>
+    /// Configures a level selection button in the UI Toolkit hierarchy with click handlers.
+    /// Interacts with <see cref="SelectLevelAndLoad(string, int)"/>.
+    /// </summary>
+    /// <param name="root">Root visual element of the UI document.</param>
+    /// <param name="buttonId">UI element name/ID of the level button.</param>
+    /// <param name="jsonName">Name of the target JSON level file.</param>
+    /// <param name="levelIndex">Index of the level in sequence.</param>
+    private void ConfigureLevelButton(VisualElement root, string buttonId, string jsonName, int levelIndex)
     {
-        Button btn = root.Q<Button>(btnId);
-        if (btn != null)
+        Button button = root.Q<Button>(buttonId);
+        if (button != null)
         {
-            // MUDANÇA 3: Passamos o 'levelIndex' para o método
-            btn.clicked += () => SelectLevelAndLoad(jsonName, levelIndex);
+            button.clicked += () => SelectLevelAndLoad(jsonName, levelIndex);
         }
         else
         {
-            Debug.LogWarning($"Botão {btnId} não encontrado no UI Builder!");
+            Debug.LogWarning($"Button {buttonId} not found in UI Builder!");
         }
     }
 
-    #region Controle de Telas (Alternando os Displays)
+    #endregion
 
-    public void AbrirSobre()
+    #region Panel Navigation
+
+    /// <summary>
+    /// Displays the About panel.
+    /// </summary>
+    public void OpenAbout()
     {
-        OpenSubmenu(painelSobre);
+        OpenSubmenu(aboutPanel);
     }
 
-    public void FecharSobre()
+    /// <summary>
+    /// Legacy alias for OpenAbout.
+    /// </summary>
+    public void AbrirSobre() => OpenAbout();
+
+    /// <summary>
+    /// Closes the About panel and returns to the main menu.
+    /// </summary>
+    public void CloseAbout()
     {
-        CloseSubmenu(painelSobre);
+        CloseSubmenu(aboutPanel);
     }
 
-    public void AbrirSelecaoDeNiveis()
+    /// <summary>
+    /// Legacy alias for CloseAbout.
+    /// </summary>
+    public void FecharSobre() => CloseAbout();
+
+    /// <summary>
+    /// Displays the Level Select panel.
+    /// </summary>
+    public void OpenLevelSelect()
     {
-        OpenSubmenu(painelLevelSelect);
+        OpenSubmenu(levelSelectPanel);
     }
 
-    public void FecharSelecaoDeNiveis()
+    /// <summary>
+    /// Legacy alias for OpenLevelSelect.
+    /// </summary>
+    public void AbrirSelecaoDeNiveis() => OpenLevelSelect();
+
+    /// <summary>
+    /// Closes the Level Select panel and returns to the main menu.
+    /// </summary>
+    public void CloseLevelSelect()
     {
-        CloseSubmenu(painelLevelSelect);
+        CloseSubmenu(levelSelectPanel);
     }
 
-    public void AbrirTutorial()
+    /// <summary>
+    /// Legacy alias for CloseLevelSelect.
+    /// </summary>
+    public void FecharSelecaoDeNiveis() => CloseLevelSelect();
+
+    /// <summary>
+    /// Displays the Tutorial panel.
+    /// </summary>
+    public void OpenTutorial()
     {
-        OpenSubmenu(painelTutorial);
+        OpenSubmenu(tutorialPanel);
     }
 
-    public void FecharTutorial()
+    /// <summary>
+    /// Legacy alias for OpenTutorial.
+    /// </summary>
+    public void AbrirTutorial() => OpenTutorial();
+
+    /// <summary>
+    /// Closes the Tutorial panel and returns to the main menu.
+    /// </summary>
+    public void CloseTutorial()
     {
-        CloseSubmenu(painelTutorial);
+        CloseSubmenu(tutorialPanel);
     }
 
-    private void FecharSubmenuAtual()
+    /// <summary>
+    /// Legacy alias for CloseTutorial.
+    /// </summary>
+    public void FecharTutorial() => CloseTutorial();
+
+    /// <summary>
+    /// Closes whatever submenu is currently active.
+    /// </summary>
+    private void CloseActiveSubmenu()
     {
         if (activeSubmenu != null)
             CloseSubmenu(activeSubmenu);
     }
 
+    /// <summary>
+    /// Opens a specified submenu panel and hides the main menu panel.
+    /// </summary>
+    /// <param name="submenu">Target VisualElement submenu panel to display.</param>
     private void OpenSubmenu(VisualElement submenu)
     {
         if (submenu == null)
         {
-            Debug.LogError("Elemento de submenu não encontrado!");
+            Debug.LogError("Submenu element not found!");
             return;
         }
 
-        if (painelMenuInicial != null)
-            painelMenuInicial.AddToClassList("hidden");
+        if (mainMenuPanel != null)
+            mainMenuPanel.AddToClassList("hidden");
 
         foreach (VisualElement item in submenus)
         {
@@ -164,38 +294,48 @@ public class MenuManager : MonoBehaviour
         submenu.RemoveFromClassList("hidden");
         activeSubmenu = submenu;
 
-        if (backBtn != null)
-            backBtn.RemoveFromClassList("hidden");
+        if (backButton != null)
+            backButton.RemoveFromClassList("hidden");
     }
 
+    /// <summary>
+    /// Closes a specified submenu panel and restores visibility of the main menu panel.
+    /// </summary>
+    /// <param name="submenu">Target VisualElement submenu panel to hide.</param>
     private void CloseSubmenu(VisualElement submenu)
     {
         if (submenu == null)
         {
-            Debug.LogError("Elemento de submenu não encontrado!");
+            Debug.LogError("Submenu element not found!");
             return;
         }
 
         submenu.AddToClassList("hidden");
         activeSubmenu = null;
 
-        if (backBtn != null)
-            backBtn.AddToClassList("hidden");
+        if (backButton != null)
+            backButton.AddToClassList("hidden");
 
-        if (painelMenuInicial != null)
-            painelMenuInicial.RemoveFromClassList("hidden");
+        if (mainMenuPanel != null)
+            mainMenuPanel.RemoveFromClassList("hidden");
     }
 
     #endregion
 
-    #region Carregamento JSON
+    #region JSON Level Loading
 
+    /// <summary>
+    /// Sets the target level JSON name and index, then loads the game level scene.
+    /// Interacts with <see cref="LevelSequenceManager.CurrentLevelIndex"/> and <see cref="SceneManager"/>.
+    /// </summary>
+    /// <param name="levelJsonName">Name of the JSON file to load.</param>
+    /// <param name="levelIndex">Index of the level in sequence.</param>
     public void SelectLevelAndLoad(string levelJsonName, int levelIndex)
     {
         LevelSequenceManager.CurrentLevelIndex = levelIndex;
 
         LevelToLoadJSON = levelJsonName;
-        Debug.Log($"JSON Selecionado com sucesso: {levelJsonName} | Índice: {levelIndex}");
+        Debug.Log($"JSON Selected successfully: {levelJsonName} | Index: {levelIndex}");
 
         SceneManager.LoadScene(customLevelName);
     }

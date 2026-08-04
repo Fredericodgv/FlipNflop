@@ -4,10 +4,13 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 /// <summary>
-/// Handles spawning and configuration of obstacles from level data.
+/// Handles spawning and configuration of obstacle GameObjects (such as <see cref="MaceController"/>) from level data definitions.
+/// Instantiated and managed by <see cref="LevelJsonLoader"/> during level initialization.
 /// </summary>
 public class ObstacleSpawner
 {
+    #region Constructor & Fields
+
     private readonly Transform obstaclesParent;
     private readonly List<ObstaclePrefabEntry> obstaclePrefabs;
     private readonly Tilemap terrainTilemap;
@@ -15,6 +18,15 @@ public class ObstacleSpawner
     private readonly int floorYRow;
     private readonly bool obstacleYRelativeToFloor;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ObstacleSpawner"/> class.
+    /// </summary>
+    /// <param name="obstaclesParent">Transform parent container for spawned obstacles.</param>
+    /// <param name="obstaclePrefabs">List of mapped prefab entries.</param>
+    /// <param name="terrainTilemap">Terrain tilemap reference for cell-to-world position calculation.</param>
+    /// <param name="startX">Starting X tile coordinate offset.</param>
+    /// <param name="floorYRow">Floor Y tile row index.</param>
+    /// <param name="obstacleYRelativeToFloor">If true, Y offset is relative to floorYRow; otherwise absolute.</param>
     public ObstacleSpawner(
         Transform obstaclesParent,
         List<ObstaclePrefabEntry> obstaclePrefabs,
@@ -31,9 +43,14 @@ public class ObstacleSpawner
         this.obstacleYRelativeToFloor = obstacleYRelativeToFloor;
     }
 
+    #endregion
+
+    #region Public API
+
     /// <summary>
-    /// Spawns all obstacles from the provided obstacle data list.
+    /// Spawns all obstacles defined in the provided obstacle data list.
     /// </summary>
+    /// <param name="obstacles">List of obstacle configuration data objects from <see cref="LevelData"/>.</param>
     public void SpawnObstacles(List<ObstacleData> obstacles)
     {
         if (obstacles == null || obstacles.Count == 0) return;
@@ -44,9 +61,14 @@ public class ObstacleSpawner
         }
     }
 
+    #endregion
+
+    #region Internal Spawning Logic
+
     /// <summary>
-    /// Spawns a single obstacle at the specified position.
+    /// Spawns a single obstacle prefab and attaches runtime configuration.
     /// </summary>
+    /// <param name="obstacle">Obstacle data configuration to instantiate.</param>
     private void SpawnSingleObstacle(ObstacleData obstacle)
     {
         var prefab = ResolveObstaclePrefab(obstacle.obstacleName);
@@ -66,8 +88,10 @@ public class ObstacleSpawner
     }
 
     /// <summary>
-    /// Resolves a prefab by obstacle type string.
+    /// Resolves a prefab GameObject by obstacle type key.
     /// </summary>
+    /// <param name="type">Type key name.</param>
+    /// <returns>Matching prefab GameObject or null if unmapped.</returns>
     private GameObject ResolveObstaclePrefab(string type)
     {
         if (string.IsNullOrEmpty(type)) return null;
@@ -84,8 +108,10 @@ public class ObstacleSpawner
     }
 
     /// <summary>
-    /// Applies obstacle configuration data to the spawned instance.
+    /// Applies obstacle configuration data to a spawned instance, configuring its <see cref="MaceController"/> if present.
     /// </summary>
+    /// <param name="instance">Spawned obstacle GameObject instance.</param>
+    /// <param name="data">Obstacle configuration data object.</param>
     private void AttachObstacleConfig(GameObject instance, ObstacleData data)
     {
         var mace = instance.GetComponent<MaceController>();
@@ -114,31 +140,72 @@ public class ObstacleSpawner
         }
     }
 
-    #region Data Classes
+    #endregion
+
+    #region Data Structures
 
     /// <summary>
-    /// Obstacle data structure matching JSON format.
+    /// Obstacle data structure matching JSON specification.
+    /// Deserialized into <see cref="LevelData.Obstacles"/>.
     /// </summary>
     [Serializable]
     public class ObstacleData
     {
+        /// <summary>
+        /// Key name identifying the obstacle type prefab.
+        /// </summary>
         public string obstacleName;
+
+        /// <summary>
+        /// X tile offset position.
+        /// </summary>
         public int startX;
+
+        /// <summary>
+        /// Y tile offset position.
+        /// </summary>
         public int startY;
+
+        /// <summary>
+        /// Movement speed scalar.
+        /// </summary>
         public float speed;
+
+        /// <summary>
+        /// Horizontal movement distance in tiles.
+        /// </summary>
         public int horizontalDistance;
+
+        /// <summary>
+        /// Vertical movement distance in tiles.
+        /// </summary>
         public int verticalDistance;
+
+        /// <summary>
+        /// Starting corner key string (e.g. "bottom-left").
+        /// </summary>
         public string starterCorner;
+
+        /// <summary>
+        /// Direction of traversal (true = clockwise, false = counter-clockwise).
+        /// </summary>
         public bool clockwise;
     }
 
     /// <summary>
-    /// Maps obstacle type string to prefab GameObject.
+    /// Maps obstacle type string to prefab GameObject in Unity Inspector.
     /// </summary>
     [Serializable]
     public class ObstaclePrefabEntry
     {
+        /// <summary>
+        /// Key name identifying the obstacle type.
+        /// </summary>
         public string obstacleName;
+
+        /// <summary>
+        /// Target prefab GameObject.
+        /// </summary>
         public GameObject prefab;
     }
 

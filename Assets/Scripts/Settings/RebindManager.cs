@@ -4,52 +4,108 @@ using UnityEngine.UIElements;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
+#region Config Structs
+
 /// <summary>
-/// Define uma ação configurável no menu de rebind.
+/// Defines a configurable input action binding setup in the rebind menu.
+/// Interacts with Unity Input System <see cref="InputActionReference"/> and Unity Localization <see cref="LocalizedString"/>.
 /// </summary>
 [System.Serializable]
 public struct ActionRebindSetup
 {
-    [Tooltip("Chave de localização para o nome exibido na interface.")]
+    /// <summary>
+    /// Localization key reference for the action label displayed in the UI.
+    /// </summary>
+    [Tooltip("Localization key for the label text displayed in the interface.")]
     public LocalizedString labelText;
 
+    /// <summary>
+    /// Reference to the Unity Input System <see cref="InputActionReference"/> being rebound.
+    /// </summary>
     public InputActionReference inputAction;
 
-    [Tooltip("Índice do binding dentro da action.")]
+    /// <summary>
+    /// Index of the binding within the input action's bindings list.
+    /// </summary>
+    [Tooltip("Binding index inside the input action.")]
     public int bindingIndex;
 }
 
+#endregion
+
 /// <summary>
-/// Gerencia a interface de remapeamento de teclas com suporte a localização.
+/// Manages the key rebinding interface, handling interactive input rebinding, conflict resolution, localization, and persistent storage via <see cref="PlayerPrefs"/>.
+/// Interacts with Unity Input System (<see cref="InputActionAsset"/>, <see cref="InputActionRebindingExtensions"/>), <see cref="UIDocument"/>, and <see cref="LocalizationSettings"/>.
 /// </summary>
 [RequireComponent(typeof(UIDocument))]
 public class RebindManager : MonoBehaviour
 {
+    #region Constants & Fields
+
+    /// <summary>
+    /// <see cref="PlayerPrefs"/> key used to save JSON serialized input binding overrides.
+    /// </summary>
     private const string SaveKey = "ControlBindingsSaved";
 
-    [Header("Configuração das Teclas")]
+    /// <summary>
+    /// Input Action Asset containing action maps and default key bindings.
+    /// </summary>
+    [Header("Key Configuration")]
     [SerializeField] private InputActionAsset inputAsset;
+
+    /// <summary>
+    /// Array of action rebind setups exposed in the inspector for configuration.
+    /// </summary>
     [SerializeField] private ActionRebindSetup[] actionsToRebind;
 
-    [Header("Elementos UI")]
+    /// <summary>
+    /// Name of the UI Toolkit ScrollView element in UXML where rebind rows are generated.
+    /// </summary>
+    [Header("UI Elements")]
     [SerializeField] private string scrollViewName = "ControlsScrollView";
+
+    /// <summary>
+    /// Name of the UI Toolkit Button element in UXML used to restore default bindings.
+    /// </summary>
     [SerializeField] private string restoreButtonName = "BtnRestoreControls";
 
+    /// <summary>
+    /// Reference to the attached <see cref="UIDocument"/> component.
+    /// </summary>
     private UIDocument uiDocument;
+
+    /// <summary>
+    /// UI Toolkit ScrollView container for control rebind rows.
+    /// </summary>
     private ScrollView controlsScrollView;
+
+    /// <summary>
+    /// UI Toolkit Button for resetting bindings to defaults.
+    /// </summary>
     private Button restoreDefaultsButton;
 
+    /// <summary>
+    /// Active interactive rebinding operation instance provided by Unity Input System.
+    /// </summary>
     private InputActionRebindingExtensions.RebindingOperation currentRebindOperation;
 
-    // -------------------------------------------------------------------------
-    // Lifecycle
-    // -------------------------------------------------------------------------
+    #endregion
 
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Initializes component references.
+    /// </summary>
     private void Awake()
     {
         uiDocument = GetComponent<UIDocument>();
     }
 
+    /// <summary>
+    /// Caches UI elements, registers event callbacks, loads stored bindings from <see cref="PlayerPrefs"/>,
+    /// initializes localization completion listeners, and subscribes to locale changes.
+    /// Interacts with <see cref="LocalizationSettings"/>.
+    /// </summary>
     private void OnEnable()
     {
         if (uiDocument == null) return;
@@ -62,17 +118,17 @@ public class RebindManager : MonoBehaviour
         RegisterCallbacks();
         LoadBindings();
 
-        // Aguarda localização estar pronta antes de gerar a UI
         LocalizationSettings.InitializationOperation.Completed += _ => DrawUI();
 
-        // Se já estiver pronta, desenha imediatamente
         if (LocalizationSettings.InitializationOperation.IsDone)
             DrawUI();
 
-        // Redesenha quando o idioma mudar
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
     }
 
+    /// <summary>
+    /// Unregisters callbacks, unsubscribes from localization events, and disposes any active rebinding operation.
+    /// </summary>
     private void OnDisable()
     {
         UnregisterCallbacks();
@@ -83,30 +139,41 @@ public class RebindManager : MonoBehaviour
         currentRebindOperation = null;
     }
 
-    // -------------------------------------------------------------------------
-    // Callbacks
-    // -------------------------------------------------------------------------
+    #endregion
 
+    #region Callbacks & Event Registration
+
+    /// <summary>
+    /// Registers click callback for the restore defaults button.
+    /// </summary>
     private void RegisterCallbacks()
     {
         if (restoreDefaultsButton != null)
             restoreDefaultsButton.clicked += RestoreDefaults;
     }
 
+    /// <summary>
+    /// Unregisters click callback for the restore defaults button.
+    /// </summary>
     private void UnregisterCallbacks()
     {
         if (restoreDefaultsButton != null)
             restoreDefaultsButton.clicked -= RestoreDefaults;
     }
 
+    /// <summary>
+    /// Triggers UI redraw when the selected localization locale changes.
+    /// </summary>
+    /// <param name="_">The newly selected <see cref="Locale"/>.</param>
     private void OnLocaleChanged(Locale _) => DrawUI();
 
-    // -------------------------------------------------------------------------
-    // UI
-    // -------------------------------------------------------------------------
+    #endregion
+
+    #region UI Generation
 
     /// <summary>
-    /// Gera dinamicamente a lista de controles configuráveis.
+    /// Clears and dynamically populates the controls ScrollView with action rebind rows.
+    /// Interacts with <see cref="ActionRebindSetup"/> and UI Toolkit.
     /// </summary>
     private void DrawUI()
     {
@@ -123,8 +190,11 @@ public class RebindManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Cria uma linha da interface de rebind com label localizado.
+    /// Creates a UI row visual element containing a localized text label and a rebind button for an action setup.
+    /// Interacts with <see cref="LocalizedString.GetLocalizedStringAsync"/> and UI Toolkit controls.
     /// </summary>
+    /// <param name="setup">The action rebind setup configuration.</param>
+    /// <returns>A configured <see cref="VisualElement"/> row.</returns>
     private VisualElement CreateRow(ActionRebindSetup setup)
     {
         VisualElement row = new();
@@ -134,22 +204,18 @@ public class RebindManager : MonoBehaviour
         row.style.marginBottom = 15;
         row.style.width = Length.Percent(100);
 
-        // Label localizado
         Label label = new();
         label.style.color = Color.white;
         label.style.fontSize = 20;
         label.style.width = 300;
         label.style.unityTextAlign = TextAnchor.MiddleLeft;
 
-        // Carrega o texto localizado de forma assíncrona e atualiza o label
         var loadOp = setup.labelText.GetLocalizedStringAsync();
         loadOp.Completed += op => label.text = op.Result;
 
-        // Fallback imediato enquanto carrega
         if (loadOp.IsDone)
             label.text = loadOp.Result;
 
-        // Botão de binding
         Button button = new();
         button.AddToClassList("menu-button");
         button.style.width = 200;
@@ -165,10 +231,17 @@ public class RebindManager : MonoBehaviour
         return row;
     }
 
-    // -------------------------------------------------------------------------
-    // Rebind logic (inalterada)
-    // -------------------------------------------------------------------------
+    #endregion
 
+    #region Rebinding Logic
+
+    /// <summary>
+    /// Initiates an interactive rebinding operation for the specified input action.
+    /// Disables action, displays listening prompt on button, and configures cancellation / completion callbacks.
+    /// Interacts with <see cref="InputActionRebindingExtensions"/>.
+    /// </summary>
+    /// <param name="setup">Action rebind setup configuration.</param>
+    /// <param name="button">Target UI button clicked to rebind.</param>
     private void StartRebind(ActionRebindSetup setup, Button button)
     {
         if (currentRebindOperation != null) return;
@@ -192,6 +265,11 @@ public class RebindManager : MonoBehaviour
             .Start();
     }
 
+    /// <summary>
+    /// Handles completion of interactive rebinding operation. Resolves binding conflicts, enables action, saves overrides, and redraws UI.
+    /// </summary>
+    /// <param name="operation">The completed rebinding operation.</param>
+    /// <param name="setup">Action rebind setup configuration.</param>
     private void OnRebindComplete(
         InputActionRebindingExtensions.RebindingOperation operation,
         ActionRebindSetup setup)
@@ -210,6 +288,11 @@ public class RebindManager : MonoBehaviour
         DrawUI();
     }
 
+    /// <summary>
+    /// Checks for duplicate bindings across configured actions and unbinds conflicting entries.
+    /// </summary>
+    /// <param name="changedSetup">The action setup being assigned the new binding.</param>
+    /// <param name="newPath">The newly assigned control path string.</param>
     private void ResolveConflicts(ActionRebindSetup changedSetup, string newPath)
     {
         foreach (ActionRebindSetup otherSetup in actionsToRebind)
@@ -232,6 +315,13 @@ public class RebindManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Handles cancellation of interactive rebinding operation (e.g., via Escape key).
+    /// Re-enables the action and restores button display text.
+    /// </summary>
+    /// <param name="operation">The canceled rebinding operation.</param>
+    /// <param name="setup">Action rebind setup configuration.</param>
+    /// <param name="button">UI button element.</param>
     private void OnRebindCanceled(
         InputActionRebindingExtensions.RebindingOperation operation,
         ActionRebindSetup setup,
@@ -244,6 +334,12 @@ public class RebindManager : MonoBehaviour
         UpdateButtonText(button, setup);
     }
 
+    /// <summary>
+    /// Updates UI button text to display human-readable name of assigned key binding.
+    /// Interacts with <see cref="InputControlPath.ToHumanReadableString(string, InputControlPath.HumanReadableStringOptions)"/>.
+    /// </summary>
+    /// <param name="button">UI button to update.</param>
+    /// <param name="setup">Action rebind setup configuration.</param>
     private void UpdateButtonText(Button button, ActionRebindSetup setup)
     {
         InputAction action = setup.inputAction.action;
@@ -260,10 +356,13 @@ public class RebindManager : MonoBehaviour
                 InputControlPath.HumanReadableStringOptions.OmitDevice);
     }
 
-    // -------------------------------------------------------------------------
-    // Save / Load
-    // -------------------------------------------------------------------------
+    #endregion
 
+    #region Save / Load / Restore
+
+    /// <summary>
+    /// Saves current binding overrides from <see cref="InputActionAsset"/> to <see cref="PlayerPrefs"/> as JSON.
+    /// </summary>
     private void SaveBindings()
     {
         if (inputAsset == null) return;
@@ -271,6 +370,9 @@ public class RebindManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    /// <summary>
+    /// Loads binding overrides from <see cref="PlayerPrefs"/> JSON data into <see cref="InputActionAsset"/>.
+    /// </summary>
     private void LoadBindings()
     {
         if (inputAsset == null) return;
@@ -279,6 +381,10 @@ public class RebindManager : MonoBehaviour
             inputAsset.LoadBindingOverridesFromJson(json);
     }
 
+    /// <summary>
+    /// Cancels any active rebind operation, removes all binding overrides from <see cref="InputActionAsset"/>,
+    /// deletes stored preferences in <see cref="PlayerPrefs"/>, and redraws UI.
+    /// </summary>
     private void RestoreDefaults()
     {
         currentRebindOperation?.Cancel();
@@ -291,4 +397,6 @@ public class RebindManager : MonoBehaviour
 
         DrawUI();
     }
+
+    #endregion
 }

@@ -3,81 +3,199 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Encapsula toda a lógica da aba "Cores" do menu de configurações,
-/// incluindo o overlay RGB para cor personalizada.
+/// Encapsulates all logic for the "Colors" tab in the settings menu, including preset palettes, swatch pickers, and the custom RGB overlay.
+/// Interacts with <see cref="SignalColorManager"/> for signal color persistence and synchronization.
 /// </summary>
 public class ColorSettingsTab : ISettingsTab
 {
+    #region Enums
+
+    /// <summary>
+    /// Identifies the signal or feedback element type being configured for custom color selection.
+    /// </summary>
     private enum SignalType
     {
+        /// <summary>J input signal.</summary>
         J,
+
+        /// <summary>K input signal.</summary>
         K,
+
+        /// <summary>Clock (CLK) input signal.</summary>
         CLK,
+
+        /// <summary>Preset input signal.</summary>
         Preset,
+
+        /// <summary>Clear input signal.</summary>
         Clear,
+
+        /// <summary>Successful feedback signal visual indicator.</summary>
         FeedbackSuccess,
+
+        /// <summary>Failure feedback signal visual indicator.</summary>
         FeedbackFailure
     }
 
-    // Cores — sinais
+    #endregion
+
+    #region Private Fields - Signal UI Elements
+
+    /// <summary>
+    /// UI Toolkit Dropdown field for selecting preset color palettes.
+    /// </summary>
     private DropdownField dropdownPaleta;
+
+    /// <summary>
+    /// UI Toolkit Button for resetting all signal colors to default palette.
+    /// </summary>
     private Button btnResetColors;
+
+    /// <summary>
+    /// Flag indicating if a preset palette application is currently in progress to avoid recursive UI callback loops.
+    /// </summary>
     private bool isApplyingPreset = false;
 
+    /// <summary>Preview visual element for J signal color.</summary>
     private VisualElement previewJ;
+
+    /// <summary>Preview visual element for K signal color.</summary>
     private VisualElement previewK;
+
+    /// <summary>Preview visual element for CLK signal color.</summary>
     private VisualElement previewCLK;
+
+    /// <summary>Preview visual element for Preset signal color.</summary>
     private VisualElement previewPreset;
+
+    /// <summary>Preview visual element for Clear signal color.</summary>
     private VisualElement previewClear;
+
+    /// <summary>Preview visual element for successful feedback color.</summary>
     private VisualElement previewFeedbackSuccess;
+
+    /// <summary>Preview visual element for failed feedback color.</summary>
     private VisualElement previewFeedbackFailure;
 
+    /// <summary>Container element holding preset color swatch buttons for J signal.</summary>
     private VisualElement containerSwatchesJ;
+
+    /// <summary>Container element holding preset color swatch buttons for K signal.</summary>
     private VisualElement containerSwatchesK;
+
+    /// <summary>Container element holding preset color swatch buttons for CLK signal.</summary>
     private VisualElement containerSwatchesCLK;
+
+    /// <summary>Container element holding preset color swatch buttons for Preset signal.</summary>
     private VisualElement containerSwatchesPreset;
+
+    /// <summary>Container element holding preset color swatch buttons for Clear signal.</summary>
     private VisualElement containerSwatchesClear;
+
+    /// <summary>Container element holding preset color swatch buttons for Feedback Success.</summary>
     private VisualElement containerSwatchesFeedbackSuccess;
+
+    /// <summary>Container element holding preset color swatch buttons for Feedback Failure.</summary>
     private VisualElement containerSwatchesFeedbackFailure;
 
+    /// <summary>Button to open custom RGB overlay for J signal.</summary>
     private Button btnCustomJ;
+
+    /// <summary>Button to open custom RGB overlay for K signal.</summary>
     private Button btnCustomK;
+
+    /// <summary>Button to open custom RGB overlay for CLK signal.</summary>
     private Button btnCustomCLK;
+
+    /// <summary>Button to open custom RGB overlay for Preset signal.</summary>
     private Button btnCustomPreset;
+
+    /// <summary>Button to open custom RGB overlay for Clear signal.</summary>
     private Button btnCustomClear;
+
+    /// <summary>Button to open custom RGB overlay for Feedback Success.</summary>
     private Button btnCustomFeedbackSuccess;
+
+    /// <summary>Button to open custom RGB overlay for Feedback Failure.</summary>
     private Button btnCustomFeedbackFailure;
 
-    // RGB Overlay
+    #endregion
+
+    #region Private Fields - RGB Overlay Elements
+
+    /// <summary>Modal overlay visual element for custom RGB color editing.</summary>
     private VisualElement rgbOverlay;
+
+    /// <summary>Header title label inside the RGB overlay.</summary>
     private Label rgbTitle;
+
+    /// <summary>Color preview block inside the RGB overlay.</summary>
     private VisualElement rgbPreview;
 
+    /// <summary>Text input field for entering color values in hexadecimal format.</summary>
     private TextField inputHex;
 
+    /// <summary>Red channel slider in the RGB overlay.</summary>
     private Slider sliderR;
+
+    /// <summary>Green channel slider in the RGB overlay.</summary>
     private Slider sliderG;
+
+    /// <summary>Blue channel slider in the RGB overlay.</summary>
     private Slider sliderB;
 
+    /// <summary>Confirm button in the RGB overlay.</summary>
     private Button btnConfirmRGB;
+
+    /// <summary>Cancel button in the RGB overlay.</summary>
     private Button btnCancelRGB;
 
+    /// <summary>Tracks which signal type is currently being modified in the RGB overlay.</summary>
     private SignalType activeCustomSignal = SignalType.J;
 
+    #endregion
+
+    #region Private Fields - Swatch Lists
+
+    /// <summary>List of swatch buttons generated for J signal presets.</summary>
     private readonly List<Button> swatchesJ = new();
+
+    /// <summary>List of swatch buttons generated for K signal presets.</summary>
     private readonly List<Button> swatchesK = new();
+
+    /// <summary>List of swatch buttons generated for CLK signal presets.</summary>
     private readonly List<Button> swatchesCLK = new();
+
+    /// <summary>List of swatch buttons generated for Preset signal presets.</summary>
     private readonly List<Button> swatchesPreset = new();
+
+    /// <summary>List of swatch buttons generated for Clear signal presets.</summary>
     private readonly List<Button> swatchesClear = new();
+
+    /// <summary>List of swatch buttons generated for Feedback Success presets.</summary>
     private readonly List<Button> swatchesFeedbackSuccess = new();
+
+    /// <summary>List of swatch buttons generated for Feedback Failure presets.</summary>
     private readonly List<Button> swatchesFeedbackFailure = new();
 
+    #endregion
+
+    #region ISettingsTab Implementation
+
+    /// <summary>
+    /// Caches all UI Toolkit elements from the root hierarchy and initializes color controls.
+    /// Interacts with <see cref="SignalColorManager"/>.
+    /// </summary>
+    /// <param name="root">The root <see cref="VisualElement"/> container of the options menu.</param>
     public void Init(VisualElement root)
     {
         CacheElements(root);
         InitColorSettings();
     }
 
+    /// <summary>
+    /// Registers event callbacks for custom color buttons, RGB sliders, hex inputs, and reset buttons.
+    /// </summary>
     public void RegisterCallbacks()
     {
         if (btnCustomJ != null) btnCustomJ.clicked += OpenCustomJ;
@@ -100,6 +218,9 @@ public class ColorSettingsTab : ISettingsTab
         inputHex?.RegisterValueChangedCallback(OnHexInputChanged);
     }
 
+    /// <summary>
+    /// Unregisters event callbacks for custom color buttons, RGB sliders, hex inputs, and reset buttons to prevent memory leaks.
+    /// </summary>
     public void UnregisterCallbacks()
     {
         if (btnCustomJ != null) btnCustomJ.clicked -= OpenCustomJ;
@@ -122,14 +243,25 @@ public class ColorSettingsTab : ISettingsTab
         inputHex?.UnregisterValueChangedCallback(OnHexInputChanged);
     }
 
+    /// <summary>
+    /// Called when the active localization locale changes.
+    /// Refreshes palette dropdown labels and synchronizes color UI state.
+    /// Interacts with <see cref="SignalColorManager.GetLocalizedPaletteName(int)"/>.
+    /// </summary>
     public void OnLocaleChanged()
     {
         RefreshPaletteDropdown();
         SyncColorUI();
     }
 
-    #region Cache
+    #endregion
 
+    #region UI Element Caching
+
+    /// <summary>
+    /// Queries and caches visual elements from the UI Toolkit root tree.
+    /// </summary>
+    /// <param name="root">The root visual element container.</param>
     private void CacheElements(VisualElement root)
     {
         dropdownPaleta = root.Q<DropdownField>("DropdownPaleta");
@@ -175,8 +307,12 @@ public class ColorSettingsTab : ISettingsTab
 
     #endregion
 
-    #region Colors
+    #region Color Settings & Swatch Logic
 
+    /// <summary>
+    /// Initializes color dropdown options, generates preset swatches for all signals, and synchronizes the UI.
+    /// Interacts with <see cref="SignalColorManager.Instance"/>.
+    /// </summary>
     private void InitColorSettings()
     {
         if (SignalColorManager.Instance == null)
@@ -228,6 +364,10 @@ public class ColorSettingsTab : ISettingsTab
         SyncColorUI();
     }
 
+    /// <summary>
+    /// Populates the palette dropdown menu with localized names for preset palettes and the custom option.
+    /// Interacts with <see cref="SignalColorManager.GetLocalizedPaletteName(int)"/> and <see cref="SignalColorManager.Instance"/>.
+    /// </summary>
     private void RefreshPaletteDropdown()
     {
         if (dropdownPaleta == null || SignalColorManager.Instance == null)
@@ -256,8 +396,12 @@ public class ColorSettingsTab : ISettingsTab
     }
 
     /// <summary>
-    /// Gera botões de cores pré-definidas para um sinal.
+    /// Dynamically creates swatch button elements for a signal container using colors from <see cref="SignalColorManager.PresetColors"/>.
+    /// Interacts with <see cref="SignalColorManager.Instance"/>.
     /// </summary>
+    /// <param name="container">Target <see cref="VisualElement"/> container to add swatches to.</param>
+    /// <param name="swatches">List holding references to created swatch <see cref="Button"/> elements.</param>
+    /// <param name="signalType">Signal type enum assigned to these swatches.</param>
     private void GenerateSwatches(
         VisualElement container,
         List<Button> swatches,
@@ -311,14 +455,13 @@ public class ColorSettingsTab : ISettingsTab
     }
 
     /// <summary>
-    /// Sincroniza toda a UI de cores com o estado atual do SignalColorManager.
+    /// Synchronizes all preview backgrounds, swatch selection borders, and dropdown selections with <see cref="SignalColorManager.Instance"/>.
     /// </summary>
     private void SyncColorUI()
     {
         if (SignalColorManager.Instance == null)
             return;
 
-        // 1. Atualiza os quadradinhos de preview com as cores do Manager
         previewJ.style.backgroundColor = SignalColorManager.Instance.ColorJ;
         previewK.style.backgroundColor = SignalColorManager.Instance.ColorK;
         previewCLK.style.backgroundColor = SignalColorManager.Instance.ColorCLK;
@@ -327,7 +470,6 @@ public class ColorSettingsTab : ISettingsTab
         previewFeedbackSuccess.style.backgroundColor = SignalColorManager.Instance.ColorFeedbackSuccess;
         previewFeedbackFailure.style.backgroundColor = SignalColorManager.Instance.ColorFeedbackFailure;
 
-        // 2. Sincroniza as bordas brancas dos seletores baseando-se nos índices puros
         UpdateSwatchBorders(swatchesJ, SignalColorManager.Instance.IndexJ);
         UpdateSwatchBorders(swatchesK, SignalColorManager.Instance.IndexK);
         UpdateSwatchBorders(swatchesCLK, SignalColorManager.Instance.IndexCLK);
@@ -336,7 +478,6 @@ public class ColorSettingsTab : ISettingsTab
         UpdateSwatchBorders(swatchesFeedbackSuccess, SignalColorManager.Instance.IndexFeedbackSuccess);
         UpdateSwatchBorders(swatchesFeedbackFailure, SignalColorManager.Instance.IndexFeedbackFailure);
 
-        // 3. Obtém qual paleta está ativa diretamente da regra de negócio
         int activePaletteIndex = SignalColorManager.Instance.GetCurrentPaletteIndex();
 
         if (activePaletteIndex >= 0)
@@ -350,8 +491,10 @@ public class ColorSettingsTab : ISettingsTab
     }
 
     /// <summary>
-    /// Atualiza a borda do swatch selecionado.
+    /// Updates border highlight colors for a list of swatch buttons to indicate the currently selected preset index.
     /// </summary>
+    /// <param name="swatches">List of swatch <see cref="Button"/> elements.</param>
+    /// <param name="selectedIndex">Currently selected preset index, or <see cref="SignalColorManager.CUSTOM_INDEX"/> (-1).</param>
     private void UpdateSwatchBorders(List<Button> swatches, int selectedIndex)
     {
         for (int i = 0; i < swatches.Count; i++)
@@ -365,31 +508,48 @@ public class ColorSettingsTab : ISettingsTab
         }
     }
 
+    /// <summary>
+    /// Resets all signal colors to default palette 0 in <see cref="SignalColorManager.Instance"/> and saves changes using <see cref="PlayerPrefs"/>.
+    /// </summary>
     private void ResetDefaultColors()
     {
         if (SignalColorManager.Instance == null) return;
 
-        // Aplica a Paleta 0 (geralmente a paleta padrão/original do jogo)
         SignalColorManager.Instance.ApplyPalette(0);
-
-        // Sincroniza as bordas brancas, as cores dos quadradinhos e o dropdown
         SyncColorUI();
-
-        PlayerPrefs.Save(); // Salva a mudança imediatamente
+        PlayerPrefs.Save();
     }
 
     #endregion
 
-    #region RGB Overlay
+    #region RGB Overlay Logic
 
+    /// <summary>Opens the RGB color editor overlay for the J signal.</summary>
     private void OpenCustomJ() => OpenRGBOverlay(SignalType.J);
+
+    /// <summary>Opens the RGB color editor overlay for the K signal.</summary>
     private void OpenCustomK() => OpenRGBOverlay(SignalType.K);
+
+    /// <summary>Opens the RGB color editor overlay for the CLK signal.</summary>
     private void OpenCustomCLK() => OpenRGBOverlay(SignalType.CLK);
+
+    /// <summary>Opens the RGB color editor overlay for the Preset signal.</summary>
     private void OpenCustomPreset() => OpenRGBOverlay(SignalType.Preset);
+
+    /// <summary>Opens the RGB color editor overlay for the Clear signal.</summary>
     private void OpenCustomClear() => OpenRGBOverlay(SignalType.Clear);
+
+    /// <summary>Opens the RGB color editor overlay for successful feedback.</summary>
     private void OpenCustomFeedbackSuccess() => OpenRGBOverlay(SignalType.FeedbackSuccess);
+
+    /// <summary>Opens the RGB color editor overlay for failed feedback.</summary>
     private void OpenCustomFeedbackFailure() => OpenRGBOverlay(SignalType.FeedbackFailure);
 
+    /// <summary>
+    /// Displays the custom RGB overlay for a specific signal type, initializing sliders and preview element with current color values.
+    /// Interacts with <see cref="SignalColorManager.Instance"/>.
+    /// </summary>
+    /// <param name="signalType">The signal type to edit.</param>
     private void OpenRGBOverlay(SignalType signalType)
     {
         if (SignalColorManager.Instance == null)
@@ -422,14 +582,25 @@ public class ColorSettingsTab : ISettingsTab
             rgbOverlay.style.display = DisplayStyle.Flex;
     }
 
+    /// <summary>
+    /// Hides the custom RGB overlay without applying changes.
+    /// </summary>
     private void CloseRGBOverlay()
     {
         if (rgbOverlay != null)
             rgbOverlay.style.display = DisplayStyle.None;
     }
 
+    /// <summary>
+    /// Event handler for RGB slider changes. Updates color preview block and hex field.
+    /// </summary>
+    /// <param name="evt">Slider value change event.</param>
     private void OnRGBSliderChanged(ChangeEvent<float> evt) => UpdateRGBPreview();
 
+    /// <summary>
+    /// Recalculates preview color from RGB sliders and updates the preview element and hex text field.
+    /// Interacts with <see cref="ColorUtility.ToHtmlStringRGB(Color)"/>.
+    /// </summary>
     private void UpdateRGBPreview()
     {
         float r = (sliderR?.value ?? 255f) / 255f;
@@ -444,6 +615,11 @@ public class ColorSettingsTab : ISettingsTab
         inputHex?.SetValueWithoutNotify("#" + ColorUtility.ToHtmlStringRGB(color));
     }
 
+    /// <summary>
+    /// Event handler for hex input text field changes. Parses hex string and synchronizes RGB sliders if valid.
+    /// Interacts with <see cref="ColorUtility.TryParseHtmlString(string, out Color)"/>.
+    /// </summary>
+    /// <param name="evt">Text change event containing the newly typed hex string.</param>
     private void OnHexInputChanged(ChangeEvent<string> evt)
     {
         string hex = evt.newValue.Trim();
@@ -462,6 +638,9 @@ public class ColorSettingsTab : ISettingsTab
             rgbPreview.style.backgroundColor = color;
     }
 
+    /// <summary>
+    /// Saves selected RGB color to <see cref="SignalColorManager.Instance"/> for the active signal, syncs UI, and closes overlay.
+    /// </summary>
     private void ConfirmRGBColor()
     {
         if (SignalColorManager.Instance == null)

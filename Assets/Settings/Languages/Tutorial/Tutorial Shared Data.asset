@@ -43,6 +43,10 @@ MonoBehaviour:
     m_Key: tutorial_end
     m_Metadata:
       m_Items: []
+  - m_Id: 26358571719360512
+    m_Key: tutorial_operation
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

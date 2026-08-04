@@ -1,34 +1,82 @@
 using UnityEngine;
 
+/// <summary>
+/// Controls camera movement, supporting automatic player tracking and manual horizontal control.
+/// Interacts with <see cref="LevelManager"/> to clamp camera movement within valid level boundaries.
+/// </summary>
 public class CameraController : MonoBehaviour
 {
-    private enum CameraMode { FollowPlayer, ManualControl }
-    private CameraMode currentMode;
+    #region Enums
 
-    [Header("Configuração de Seguir")]
+    /// <summary>
+    /// Operating modes for camera movement control.
+    /// </summary>
+    private enum CameraMode
+    {
+        FollowPlayer,
+        ManualControl
+    }
+
+    #endregion
+
+    #region Serialized Fields
+
+    [Header("Follow Configuration")]
+    [Tooltip("Target transform that the camera will follow.")]
     public Transform target;
+
+    [Tooltip("Smooth damping factor for camera tracking movement.")]
     public float smoothSpeed = 0.125f;
+
+    [Tooltip("Offset position relative to the target transform.")]
     public Vector3 offset;
 
-    [Header("Configuração de Controle Manual")]
-    [Tooltip("Velocidade com que a câmera se move no modo manual.")]
+    [Header("Manual Control Configuration")]
+    [Tooltip("Speed at which the camera moves in manual mode.")]
     public float manualMoveSpeed = 10f;
 
-    [Header("Limites da Fase")]
-    [Tooltip("A posição X onde a câmera PARA no início da fase.")]
+    [Header("Level Limits")]
+    [Tooltip("The minimum X position where the camera stops at the start of the level.")]
     public float minX;
-    [Tooltip("Uma folga para a câmera ir um pouco além do final da tela. Use 0 para parar na borda.")]
+
+    [Tooltip("Padding allowing the camera to move slightly past the screen end. Set to 0 to stop at the edge.")]
     public float endPadding = 2f;
+
+    #endregion
+
+    #region Private Fields
+
+    /// <summary>
+    /// Calculated maximum horizontal position for the camera.
+    /// </summary>
     private float maxX;
 
+    /// <summary>
+    /// Current active camera operating mode.
+    /// </summary>
+    private CameraMode currentMode;
+
+    /// <summary>
+    /// Reference to the attached Camera component.
+    /// </summary>
     private Camera cam;
 
-    void Awake()
+    #endregion
+
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Caches component references on awake.
+    /// </summary>
+    private void Awake()
     {
         cam = GetComponent<Camera>();
     }
 
-    void Start()
+    /// <summary>
+    /// Initializes default mode and calculates camera level boundary limits using <see cref="LevelManager"/>.
+    /// </summary>
+    private void Start()
     {
         currentMode = CameraMode.FollowPlayer;
 
@@ -42,11 +90,14 @@ public class CameraController : MonoBehaviour
         }
         else
         {
-            Debug.LogError("LevelManager não encontrado na cena!");
+            Debug.LogError("LevelManager not found in the scene!");
         }
     }
 
-    void LateUpdate()
+    /// <summary>
+    /// Updates camera position each frame based on the active camera mode.
+    /// </summary>
+    private void LateUpdate()
     {
         if (currentMode == CameraMode.FollowPlayer)
         {
@@ -58,14 +109,52 @@ public class CameraController : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Public Methods
+
     /// <summary>
-    /// Clamps the camera X position based on current limits.
+    /// Switches the camera to manual input control mode.
     /// </summary>
+    public void EnableManualControl()
+    {
+        currentMode = CameraMode.ManualControl;
+    }
+
+    /// <summary>
+    /// Enables manual control and locks the right boundary limit at the current camera position.
+    /// Prevents the camera from moving further right upon player death.
+    /// </summary>
+    /// <param name="rightLimitWorldX">World X position for the right boundary limit.</param>
+    public void EnableManualControlWithRightLimit(float rightLimitWorldX)
+    {
+        float currentCenterX = transform.position.x;
+        maxX = Mathf.Max(minX, currentCenterX);
+
+        currentMode = CameraMode.ManualControl;
+
+        Vector3 pos = transform.position;
+        pos.x = ClampCameraX(pos.x);
+        transform.position = pos;
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    /// <summary>
+    /// Clamps the camera X position based on current min/max boundaries.
+    /// </summary>
+    /// <param name="x">The unclamped X coordinate.</param>
+    /// <returns>The clamped X coordinate within level bounds.</returns>
     private float ClampCameraX(float x)
     {
         return Mathf.Clamp(x, minX, maxX);
     }
 
+    /// <summary>
+    /// Smoothly interpolates the camera position towards the target position.
+    /// </summary>
     private void FollowPlayer()
     {
         if (target != null)
@@ -77,6 +166,9 @@ public class CameraController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Handles horizontal manual camera movement based on raw input axes.
+    /// </summary>
     private void HandleManualControl()
     {
         float horizontalInput = Input.GetAxisRaw("Horizontal");
@@ -86,25 +178,5 @@ public class CameraController : MonoBehaviour
         transform.position = newPosition;
     }
 
-    public void EnableManualControl()
-    {
-        currentMode = CameraMode.ManualControl;
-    }
-
-    /// <summary>
-    /// Enables manual control and locks the right limit at the camera's current position.
-    /// Used when the player dies to prevent camera from moving further right.
-    /// </summary>
-    public void EnableManualControlWithRightLimit(float rightLimitWorldX)
-    {
-        float currentCenterX = transform.position.x;
-        maxX = Mathf.Max(minX, currentCenterX);
-
-        currentMode = CameraMode.ManualControl;
-
-        // Apply clamping immediately to respect new limits
-        Vector3 pos = transform.position;
-        pos.x = ClampCameraX(pos.x);
-        transform.position = pos;
-    }
+    #endregion
 }

@@ -57,6 +57,10 @@ MonoBehaviour:
       e a pontua\xE7\xE3o obtida."
     m_Metadata:
       m_Items: []
+  - m_Id: 26358571719360512
+    m_Localized: "Use B para exibir dicas sobre a pr\xF3xima opera\xE7\xE3o s\xEDncrona"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

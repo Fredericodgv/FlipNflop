@@ -1,65 +1,91 @@
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Runtime.InteropServices;
-using UnityEngine.UIElements; // Adicionado para o UI Toolkit
+using UnityEngine.UIElements;
 
+/// <summary>
+/// Manages custom JSON level file uploads in WebGL builds using native JavaScript interop.
+/// Interacts with <see cref="UIDocument"/> for error feedback, <see cref="UploadedLevelJson"/> for storing uploaded JSON data,
+/// <see cref="MenuManager"/> to clear static resource references, and <see cref="SceneManager"/> to launch the target level.
+/// </summary>
 public class UploadMenuManager : MonoBehaviour
 {
+    #region Fields & Properties
+
+    [Header("Scene Navigation")]
+    [Tooltip("Name of the scene loaded after uploading a custom JSON level.")]
     [SerializeField] private string customSceneName = "Custom";
 
-    // Novo: Variável para o UI Toolkit no lugar do GameObject
-    private VisualElement _feedbackErro;
+    /// <summary>
+    /// Visual element displaying error feedback when JSON upload fails or is empty.
+    /// </summary>
+    private VisualElement errorFeedback;
 
+    #endregion
+
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Retrieves attached <see cref="UIDocument"/> and initializes the error feedback UI container.
+    /// </summary>
     private void OnEnable()
     {
-        // Busca o UIDocument no mesmo GameObject
         var uiDocument = GetComponent<UIDocument>();
         if (uiDocument != null)
         {
-            // Busca o elemento de erro pelo ID (você precisa criar isso no UI Builder)
-            _feedbackErro = uiDocument.rootVisualElement.Q<VisualElement>("ErrorFeedback");
+            errorFeedback = uiDocument.rootVisualElement.Q<VisualElement>("ErrorFeedback");
 
-            // Garante que a mensagem comece escondida
-            if (_feedbackErro != null)
-                _feedbackErro.style.display = DisplayStyle.None;
+            if (errorFeedback != null)
+                errorFeedback.style.display = DisplayStyle.None;
         }
     }
 
+    #endregion
+
+    #region WebGL Interop & API
+
 #if UNITY_WEBGL && !UNITY_EDITOR
+    /// <summary>
+    /// Native JavaScript method call to open the WebGL file picker dialog.
+    /// </summary>
     [DllImport("__Internal")]
     private static extern void UploadJSON(string objectName, string callbackMethod);
 #endif
 
+    /// <summary>
+    /// Triggered when the upload button is clicked. Invokes JavaScript file browser in WebGL.
+    /// </summary>
     public void OnClickUpload()
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
-        // Passa o nome deste GameObject para o JS saber para onde enviar o JSON de volta
         UploadJSON(gameObject.name, nameof(OnJSONReceived));
 #else
-        Debug.LogWarning("File picker só funciona no build WebGL. Use o Inspector para testar.");
+        Debug.LogWarning("File picker only works in WebGL build. Use the Inspector for testing.");
 #endif
     }
 
     /// <summary>
-    /// Callback do JavaScript com o conteúdo do JSON.
+    /// JavaScript callback invoked when JSON file contents are read from file picker.
+    /// Interacts with <see cref="UploadedLevelJson.Content"/>, <see cref="MenuManager.LevelToLoadJSON"/>, and <see cref="SceneManager"/>.
     /// </summary>
+    /// <param name="jsonContent">Raw string contents of the uploaded JSON level file.</param>
     public void OnJSONReceived(string jsonContent)
     {
         if (string.IsNullOrWhiteSpace(jsonContent))
         {
-            // Mostra o feedback de erro no UI Toolkit
-            if (_feedbackErro != null)
-                _feedbackErro.style.display = DisplayStyle.Flex;
+            if (errorFeedback != null)
+                errorFeedback.style.display = DisplayStyle.Flex;
 
             return;
         }
 
-        // Esconde o erro (caso estivesse aparecendo de uma tentativa anterior)
-        if (_feedbackErro != null)
-            _feedbackErro.style.display = DisplayStyle.None;
+        if (errorFeedback != null)
+            errorFeedback.style.display = DisplayStyle.None;
 
         UploadedLevelJson.Content = jsonContent;
-        MenuManager.LevelToLoadJSON = ""; // garante que o loader use Content, não Resources
+        MenuManager.LevelToLoadJSON = "";
         SceneManager.LoadScene(customSceneName);
     }
+
+    #endregion
 }

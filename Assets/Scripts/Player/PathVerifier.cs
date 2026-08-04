@@ -2,34 +2,68 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// MonoBehaviour orquestrador da pipeline de verificação do caminho.
-/// Também é responsável por desenhar o feedback visual (linhas sólidas e tracejadas).
+/// Orchestrates the player path verification pipeline and draws visual feedback (solid and dashed lines).
+/// Interacts with <see cref="GabaritoGenerator"/> to produce reference corners, <see cref="PathChecker"/> to evaluate accuracy,
+/// <see cref="SignalPath"/> for recorded player coordinates, <see cref="SignalColorManager"/> for color synchronization,
+/// <see cref="LevelManager"/> for stage boundaries, <see cref="ScoreController"/> for reporting scores,
+/// and <see cref="ResultScreenController"/> to present final results.
 /// </summary>
 public class PathVerifier : MonoBehaviour
 {
-    #region Fields
+    #region Data Structures
+
+    /// <summary>
+    /// Represents a flip-flop output transition event at a specific X world coordinate.
+    /// </summary>
+    public struct SignalEvent
+    {
+        /// <summary>
+        /// World X position where the signal transition occurs.
+        /// </summary>
+        public float x;
+
+        /// <summary>
+        /// Logical boolean value of the output signal after the transition.
+        /// </summary>
+        public bool value;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SignalEvent"/> struct.
+        /// </summary>
+        /// <param name="x">World X coordinate.</param>
+        /// <param name="value">Logical output state.</param>
+        public SignalEvent(float x, bool value) { this.x = x; this.value = value; }
+    }
+
+    #endregion
+
+    #region Fields & Serialized Properties
 
     [Header("Output Settings")]
-    [Tooltip("Y no mundo para o nível lógico LOW (0).")]
+    [Tooltip("World Y position for logical LOW state (0).")]
     [SerializeField] private float lowY = -2.5f;
-    [Tooltip("Y no mundo para o nível lógico HIGH (1).")]
+
+    [Tooltip("World Y position for logical HIGH state (1).")]
     [SerializeField] private float highY = 1.25f;
 
     [Header("Corner Answer Key (Auto-Generated)")]
     [SerializeField] private List<Vector3> correctCorners;
 
-    [Header("Referências")]
+    [Header("References")]
     [SerializeField] private SignalPath signalPath;
     [SerializeField] private float cornerTolerance = 1.0f;
 
     [Header("Visual Feedback")]
-    [Tooltip("Cor da linha quando o segmento é correto.")]
+    [Tooltip("Line color when the path segment is correct.")]
     [SerializeField] private Color successColor = Color.green;
-    [Tooltip("Cor da linha quando o segmento é incorreto.")]
+
+    [Tooltip("Line color when the path segment is incorrect.")]
     [SerializeField] private Color failureColor = Color.red;
-    [Tooltip("Prefab de LineRenderer instanciado para cada segmento de feedback.")]
+
+    [Tooltip("LineRenderer prefab instantiated for each feedback segment.")]
     [SerializeField] private LineRenderer linePrefab;
-    [Tooltip("Transform pai que agrupa os GameObjects de feedback.")]
+
+    [Tooltip("Parent Transform that groups feedback line GameObjects.")]
     [SerializeField] private Transform feedbackLinesParent;
 
     [Header("Dashed Line Settings")]
@@ -41,35 +75,19 @@ public class PathVerifier : MonoBehaviour
     [SerializeField] private bool showMissedCornersInGame = false;
     [SerializeField] private bool realtimeFeedback = false;
 
-    // ── Módulos delegados (POCOs) ─────────────────────────────────────────────
     private GabaritoGenerator gabaritoGenerator;
     private PathChecker pathChecker;
-
-    // Estado de debug (Gizmos)
     private List<Vector3> missedCorners = new();
     private LineRenderer signalLineRenderer;
 
     #endregion
 
-    #region Tipo compartilhado
-
-    /// <summary>
-    /// Representa uma transição de saída do flip-flop em uma posição X do mundo.
-    /// </summary>
-    public struct SignalEvent
-    {
-        /// <summary>Posição X no mundo onde ocorre a transição.</summary>
-        public float x;
-        /// <summary>Novo valor lógico da saída após a transição.</summary>
-        public bool value;
-
-        public SignalEvent(float x, bool value) { this.x = x; this.value = value; }
-    }
-
-    #endregion
-
     #region Unity Lifecycle
 
+    /// <summary>
+    /// Instantiates the reference generator and path checker, generating initial reference corners.
+    /// Interacts with <see cref="GabaritoGenerator"/> and <see cref="PathChecker"/>.
+    /// </summary>
     private void Awake()
     {
         gabaritoGenerator = new GabaritoGenerator(lowY, highY);
@@ -79,6 +97,9 @@ public class PathVerifier : MonoBehaviour
         pathChecker = new PathChecker(cornerTolerance, enableDebugLogs);
     }
 
+    /// <summary>
+    /// Subscribes to color changes from <see cref="SignalColorManager"/> and caches the LineRenderer component on <see cref="SignalPath"/>.
+    /// </summary>
     private void Start()
     {
         if (signalPath != null)
@@ -88,11 +109,18 @@ public class PathVerifier : MonoBehaviour
         SyncFeedbackColors();
     }
 
+    /// <summary>
+    /// Unsubscribes from <see cref="SignalColorManager"/> events.
+    /// </summary>
     private void OnDestroy()
     {
         SignalColorManager.OnColorsChanged -= SyncFeedbackColors;
     }
 
+    /// <summary>
+    /// Continuously updates realtime visual feedback if enabled.
+    /// Interacts with <see cref="SignalPath"/>.
+    /// </summary>
     private void Update()
     {
         if (!realtimeFeedback ||
@@ -104,6 +132,9 @@ public class PathVerifier : MonoBehaviour
         DrawFeedback(signalPath.PathPoints);
     }
 
+    /// <summary>
+    /// Draws gizmos in the Scene view visualizing reference corners and missed corners.
+    /// </summary>
     private void OnDrawGizmos()
     {
         if (correctCorners == null || correctCorners.Count < 2) return;
@@ -130,20 +161,19 @@ public class PathVerifier : MonoBehaviour
 
     #endregion
 
-    #region API pública
+    #region Public Verification API
 
     /// <summary>
-    /// Finaliza o caminho do jogador e executa a pipeline completa.
-    /// Chamado pelo PlayerController na morte ou ao completar a fase.
-    ///
-    /// ENTRADA: endX — limite direito do caminho a avaliar; null usa LevelManager.phaseEndX
-    /// SAÍDA  : feedback visual + ScoreController + ResultScreenController atualizados
+    /// Finalizes the player's recorded path and runs the full verification pipeline.
+    /// Typically invoked by <see cref="PlayerController"/> upon death or level completion.
+    /// Interacts with <see cref="SignalPath"/> and <see cref="LevelManager"/>.
     /// </summary>
+    /// <param name="endX">Optional right boundary cap for the path. Defaults to <see cref="LevelManager.phaseEndX"/> if null.</param>
     public void FinalizeAndCheckPath(float? endX = null)
     {
         if (signalPath == null)
         {
-            Debug.LogError("[PathVerifier] Referência ao SignalPath não está definida!");
+            Debug.LogError("[PathVerifier] Reference to SignalPath is not set!");
             return;
         }
 
@@ -154,8 +184,13 @@ public class PathVerifier : MonoBehaviour
     }
 
     /// <summary>
-    /// Reconstrói o gabarito a partir de eventos externos (testes / editor tools).
+    /// Rebuilds the reference answer key corners from external signal events.
+    /// Used by testing frameworks or editor utilities.
+    /// Interacts with <see cref="GabaritoGenerator"/>.
     /// </summary>
+    /// <param name="events">List of output signal transition events.</param>
+    /// <param name="initialX">Starting X world coordinate.</param>
+    /// <param name="initialState">Initial logical state of the signal.</param>
     public void BuildCorrectCornersFromSignalEvents(
         List<SignalEvent> events,
         float initialX = 0f,
@@ -167,15 +202,19 @@ public class PathVerifier : MonoBehaviour
 
     #endregion
 
-    #region Pipeline
+    #region Verification Pipeline
 
+    /// <summary>
+    /// Executes the full verification sequence: evaluates the player path, renders visual feedback, and notifies score and UI controllers.
+    /// Interacts with <see cref="PathChecker"/>, <see cref="ScoreController"/>, and <see cref="ResultScreenController"/>.
+    /// </summary>
     private void RunPipeline()
     {
         SyncFeedbackColors();
 
         if (signalPath == null || signalPath.PathPoints.Count < 2)
         {
-            Debug.LogError("[PathVerifier] Caminho do jogador inválido!");
+            Debug.LogError("[PathVerifier] Invalid player path!");
             ResultScreenController.Instance?.Show(false);
             return;
         }
@@ -185,34 +224,23 @@ public class PathVerifier : MonoBehaviour
 
         List<Vector3> playerPath = signalPath.PathPoints;
 
-        // ── Etapa 1: Verificação ──────────────────────────────────────────────
-        // ENTRADA: correctCorners, playerPath
-        // SAÍDA  : PathCheckResult
         PathCheckResult result = pathChecker.Evaluate(correctCorners, playerPath);
         missedCorners = new List<Vector3>(result.MissedCorners);
 
-        // ── Etapa 2: Feedback visual ──────────────────────────────────────────
-        // ENTRADA: playerPath, correctCorners, cores, prefab, parent
-        // SAÍDA  : GameObjects de LineRenderer criados em feedbackLinesParent
         DrawFeedback(playerPath);
 
-        // ── Etapa 3: Resultado ────────────────────────────────────────────────
-        // ENTRADA: coveredSegments, gabaritoTotal, isCorrect
-        // SAÍDA  : ScoreController e ResultScreenController
         ScoreController.Instance?.ReportResult(result.CoveredSegments, result.GabaritoTotal, result.IsCorrect);
         ResultScreenController.Instance?.Show(result.IsCorrect);
     }
 
     #endregion
 
-    #region Desenho de Feedback
+    #region Feedback Drawing Logic
 
     /// <summary>
-    /// Limpa o feedback anterior e redesenha as linhas sólidas (acerto) e tracejadas (erro).
-    ///
-    /// ENTRADA: playerPath — pontos do caminho a colorir
-    /// SAÍDA  : GameObjects de LineRenderer em feedbackLinesParent (efeito visual)
+    /// Clears previous feedback line objects and instantiates new line segments (solid for correct, dashed for incorrect).
     /// </summary>
+    /// <param name="playerPath">List of recorded player path coordinates.</param>
     private void DrawFeedback(List<Vector3> playerPath)
     {
         if (linePrefab == null || feedbackLinesParent == null) return;
@@ -240,6 +268,9 @@ public class PathVerifier : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Destroys all instantiated feedback line GameObjects inside the parent container.
+    /// </summary>
     private void ClearFeedbackLines()
     {
         foreach (Transform child in feedbackLinesParent)
@@ -247,9 +278,11 @@ public class PathVerifier : MonoBehaviour
     }
 
     /// <summary>
-    /// ENTRADA: dois extremos de um segmento do jogador
-    /// SAÍDA  : true se o segmento está dentro dos limites ortogonais de algum segmento do gabarito
+    /// Evaluates if a player path segment falls within orthogonal tolerance of any reference answer key segment.
     /// </summary>
+    /// <param name="pStart">Segment start point.</param>
+    /// <param name="pEnd">Segment end point.</param>
+    /// <returns>True if the segment closely aligns with a valid reference segment.</returns>
     private bool IsSegmentValid(Vector3 pStart, Vector3 pEnd)
     {
         if ((pEnd - pStart).sqrMagnitude < 0.0001f) return true;
@@ -288,6 +321,12 @@ public class PathVerifier : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Instantiates a solid LineRenderer GameObject representing a correct path segment.
+    /// </summary>
+    /// <param name="start">Start coordinate.</param>
+    /// <param name="end">End coordinate.</param>
+    /// <param name="color">Segment color.</param>
     private void DrawSolidLine(Vector3 start, Vector3 end, Color color)
     {
         LineRenderer line = Instantiate(linePrefab, feedbackLinesParent);
@@ -297,6 +336,13 @@ public class PathVerifier : MonoBehaviour
         line.endColor = color;
     }
 
+    /// <summary>
+    /// Instantiates dashed LineRenderer segments representing an incorrect path segment.
+    /// </summary>
+    /// <param name="start">Start coordinate.</param>
+    /// <param name="end">End coordinate.</param>
+    /// <param name="accumulator">Accumulated distance helper for dash patterns.</param>
+    /// <param name="isDrawingDash">Flag toggling dash drawing state.</param>
     private void DrawDashedLine(Vector3 start, Vector3 end, ref float accumulator, ref bool isDrawingDash)
     {
         float length = Vector3.Distance(start, end);
@@ -327,8 +373,11 @@ public class PathVerifier : MonoBehaviour
 
     #endregion
 
-    #region Cores
+    #region Color Synchronization
 
+    /// <summary>
+    /// Synchronizes feedback success and failure colors with <see cref="SignalColorManager"/>.
+    /// </summary>
     private void SyncFeedbackColors()
     {
         if (SignalColorManager.Instance == null) return;
@@ -338,36 +387,42 @@ public class PathVerifier : MonoBehaviour
 
     #endregion
 
-    #region Debug
+    #region Debug & Editor Utilities
 
+    /// <summary>
+    /// Logs detailed information about the reference answer key corners to the Unity console.
+    /// </summary>
     [ContextMenu("Log Gabarito Info")]
     private void LogGabaritoInfo()
     {
         if (correctCorners == null || correctCorners.Count == 0)
         {
-            Debug.LogWarning("[PathVerifier] Gabarito vazio ou não gerado!");
+            Debug.LogWarning("[PathVerifier] Gabarito list is empty or not generated!");
             return;
         }
 
         Debug.Log("<color=cyan>===== GABARITO INFO =====</color>");
-        Debug.Log($"Total de quinas: {correctCorners.Count}");
-        Debug.Log($"Primeira quina: {correctCorners[0]}");
-        Debug.Log($"Última quina: {correctCorners[correctCorners.Count - 1]}");
-        Debug.Log($"Tolerância: {cornerTolerance}");
+        Debug.Log($"Total corners: {correctCorners.Count}");
+        Debug.Log($"First corner: {correctCorners[0]}");
+        Debug.Log($"Last corner: {correctCorners[correctCorners.Count - 1]}");
+        Debug.Log($"Tolerance: {cornerTolerance}");
 
         for (int i = 0; i < correctCorners.Count; i++)
         {
             string level = Mathf.Approximately(correctCorners[i].y, lowY) ? "LOW" : "HIGH";
-            Debug.Log($"  Quina #{i}: X={correctCorners[i].x:F2} Y={correctCorners[i].y:F2} ({level})");
+            Debug.Log($"  Corner #{i}: X={correctCorners[i].x:F2} Y={correctCorners[i].y:F2} ({level})");
         }
     }
 
+    /// <summary>
+    /// Toggles debug log output for path evaluation.
+    /// </summary>
     [ContextMenu("Toggle Debug Logs")]
     private void ToggleDebugLogs()
     {
         enableDebugLogs = !enableDebugLogs;
         pathChecker = new PathChecker(cornerTolerance, enableDebugLogs);
-        Debug.Log($"<color=yellow>[PathVerifier] Debug logs {(enableDebugLogs ? "ATIVADOS" : "DESATIVADOS")}</color>");
+        Debug.Log($"<color=yellow>[PathVerifier] Debug logs {(enableDebugLogs ? "ENABLED" : "DISABLED")}</color>");
     }
 
     #endregion

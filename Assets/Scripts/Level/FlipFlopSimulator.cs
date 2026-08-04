@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Simulates various flip-flop types (JK, SR, D, T) with synchronous and asynchronous inputs.
-/// Provides timeline computation and event generation for level path verification.
+/// Simulates various flip-flop logic types (JK, SR, D, T) with synchronous and asynchronous inputs.
+/// Provides timeline computation and event generation for level path verification and tilemap rendering.
+/// Interacts with <see cref="LevelData"/> and is invoked by <see cref="LevelJsonLoader"/> and <see cref="PathVerifier"/>.
 /// </summary>
 public static class FlipFlopSimulator
 {
@@ -15,8 +16,18 @@ public static class FlipFlopSimulator
     /// Returns doubled-resolution output: each input tile produces 2 output positions (X.0 and X.5).
     /// This allows both synchronous (at X.0) and asynchronous (at X.5) operations to coexist.
     /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
+    /// Used by <see cref="LevelJsonLoader"/> and <see cref="PathVerifier"/>.
     /// </summary>
-    /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0</param>
+    /// <param name="jSignal">Input array for J signal values.</param>
+    /// <param name="kSignal">Input array for K signal values.</param>
+    /// <param name="presetSignal">Input array for asynchronous Preset signal values.</param>
+    /// <param name="clearSignal">Input array for asynchronous Clear signal values.</param>
+    /// <param name="clockStep">Clock step interval in tile units.</param>
+    /// <param name="diagramLength">Total logical length of the diagram.</param>
+    /// <param name="ops">Output array containing operation tokens for each step.</param>
+    /// <param name="events">Output list containing state change events.</param>
+    /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0.</param>
+    /// <returns>Boolean array representing the output Q signal timeline over time.</returns>
     public static bool[] SimulateJK(bool[] jSignal, bool[] kSignal, bool[] presetSignal, bool[] clearSignal,
         int clockStep, int diagramLength, out string[] ops, out List<SignalEvent> events, bool asyncActiveHigh = true)
     {
@@ -46,13 +57,11 @@ public static class FlipFlopSimulator
 
             if (isEdge)
             {
-                // Only ignore sync if async happened at the IMMEDIATELY PREVIOUS tile (i-1)
                 if (!asyncAtPreviousTile)
                 {
                     bool j = GetAt(jSignal, i - 1);
                     bool k = GetAt(kSignal, i - 1);
 
-                    // JK truth table
                     if (j && !k) q = true;
                     else if (!j && k) q = false;
                     else if (j && k) q = !q;
@@ -90,7 +99,7 @@ public static class FlipFlopSimulator
 
             if (hasPreset && hasClear)
             {
-                throw new InvalidOperationException($"Fase com entradas inválidas: Preset e Clear assíncronos não podem estar ativos simultaneamente (Erro no Tile {i}).");
+                throw new InvalidOperationException($"Invalid level inputs: Asynchronous Preset and Clear cannot be active simultaneously at tile {i}.");
             }
 
             if (hasPreset || hasClear)
@@ -106,13 +115,11 @@ public static class FlipFlopSimulator
                     eventList.Add(new SignalEvent(i + 0.5f, q));
                 }
 
-                // Mark that async happened at THIS tile
                 asyncAtPreviousTile = true;
             }
             else
             {
                 asyncToken = (qBeforeAsync == q) ? "keep" : (q ? "set_initial" : "reset_initial");
-                // Reset flag since no async at this tile
                 asyncAtPreviousTile = false;
             }
 
@@ -133,8 +140,17 @@ public static class FlipFlopSimulator
     /// Computes SR flip-flop timeline with doubled-resolution output.
     /// Returns doubled-resolution output: each input tile produces 2 output positions (X.0 and X.5).
     /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
-    /// S=1 sets Q, R=1 resets Q, S=R=1 is typically invalid (can be configured).
+    /// S=1 sets Q, R=1 resets Q, S=R=1 is invalid.
+    /// Interacts with <see cref="LevelData"/> during level simulation.
     /// </summary>
+    /// <param name="sSignal">Input array for Set (S) signal values.</param>
+    /// <param name="rSignal">Input array for Reset (R) signal values.</param>
+    /// <param name="clockStep">Clock step interval in tile units.</param>
+    /// <param name="diagramLength">Total logical length of the diagram.</param>
+    /// <param name="ops">Output array containing operation tokens for each step.</param>
+    /// <param name="events">Output list containing state change events.</param>
+    /// <param name="invalidStateToZero">If true, handles invalid S=R=1 state by forcing output to false.</param>
+    /// <returns>Boolean array representing the output Q signal timeline over time.</returns>
     public static bool[] SimulateSR(bool[] sSignal, bool[] rSignal, int clockStep, int diagramLength,
         out string[] ops, out List<SignalEvent> events, bool invalidStateToZero = true)
     {
@@ -167,7 +183,7 @@ public static class FlipFlopSimulator
 
                 if (s && r)
                 {
-                    throw new InvalidOperationException($"Fase com entradas inválidas: Set (S) e Reset (R) não podem estar ativos simultaneamente (Erro no Tile {i - 1}).");
+                    throw new InvalidOperationException($"Invalid level inputs: Set (S) and Reset (R) cannot be active simultaneously at tile {i - 1}.");
                 }
                 else if (s)
                 {
@@ -211,7 +227,17 @@ public static class FlipFlopSimulator
     /// Returns doubled-resolution output: each input tile produces 2 output positions (X.0 and X.5).
     /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
     /// Q follows D input at each clock edge.
+    /// Interacts with <see cref="LevelData"/> during level simulation.
     /// </summary>
+    /// <param name="dSignal">Input array for D signal values.</param>
+    /// <param name="presetSignal">Input array for asynchronous Preset signal values.</param>
+    /// <param name="clearSignal">Input array for asynchronous Clear signal values.</param>
+    /// <param name="clockStep">Clock step interval in tile units.</param>
+    /// <param name="diagramLength">Total logical length of the diagram.</param>
+    /// <param name="ops">Output array containing operation tokens for each step.</param>
+    /// <param name="events">Output list containing state change events.</param>
+    /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0.</param>
+    /// <returns>Boolean array representing the output Q signal timeline over time.</returns>
     public static bool[] SimulateD(bool[] dSignal, bool[] presetSignal, bool[] clearSignal,
         int clockStep, int diagramLength, out string[] ops, out List<SignalEvent> events, bool asyncActiveHigh = true)
     {
@@ -315,7 +341,17 @@ public static class FlipFlopSimulator
     /// Returns doubled-resolution output: each input tile produces 2 output positions (X.0 and X.5).
     /// Timeline length = (diagramLength+1) * 2, where even indices are sync, odd indices are async.
     /// Q toggles when T=1 at clock edge, holds when T=0.
+    /// Interacts with <see cref="LevelData"/> during level simulation.
     /// </summary>
+    /// <param name="tSignal">Input array for T signal values.</param>
+    /// <param name="presetSignal">Input array for asynchronous Preset signal values.</param>
+    /// <param name="clearSignal">Input array for asynchronous Clear signal values.</param>
+    /// <param name="clockStep">Clock step interval in tile units.</param>
+    /// <param name="diagramLength">Total logical length of the diagram.</param>
+    /// <param name="ops">Output array containing operation tokens for each step.</param>
+    /// <param name="events">Output list containing state change events.</param>
+    /// <param name="asyncActiveHigh">If true, preset/clear active when signal=1; if false, active when signal=0.</param>
+    /// <returns>Boolean array representing the output Q signal timeline over time.</returns>
     public static bool[] SimulateT(bool[] tSignal, bool[] presetSignal, bool[] clearSignal,
         int clockStep, int diagramLength, out string[] ops, out List<SignalEvent> events, bool asyncActiveHigh = true)
     {
@@ -415,16 +451,22 @@ public static class FlipFlopSimulator
     #region Helper Methods
 
     /// <summary>
-    /// Safely gets value from bool array at index (returns false if out of bounds or null).
+    /// Safely gets value from a boolean array at the specified index.
+    /// Returns false if out of bounds or if the array is null.
     /// </summary>
+    /// <param name="arr">Target boolean array.</param>
+    /// <param name="idx">Index to sample.</param>
+    /// <returns>Boolean value at index or false if invalid.</returns>
     private static bool GetAt(bool[] arr, int idx)
     {
         return arr != null && idx >= 0 && idx < arr.Length && arr[idx];
     }
 
     /// <summary>
-    /// Returns the maximum length among provided bool arrays.
+    /// Returns the maximum length among provided boolean arrays.
     /// </summary>
+    /// <param name="arrays">Array of boolean arrays to compare.</param>
+    /// <returns>Maximum length found, or 0 if null/empty.</returns>
     public static int MaxLen(params bool[][] arrays)
     {
         int max = 0;
@@ -437,8 +479,10 @@ public static class FlipFlopSimulator
     }
 
     /// <summary>
-    /// Inverts all bits in a bool array (active-high to active-low conversion).
+    /// Inverts all bits in a boolean array (active-high to active-low conversion).
     /// </summary>
+    /// <param name="arr">Source boolean array.</param>
+    /// <returns>New array containing inverted boolean values.</returns>
     public static bool[] InvertBits(bool[] arr)
     {
         if (arr == null) return null;
@@ -453,12 +497,25 @@ public static class FlipFlopSimulator
 
     /// <summary>
     /// Represents a signal transition event at a specific X position.
+    /// Interacts with simulation outcomes processed by <see cref="LevelJsonLoader"/> and <see cref="PathVerifier"/>.
     /// </summary>
     public struct SignalEvent
     {
+        /// <summary>
+        /// X coordinate position of the event in world/tile space.
+        /// </summary>
         public float x;
+
+        /// <summary>
+        /// New boolean state of the signal at this event.
+        /// </summary>
         public bool value;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SignalEvent"/> struct.
+        /// </summary>
+        /// <param name="x">X position of event.</param>
+        /// <param name="value">Boolean value at event.</param>
         public SignalEvent(float x, bool value)
         {
             this.x = x;

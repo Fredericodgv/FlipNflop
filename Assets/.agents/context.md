@@ -1,7 +1,8 @@
 # Contexto do Projeto: FlipNflop (Unity C#)
 
 > **Diretório Raiz de Contextos:** `Assets/.agents/`  
-> **Escopo Principal de Leitura/Edição:** `Assets/Scripts/` e `Assets/UI Toolkit/`
+> **Escopo Principal de Leitura/Edição:** `Assets/Scripts/` e `Assets/UI Toolkit/`  
+> **Padrão Obrigatório de Código C#:** [csharp_coding_standards.md](file:///D:/Projetos/FlipNflop/Assets/.agents/csharp_coding_standards.md)
 
 ---
 

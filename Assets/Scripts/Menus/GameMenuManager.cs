@@ -5,48 +5,110 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Gerencia o menu de pausa do jogo.
+/// Manages the in-game pause menu UI and state transitions.
+/// Interacts with <see cref="UIDocument"/> for UI rendering, <see cref="PlayerInput"/> to toggle player controls,
+/// <see cref="InputActionReference"/> for pause inputs, and <see cref="SceneManager"/> for scene loading.
 /// </summary>
 [RequireComponent(typeof(UIDocument))]
 public class GameMenuManager : MonoBehaviour
 {
-    [Header("Configurações da Cena")]
-    [Tooltip("Nome da cena carregada ao sair do jogo.")]
+    #region Fields & Properties
+
+    [Header("Scene Settings")]
+    [Tooltip("Name of the scene loaded when exiting to the main menu.")]
     [SerializeField] private string mainMenuSceneName = "MenuWeb";
 
-    [Header("Controles do Jogador")]
-    [Tooltip("PlayerInput utilizado para bloquear ações durante a pausa.")]
+    [Header("Player Controls")]
+    [Tooltip("PlayerInput component used to disable actions while paused.")]
     [SerializeField] private PlayerInput playerInput;
 
-    [Tooltip("Ação utilizada para abrir e fechar o menu.")]
+    [Tooltip("Input action reference used to toggle the pause menu.")]
     [SerializeField] private InputActionReference pauseAction;
 
+    /// <summary>
+    /// Cached reference to the UIDocument component attached to this GameObject.
+    /// </summary>
     private UIDocument uiDocument;
 
+    /// <summary>
+    /// Root overlay container for the game menu.
+    /// </summary>
     private VisualElement gameMenuOverlay;
+
+    /// <summary>
+    /// Main menu panel containing main pause options.
+    /// </summary>
     private VisualElement panelMain;
+
+    /// <summary>
+    /// Options panel for game settings.
+    /// </summary>
     private VisualElement panelOptions;
+
+    /// <summary>
+    /// Tutorial panel displaying game instructions.
+    /// </summary>
     private VisualElement panelTutorial;
+
+    /// <summary>
+    /// Currently active active submenu panel, or null if on main panel.
+    /// </summary>
     private VisualElement activeSubmenu;
 
+    /// <summary>
+    /// HUD button to open the pause menu.
+    /// </summary>
     private Button menuHudButton;
+
+    /// <summary>
+    /// Button to continue/resume gameplay.
+    /// </summary>
     private Button continueButton;
+
+    /// <summary>
+    /// Button to restart the current level scene.
+    /// </summary>
     private Button retryButton;
+
+    /// <summary>
+    /// Button to open the tutorial panel.
+    /// </summary>
     private Button tutorialButton;
+
+    /// <summary>
+    /// Button to navigate back from submenus to the main pause panel.
+    /// </summary>
     private Button backButton;
+
+    /// <summary>
+    /// Button to open the options panel.
+    /// </summary>
     private Button optionsButton;
+
+    /// <summary>
+    /// Button to exit the level and load the main menu scene.
+    /// </summary>
     private Button exitButton;
+
+    /// <summary>
+    /// List of all available submenu visual elements.
+    /// </summary>
     private readonly List<VisualElement> submenus = new();
 
     /// <summary>
-    /// Indica se o menu está aberto.
+    /// Indicates whether the pause menu overlay is currently visible and active.
     /// </summary>
     public bool IsMenuOpen =>
         gameMenuOverlay != null &&
         gameMenuOverlay.style.display == DisplayStyle.Flex;
 
+    #endregion
+
+    #region Unity Lifecycle
+
     /// <summary>
-    /// Inicializa referências do componente.
+    /// Initializes component references before OnEnable.
+    /// Retrieves the attached <see cref="UIDocument"/>.
     /// </summary>
     private void Awake()
     {
@@ -54,7 +116,8 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Inicializa a interface e registra callbacks.
+    /// Caches UI elements, configures initial display state, and registers UI and input callbacks.
+    /// Interacts with <see cref="UIDocument"/>.
     /// </summary>
     private void OnEnable()
     {
@@ -67,15 +130,19 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Remove callbacks registrados.
+    /// Unregisters UI and input event callbacks when component is disabled.
     /// </summary>
     private void OnDisable()
     {
         UnregisterCallbacks();
     }
 
+    #endregion
+
+    #region Initialization & UI Setup
+
     /// <summary>
-    /// Busca elementos da interface.
+    /// Queries and caches all UI VisualElement and Button references from <see cref="UIDocument.rootVisualElement"/>.
     /// </summary>
     private void CacheUIElements()
     {
@@ -101,7 +168,7 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Configura o estado inicial da interface.
+    /// Hides the menu overlay and all submenus, setting initial UI visibility states.
     /// </summary>
     private void ConfigureInitialState()
     {
@@ -123,8 +190,13 @@ public class GameMenuManager : MonoBehaviour
         activeSubmenu = null;
     }
 
+    #endregion
+
+    #region Event Subscriptions
+
     /// <summary>
-    /// Registra callbacks da interface e input.
+    /// Registers button click callbacks and input action listener.
+    /// Interacts with <see cref="InputActionReference"/>.
     /// </summary>
     private void RegisterCallbacks()
     {
@@ -157,7 +229,7 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Remove callbacks registrados.
+    /// Unsubscribes button click callbacks and input action listener.
     /// </summary>
     private void UnregisterCallbacks()
     {
@@ -186,16 +258,21 @@ public class GameMenuManager : MonoBehaviour
             pauseAction.action.performed -= OnPausePerformed;
     }
 
+    #endregion
+
+    #region Input Handlers
+
     /// <summary>
-    /// Alterna entre pausa e continuação do jogo.
+    /// Callback invoked when the pause input action is triggered.
     /// </summary>
+    /// <param name="context">The input action execution context.</param>
     private void OnPausePerformed(InputAction.CallbackContext context)
     {
         HandlePauseNavigation();
     }
 
     /// <summary>
-    /// Decide o destino do Esc/Pause de acordo com a tela atual.
+    /// Evaluates navigation state on pause input: closes active submenu, resumes game, or opens menu.
     /// </summary>
     private void HandlePauseNavigation()
     {
@@ -213,8 +290,12 @@ public class GameMenuManager : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Public Menu API
+
     /// <summary>
-    /// Abre o menu de pausa.
+    /// Pauses time, disables player inputs via <see cref="PlayerInput"/>, and displays the pause menu overlay.
     /// </summary>
     public void OpenMenu()
     {
@@ -247,7 +328,7 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Fecha o menu e retorna ao jogo.
+    /// Resumes normal time scale, re-enables player input via <see cref="PlayerInput"/>, and hides the pause menu overlay.
     /// </summary>
     public void ContinueGame()
     {
@@ -266,7 +347,7 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Reinicia a cena atual.
+    /// Resumes time, re-enables input, and reloads the current active scene via <see cref="SceneManager"/>.
     /// </summary>
     public void RestartLevel()
     {
@@ -278,7 +359,7 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Retorna ao menu principal.
+    /// Resumes time, re-enables input, and loads the main menu scene via <see cref="SceneManager"/>.
     /// </summary>
     public void ExitToMainMenu()
     {
@@ -290,7 +371,7 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Exibe o painel de configurações.
+    /// Opens the options submenu panel.
     /// </summary>
     public void OpenOptions()
     {
@@ -298,7 +379,7 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Exibe o painel de tutorial.
+    /// Opens the tutorial submenu panel.
     /// </summary>
     public void OpenTutorial()
     {
@@ -306,15 +387,19 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Fecha o tutorial e retorna ao menu principal de pausa.
+    /// Closes the tutorial panel and returns to the main pause panel.
     /// </summary>
     public void CloseTutorial()
     {
         CloseSubmenu(panelTutorial);
     }
 
+    #endregion
+
+    #region Submenu Navigation
+
     /// <summary>
-    /// Fecha o submenu atualmente aberto.
+    /// Closes whatever submenu is currently active.
     /// </summary>
     private void CloseActiveSubmenu()
     {
@@ -323,13 +408,14 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Exibe um submenu e oculta o painel principal.
+    /// Opens a specified submenu panel and hides the main panel.
     /// </summary>
+    /// <param name="submenu">The target VisualElement submenu panel to open.</param>
     private void OpenSubmenu(VisualElement submenu)
     {
         if (submenu == null)
         {
-            Debug.LogError("Elemento de submenu não encontrado!");
+            Debug.LogError("Submenu element not found!");
             return;
         }
 
@@ -350,13 +436,14 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Fecha um submenu e retorna ao painel principal.
+    /// Closes a specified submenu panel and restores visibility of the main panel.
     /// </summary>
+    /// <param name="submenu">The target VisualElement submenu panel to close.</param>
     private void CloseSubmenu(VisualElement submenu)
     {
         if (submenu == null)
         {
-            Debug.LogError("Elemento de submenu não encontrado!");
+            Debug.LogError("Submenu element not found!");
             return;
         }
 
@@ -375,8 +462,12 @@ public class GameMenuManager : MonoBehaviour
             tutorialButton.Focus();
     }
 
+    #endregion
+
+    #region Player Input Toggle
+
     /// <summary>
-    /// Desativa inputs do jogador.
+    /// Disables the "Player" action map in <see cref="PlayerInput"/> to block gameplay actions during pause.
     /// </summary>
     private void DisablePlayerInput()
     {
@@ -390,7 +481,7 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Reativa inputs do jogador.
+    /// Re-enables the "Player" action map in <see cref="PlayerInput"/> upon unpausing.
     /// </summary>
     private void EnablePlayerInput()
     {
@@ -402,4 +493,6 @@ public class GameMenuManager : MonoBehaviour
         if (playerMap != null)
             playerMap.Enable();
     }
+
+    #endregion
 }

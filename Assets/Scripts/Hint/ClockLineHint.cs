@@ -1,8 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Renders vertical hint lines across the level grid for clock cycles and asynchronous signal transitions.
+/// Interacts with <see cref="LevelManager"/> for level boundary limits and <see cref="LevelJsonLoader"/> for async signal definitions.
+/// </summary>
 public class ClockLineHint : MonoBehaviour
 {
+    #region Enums
+
+    /// <summary>
+    /// Defines the active visual display mode for grid hint lines.
+    /// </summary>
     public enum HintMode
     {
         Off,
@@ -10,39 +19,91 @@ public class ClockLineHint : MonoBehaviour
         ClockAndAsync
     }
 
+    #endregion
+
+    #region Serialized Fields
+
     [Header("Line Appearance")]
+    [Tooltip("Vertical height of rendered hint lines.")]
     [SerializeField] private float lineLength = 10f;
+
+    [Tooltip("Width of individual line segments.")]
     [SerializeField] private float lineWidth = 0.1f;
 
     [Header("Dashed Line Settings")]
+    [Tooltip("LineRenderer prefab instantiated to form dashed segments.")]
     [SerializeField] private LineRenderer linePrefab;
+
+    [Tooltip("Length of drawn dash segments.")]
     [SerializeField] private float dashLength = 0.15f;
+
+    [Tooltip("Gap distance between dash segments.")]
     [SerializeField] private float dashGap = 0.1f;
 
     [Header("Clock Lines")]
+    [Tooltip("Horizontal interval distance between adjacent clock cycle lines.")]
     [SerializeField] private float clockStep = 6f;
+
+    [Tooltip("Display color for standard clock lines.")]
     [SerializeField] private Color clockLineColor = new Color(0f, 0.9f, 1f, 0.6f);
 
     [Header("Hint Mode")]
+    [Tooltip("Currently selected hint display mode.")]
     [SerializeField] private HintMode hintMode = HintMode.ClockOnly;
 
     [Header("Async Transition Hints")]
+    [Tooltip("Display color for asynchronous transition hint lines.")]
     [SerializeField] private Color asyncHintColor = new Color(1f, 0.5f, 0f, 0.6f);
+
+    [Tooltip("Reference to the LevelJsonLoader for reading asynchronous signal state arrays.")]
     [SerializeField] private LevelJsonLoader levelJsonLoader;
 
     [Header("Rendering Optimization")]
+    [Tooltip("Number of off-screen clock intervals to buffer before and after the camera position.")]
     [SerializeField] private int bufferLines = 5;
 
     [Header("Gizmos")]
+    [Tooltip("Whether to draw clock line gizmos in the Unity Editor Scene view.")]
     [SerializeField] private bool drawClockGizmos = true;
+
+    [Tooltip("Whether to draw async transition gizmos in the Unity Editor Scene view.")]
     [SerializeField] private bool drawAsyncGizmos = true;
+
+    [Tooltip("Interval spacing for numerical labels in Scene view gizmos (0 disables labels).")]
     [SerializeField] private int labelEveryN = 0;
 
+    #endregion
+
+    #region Private Fields
+
+    /// <summary>
+    /// Cached main camera transform.
+    /// </summary>
     private Transform cameraTransform;
+
+    /// <summary>
+    /// Camera X position during the previous line regeneration update.
+    /// </summary>
     private float lastCameraX;
+
+    /// <summary>
+    /// Active line parent GameObjects managed by this controller.
+    /// </summary>
     private readonly List<GameObject> activeLines = new List<GameObject>();
+
+    /// <summary>
+    /// Tracked hint mode state to detect changes.
+    /// </summary>
     private HintMode lastHintMode;
 
+    #endregion
+
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Initializes camera tracking, default hint mode based on async signals, and generates initial lines.
+    /// Interacts with <see cref="Camera.main"/> and <see cref="LevelJsonLoader"/>.
+    /// </summary>
     private void Start()
     {
         if (Camera.main != null)
@@ -56,6 +117,9 @@ public class ClockLineHint : MonoBehaviour
         GenerateVisibleLines();
     }
 
+    /// <summary>
+    /// Monitors camera movement and hint mode changes to trigger line regeneration when necessary.
+    /// </summary>
     private void Update()
     {
         bool cameraMovedEnough = Mathf.Abs(cameraTransform.position.x - lastCameraX) >= clockStep;
@@ -66,8 +130,13 @@ public class ClockLineHint : MonoBehaviour
         if (cameraMovedEnough || modeChanged) GenerateVisibleLines();
     }
 
+    #endregion
+
+    #region Public Methods
+
     /// <summary>
     /// Cycles through hint modes: Off -> ClockOnly -> ClockAndAsync (if async signals exist) -> Off.
+    /// Interacts with <see cref="LevelJsonLoader"/> via <see cref="HasAsyncSignals"/>.
     /// </summary>
     public void ToggleHintMode()
     {
@@ -84,8 +153,13 @@ public class ClockLineHint : MonoBehaviour
         Debug.Log($"<color=cyan>[ClockLineHint] Hint mode: {hintMode}</color>");
     }
 
+    #endregion
+
+    #region Private Methods
+
     /// <summary>
     /// Clears and regenerates all visible hint lines based on the current hint mode and camera position.
+    /// Interacts with <see cref="LevelManager.Instance"/> for level boundaries.
     /// </summary>
     private void GenerateVisibleLines()
     {
@@ -104,6 +178,8 @@ public class ClockLineHint : MonoBehaviour
     /// <summary>
     /// Generates dashed vertical lines at each clock edge within the visible range.
     /// </summary>
+    /// <param name="cameraX">Current horizontal camera position.</param>
+    /// <param name="levelEndX">Right limit boundary of the current level.</param>
     private void GenerateClockLines(float cameraX, float levelEndX)
     {
         float halfSpan = bufferLines * clockStep;
@@ -122,7 +198,10 @@ public class ClockLineHint : MonoBehaviour
 
     /// <summary>
     /// Generates dashed vertical lines at async preset/clear transition positions within the visible range.
+    /// Interacts with <see cref="LevelJsonLoader"/> to inspect signal transition indices.
     /// </summary>
+    /// <param name="cameraX">Current horizontal camera position.</param>
+    /// <param name="levelEndX">Right limit boundary of the current level.</param>
     private void GenerateAsyncHintLines(float cameraX, float levelEndX)
     {
         if (levelJsonLoader == null) return;
@@ -160,6 +239,9 @@ public class ClockLineHint : MonoBehaviour
     /// <summary>
     /// Creates a dashed vertical line at the given X position by spawning multiple solid dash segments under a shared parent.
     /// </summary>
+    /// <param name="xPos">World X position for line alignment.</param>
+    /// <param name="color">Color assigned to line segment renderers.</param>
+    /// <param name="name">Name string assigned to the created root GameObject.</param>
     private void CreateDashedLine(float xPos, Color color, string name)
     {
         GameObject lineRoot = new GameObject(name);
@@ -201,6 +283,10 @@ public class ClockLineHint : MonoBehaviour
     /// <summary>
     /// Instantiates a single solid LineRenderer segment between two points.
     /// </summary>
+    /// <param name="start">Start coordinate of the segment.</param>
+    /// <param name="end">End coordinate of the segment.</param>
+    /// <param name="color">Segment color.</param>
+    /// <param name="parent">Parent transform container.</param>
     private void DrawDashSegment(Vector3 start, Vector3 end, Color color, Transform parent)
     {
         LineRenderer lr = Instantiate(linePrefab, parent);
@@ -225,7 +311,9 @@ public class ClockLineHint : MonoBehaviour
 
     /// <summary>
     /// Returns true if any preset or clear signal contains at least one transition.
+    /// Interacts with <see cref="LevelJsonLoader"/>.
     /// </summary>
+    /// <returns>True if transition events are present, false otherwise.</returns>
     private bool HasAsyncSignals()
     {
         if (levelJsonLoader == null) return false;
@@ -244,6 +332,13 @@ public class ClockLineHint : MonoBehaviour
         return false;
     }
 
+    #endregion
+
+    #region Gizmos
+
+    /// <summary>
+    /// Draws Scene view gizmos for visual debugging.
+    /// </summary>
     private void OnDrawGizmos()
     {
         DrawClockLineGizmos();
@@ -252,6 +347,7 @@ public class ClockLineHint : MonoBehaviour
 
     /// <summary>
     /// Draws clock edge lines in the Scene view for level design reference.
+    /// Interacts with <see cref="LevelManager"/>.
     /// </summary>
     private void DrawClockLineGizmos()
     {
@@ -280,6 +376,7 @@ public class ClockLineHint : MonoBehaviour
 
     /// <summary>
     /// Draws async transition positions in the Scene view for level design reference.
+    /// Interacts with <see cref="LevelJsonLoader"/>.
     /// </summary>
     private void DrawAsyncHintGizmos()
     {
@@ -319,4 +416,6 @@ public class ClockLineHint : MonoBehaviour
 #endif
         }
     }
+
+    #endregion
 }

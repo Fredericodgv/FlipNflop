@@ -2,52 +2,83 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Controls the player's movement, jumping, gravity inversion, and animations.
-/// Uses the new Input System and integrates with ground detection, camera, and path verification.
+/// Controls the player character's movement, jumping, gravity inversion, and dashing mechanics.
+/// Interacts with Unity <see cref="InputSystem"/>, <see cref="Rigidbody2D"/>, <see cref="Animator"/>, <see cref="SpriteRenderer"/>,
+/// <see cref="PathVerifier"/> for final path check, <see cref="CameraController"/> for camera target tracking,
+/// <see cref="HintController"/> for level hints, <see cref="ScoreController"/> for timer management,
+/// and <see cref="LevelManager"/> for level boundaries.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(SpriteRenderer))]
 public class PlayerController : MonoBehaviour
 {
+    #region Nested Types
+
+    /// <summary>
+    /// Represents the exclusive action states for special player movements (flipping or dashing).
+    /// </summary>
+    private enum ActionState { None, Flipping, Dashing }
+
+    #endregion
+
+    #region Inspector Fields
+
     [Header("Movement Settings")]
+    [Tooltip("Base horizontal movement speed (units/second).")]
     [SerializeField] private float moveSpeed = 5.0f;
+
+    [Tooltip("Vertical impulse force applied when jumping.")]
     [SerializeField] private float jumpForce = 12.0f;
 
     [Header("Ground Check Settings")]
+    [Tooltip("Radius of the overlap sphere used for ground detection.")]
     [SerializeField] private float groundCheckRadius = 0.2f;
+
+    [Tooltip("Transform position marking the center of ground detection.")]
     [SerializeField] private Transform groundCheckPoint;
+
+    [Tooltip("Layer mask specifying ground collision layers.")]
     [SerializeField] private LayerMask groundLayer;
 
     [Header("Animation Settings")]
     [Tooltip("Multiplier applied to the normalized speed to feed the runSpeed parameter.")]
     [SerializeField] private float runAnimSpeedMultiplier = 1f;
+
     [Tooltip("Damping time for smoothing the runSpeed parameter updates.")]
     [SerializeField] private float runAnimDampTime = 0.05f;
+
     [Tooltip("Minimum speed multiplier when in run state to avoid animation sticking at start.")]
     [Range(0f, 2f)]
     [SerializeField] private float minRunAnimSpeed = 0.3f;
+
     [Tooltip("If true, base run animation speed on input target speed (immediate); otherwise use rigidbody velocity (lagged).")]
     [SerializeField] private bool useInputForRunSpeed = true;
 
     [Header("Movement Smoothing")]
-    [Tooltip("How fast the player accelerates toward target speed (units/s^2)")]
+    [Tooltip("How fast the player accelerates toward target speed (units/s^2).")]
     [SerializeField] private float acceleration = 25f;
-    [Tooltip("How fast the player slows down when releasing input (units/s^2)")]
+
+    [Tooltip("How fast the player slows down when releasing input (units/s^2).")]
     [SerializeField] private float deceleration = 35f;
-    [Tooltip("Multiplier applied to acceleration/deceleration while airborne")]
+
+    [Tooltip("Multiplier applied to acceleration/deceleration while airborne.")]
     [SerializeField] private float airControlMultiplier = 0.7f;
 
     [Header("Gameplay Settings")]
+    [Tooltip("World Y threshold (positive and negative) below/above which player dies.")]
     [SerializeField] private float fallKillThreshold = -25f;
 
     [Header("Dash Settings")]
     [Tooltip("Horizontal dash speed applied during a dash.")]
     [SerializeField] private float dashSpeed = 18f;
+
     [Tooltip("Dash duration in seconds.")]
     [SerializeField] private float dashDuration = 0.15f;
+
     [Tooltip("Cooldown between dashes in seconds.")]
     [SerializeField] private float dashCooldown = 0.5f;
+
     [Range(0f, 1f)]
-    [Tooltip("Inertia factor kept right after dash ends (0 = snap to input speed, 1 = keep full dash speed)")]
+    [Tooltip("Inertia factor kept right after dash ends (0 = snap to input speed, 1 = keep full dash speed).")]
     [SerializeField] private float postDashInertiaFactor = 0.5f;
 
     [Header("Object References")]
@@ -59,24 +90,49 @@ public class PlayerController : MonoBehaviour
     [Header("Input System")]
     [Tooltip("Reference to the Move action (1D Axis/float).")]
     [SerializeField] private InputActionReference moveAction;
+
     [Tooltip("Reference to the Jump action (Button).")]
     [SerializeField] private InputActionReference jumpAction;
+
     [Tooltip("Reference to the Flip Gravity action (Button).")]
     [SerializeField] private InputActionReference flipGravityAction;
+
     [Tooltip("Reference to the Dash action (Button).")]
     [SerializeField] private InputActionReference dashAction;
 
     [Header("Audio Settings")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip footstepSound;
-    [Tooltip("Variação do som dos passos para não parecer uma metralhadora repetitiva.")]
+
+    [Tooltip("Pitch variation for footstep sounds to avoid repetitive audio playback.")]
     [SerializeField] private float pitchVariation = 0.1f;
 
+    [Header("Safety")]
+    [Tooltip("Maximum duration allowed for a flip operation before it automatically resets.")]
+    [SerializeField] private float flipTimeout = 1f;
+
+    #endregion
+
+    #region Properties
 
     /// <summary>
     /// Logical gravity inversion state (independent from temporary physics tweaks like gravityScale = 0 during dash).
     /// </summary>
     public bool IsGravityInverted => isGravityInvertedState;
+
+    /// <summary>
+    /// Indicates whether the player is currently executing a gravity flip animation.
+    /// </summary>
+    private bool isFlipping => actionState == ActionState.Flipping;
+
+    /// <summary>
+    /// Indicates whether the player is currently performing a dash move.
+    /// </summary>
+    private bool isDashing => actionState == ActionState.Dashing;
+
+    #endregion
+
+    #region Private Fields & State
 
     private Rigidbody2D rb;
     private Animator animator;
@@ -86,28 +142,22 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool jumpInput;
     private bool gravityFlipInput;
-    private enum ActionState { None, Flipping, Dashing }
     private ActionState actionState = ActionState.None;
-
-    [Header("Safety")]
-    [Tooltip("Tempo máximo que o flip pode durar antes de ser resetado automaticamente.")]
-    [SerializeField] private float flipTimeout = 1f;
     private float flipStartTime;
-
-    // Propriedades de conveniência que substituem os usos anteriores:
-    private bool isFlipping => actionState == ActionState.Flipping;
-    private bool isDashing => actionState == ActionState.Dashing;
     private float dashEndTime;
     private float nextDashTime;
     private float dashDir = 1f;
-
-    // Dash physics preservation
     private float preDashGravityScale = 1f;
     private RigidbodyConstraints2D preDashConstraints;
     private float dashLockY;
 
+    #endregion
+
+    #region Unity Lifecycle
+
     /// <summary>
-    /// Initializes references and validates dependencies.
+    /// Initializes local component references and finds missing manager references.
+    /// Interacts with <see cref="ScoreController"/>, <see cref="PathVerifier"/>, <see cref="CameraController"/>, and <see cref="HintController"/>.
     /// </summary>
     private void Awake()
     {
@@ -115,25 +165,14 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        scoreController = GetOrFind(scoreController, "ScoreController não encontrado!");
-        pathVerifier = GetOrFind(pathVerifier, "PathVerifier não encontrado!");
-        cameraController = GetOrFind(cameraController, "CameraController não encontrado!");
-        hintController = GetOrFind(hintController, "HintController não encontrado!");
-    }
-
-    private T GetOrFind<T>(T reference, string errorMessage) where T : Object
-    {
-        if (reference == null)
-            reference = FindAnyObjectByType<T>();
-
-        if (reference == null)
-            Debug.LogError(errorMessage);
-
-        return reference;
+        scoreController = GetOrFind(scoreController, "ScoreController not found!");
+        pathVerifier = GetOrFind(pathVerifier, "PathVerifier not found!");
+        cameraController = GetOrFind(cameraController, "CameraController not found!");
+        hintController = GetOrFind(hintController, "HintController not found!");
     }
 
     /// <summary>
-    /// Sets the initial state and ensures gravity is positive.
+    /// Sets the initial physics state and ensures gravity is positive.
     /// </summary>
     private void Start()
     {
@@ -142,25 +181,17 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Updates win/lose checks and animation parameters per frame.
+    /// Updates win/lose conditions, animation parameters, and flip safety timeouts per frame.
     /// </summary>
     private void Update()
     {
         UpdateAnimator();
         CheckWinAndLoseConditions();
-        CheckFlipTimeout(); // novo
-    }
-
-    private void CheckFlipTimeout()
-    {
-        if (actionState == ActionState.Flipping && Time.time - flipStartTime > flipTimeout)
-        {
-            actionState = ActionState.None;
-        }
+        CheckFlipTimeout();
     }
 
     /// <summary>
-    /// Updates physics: ground check, movement, jump, and gravity flip (fixed steps).
+    /// Updates physics calculations including ground check, movement, jumping, flipping, and dashing.
     /// </summary>
     private void FixedUpdate()
     {
@@ -171,8 +202,13 @@ public class PlayerController : MonoBehaviour
         HandleDash();
     }
 
-    #region Input & State Checks
+    #endregion
 
+    #region Input Subscriptions
+
+    /// <summary>
+    /// Subscribes input action callbacks using Unity's <see cref="InputSystem"/>.
+    /// </summary>
     private void OnEnable()
     {
         if (moveAction?.action != null)
@@ -201,6 +237,9 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Unsubscribes input action callbacks.
+    /// </summary>
     private void OnDisable()
     {
         if (moveAction?.action != null)
@@ -229,17 +268,72 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Handles horizontal movement input performing callback.
+    /// </summary>
     private void OnMovePerformed(InputAction.CallbackContext ctx) => horizontalInput = ctx.ReadValue<float>();
+
+    /// <summary>
+    /// Handles horizontal movement input canceled callback.
+    /// </summary>
     private void OnMoveCanceled(InputAction.CallbackContext ctx) => horizontalInput = 0f;
+
+    /// <summary>
+    /// Handles jump input callback.
+    /// </summary>
     private void OnJumpPerformed(InputAction.CallbackContext ctx) => jumpInput = true;
+
+    /// <summary>
+    /// Handles gravity flip input callback.
+    /// </summary>
     private void OnFlipGravityPerformed(InputAction.CallbackContext ctx) => gravityFlipInput = true;
+
+    /// <summary>
+    /// Handles dash input callback.
+    /// </summary>
     private void OnDashPerformed(InputAction.CallbackContext ctx) => TryStartDash();
 
+    #endregion
+
+    #region Helper Methods
+
+    /// <summary>
+    /// Finds object of type T if serialised reference is missing.
+    /// </summary>
+    private T GetOrFind<T>(T reference, string errorMessage) where T : Object
+    {
+        if (reference == null)
+            reference = FindAnyObjectByType<T>();
+
+        if (reference == null)
+            Debug.LogError(errorMessage);
+
+        return reference;
+    }
+
+    /// <summary>
+    /// Resets flipping state if flip duration exceeds timeout threshold.
+    /// </summary>
+    private void CheckFlipTimeout()
+    {
+        if (actionState == ActionState.Flipping && Time.time - flipStartTime > flipTimeout)
+        {
+            actionState = ActionState.None;
+        }
+    }
+
+    /// <summary>
+    /// Performs ground detection check using Physics2D overlap circle.
+    /// </summary>
     private void CheckIfGrounded()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, groundLayer);
     }
 
+    /// <summary>
+    /// Checks fall out-of-bounds death conditions and stage finish triggers.
+    /// Interacts with <see cref="LevelManager"/>, <see cref="ScoreController"/>, <see cref="PathVerifier"/>, and <see cref="CameraController"/>.
+    /// </summary>
     private void CheckWinAndLoseConditions()
     {
         float limit = Mathf.Abs(fallKillThreshold);
@@ -270,12 +364,11 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    #region Movement & Actions
+    #region Movement & Mechanics
 
     /// <summary>
     /// Applies horizontal movement based on player input.
-    /// If the player is currently dashing, overrides movement to maintain constant dash velocity
-    /// and locks vertical position.
+    /// Overrides movement during dash to lock vertical position and maintain dash speed.
     /// </summary>
     private void HandleMovement()
     {
@@ -300,9 +393,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Updates the sprite orientation based on movement direction and gravity state.
-    /// During a dash, orientation follows the dash direction. Otherwise, it reflects
-    /// the current horizontal input, adjusted for gravity inversion.
+    /// Updates sprite flip direction based on movement input, dash direction, and gravity inversion state.
     /// </summary>
     private void FlipSprite()
     {
@@ -320,12 +411,10 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Processes jump input when the player is grounded, applying an instantaneous
-    /// vertical velocity in the direction opposite to gravity. Triggers the jump animation.
+    /// Processes jump input when grounded, applying vertical velocity in direction opposite to gravity.
     /// </summary>
     private void HandleJump()
     {
-        // Flip tem prioridade — bloqueia pulo durante flip ou dash
         if (jumpInput && isGrounded && actionState == ActionState.None)
         {
             float jumpDirection = IsGravityInverted ? -1f : 1f;
@@ -336,9 +425,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Handles gravity inversion when triggered by input. Flips the gravity scale,
-    /// rotates the player, updates sprite orientation, and toggles the logical gravity state.
-    /// Only allowed when grounded and not dashing.
+    /// Handles gravity inversion initiation when triggered by input while grounded.
     /// </summary>
     private void HandleGravityFlip()
     {
@@ -347,7 +434,6 @@ public class PlayerController : MonoBehaviour
             actionState = ActionState.Flipping;
             flipStartTime = Time.time;
 
-            // Cancela qualquer velocidade vertical pendente do pulo
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
             jumpInput = false;
 
@@ -360,7 +446,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Executes the actual gravity inversion and rotation. Should be called at the correct frame by an Animation Event in the Flip animation.
+    /// Animation Event method executed during Flip animation to rotate character transform visually.
     /// </summary>
     public void ExecuteFlipVisuals()
     {
@@ -371,7 +457,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Starts a dash if off cooldown: chooses direction, locks height, and applies horizontal speed.
+    /// Attempts to initiate a dash action if cooldown has elapsed and player is not flipping.
     /// </summary>
     private void TryStartDash()
     {
@@ -401,16 +487,14 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Updates the dash state over time. Ends the dash when its duration expires,
-    /// restores previous physics settings, and smoothly blends horizontal velocity
-    /// back toward player-controlled movement using inertia.
+    /// Manages active dash state and restores original physics settings upon dash conclusion.
     /// </summary>
     private void HandleDash()
     {
         if (!isDashing) return;
         if (Time.time >= dashEndTime)
         {
-            actionState = ActionState.None; // substitui isDashing = false
+            actionState = ActionState.None;
             rb.gravityScale = preDashGravityScale;
             rb.constraints = preDashConstraints;
 
@@ -426,9 +510,8 @@ public class PlayerController : MonoBehaviour
     #region Collision & Death
 
     /// <summary>
-    /// Handles the player's death by stopping the timer, enabling manual camera control
-    /// with a right boundary, evaluating the path up to the death position, and disabling
-    /// the player GameObject.
+    /// Triggers death sequence by stopping timers, enabling manual camera control, and finalizing path verification.
+    /// Interacts with <see cref="ScoreController"/>, <see cref="CameraController"/>, and <see cref="PathVerifier"/>.
     /// </summary>
     private void PlayerDeath()
     {
@@ -442,8 +525,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Detects collisions with other objects. If the player collides with an object
-    /// tagged as "Enemy", triggers the death routine.
+    /// Collision detection handler. Triggers player death upon colliding with objects tagged "Enemy".
     /// </summary>
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -458,9 +540,7 @@ public class PlayerController : MonoBehaviour
     #region Animation
 
     /// <summary>
-    /// Updates animation parameters based on the player's current state, including
-    /// running, grounded status, falling condition relative to gravity direction,
-    /// and normalized horizontal speed with optional input-based responsiveness.
+    /// Updates animator parameter flags for running, ground state, falling, and normalized speed.
     /// </summary>
     private void UpdateAnimator()
     {
@@ -486,9 +566,7 @@ public class PlayerController : MonoBehaviour
     #region Audio
 
     /// <summary>
-    /// Plays a randomized footstep sound when the player is grounded, ensuring
-    /// an audio source and clip are available. Applies slight pitch variation
-    /// to avoid repetitive sound effects.
+    /// Plays footstep audio with pitch variation. Intended to be called via Animation Events.
     /// </summary>
     public void PlayFootstepSound()
     {
@@ -499,9 +577,10 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
+    #region Debug & Gizmos
+
     /// <summary>
-    /// Draws a wireframe sphere in the editor to visualize the ground check area
-    /// when the GameObject is selected.
+    /// Draws ground detection gizmo in Scene view when object is selected.
     /// </summary>
     private void OnDrawGizmosSelected()
     {
@@ -509,4 +588,6 @@ public class PlayerController : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
     }
+
+    #endregion
 }

@@ -1,29 +1,32 @@
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Contrato que cada aba de configuração deve implementar.
-/// O ConfigManager delega toda a lógica específica para estas implementações.
+/// Defines the contract that each settings tab module implementation must fulfill.
+/// Interacts with <see cref="ConfigManager"/>, which delegates tab initialization, event handling, and localization updates to implementations of this interface.
 /// </summary>
 public interface ISettingsTab
 {
     /// <summary>
-    /// Faz cache dos elementos da UI e inicializa o estado.
+    /// Caches UI Toolkit elements from the root hierarchy and initializes internal state.
+    /// Interacts with <see cref="VisualElement"/>.
     /// </summary>
+    /// <param name="root">The root <see cref="VisualElement"/> container of the options menu.</param>
     void Init(VisualElement root);
 
     /// <summary>
-    /// Registra os callbacks de interação.
+    /// Registers event callbacks for user interaction controls.
     /// </summary>
     void RegisterCallbacks();
 
     /// <summary>
-    /// Remove callbacks registrados.
+    /// Unregisters event callbacks to prevent memory leaks and dangling references.
     /// </summary>
     void UnregisterCallbacks();
 
     /// <summary>
-    /// Chamado quando o idioma ativo muda.
-    /// Implementações podem ignorar se não possuem textos localizados.
+    /// Called when the active localization locale changes.
+    /// Implementations update localized text labels or UI options as needed.
+    /// Interacts with Unity Localization system.
     /// </summary>
     void OnLocaleChanged();
 }

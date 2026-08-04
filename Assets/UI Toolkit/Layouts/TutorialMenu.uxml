@@ -56,7 +56,11 @@
             </ui:VisualElement>
             <ui:VisualElement name="Dica" class="tutorial-item">
                 <ui:VisualElement name="Image" class="image-slot"/>
-                <ui:Label name="Text" text="Use B para exibir dicas sobre a próxima operação síncrona" class="tutorial-text"/>
+                <ui:Label name="Text" text="Use B para exibir dicas sobre a próxima operação síncrona" class="tutorial-text">
+                    <Bindings>
+                        <UnityEngine.Localization.LocalizedString property="text" table="GUID:bcdba3d027686d241b4c3261971aa0ab" entry="Id(26358571719360512)"/>
+                    </Bindings>
+                </ui:Label>
             </ui:VisualElement>
             <ui:VisualElement name="EndOfLevel" class="tutorial-item">
                 <ui:VisualElement name="Image" class="image-slot"/>

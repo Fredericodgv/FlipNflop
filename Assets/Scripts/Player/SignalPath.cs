@@ -1,20 +1,29 @@
-// /Assets/Scripts/SignalPath.cs
-
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Records and renders the player's output signal trajectory as line points using a <see cref="LineRenderer"/>.
+/// Interacts with <see cref="PlayerController"/> to track gravity state and position updates.
+/// </summary>
 [RequireComponent(typeof(LineRenderer), typeof(PlayerController))]
 public class SignalPath : MonoBehaviour
 {
+    #region Inspector Fields
+
     [Header("Path Settings")]
-    [Tooltip("A distância mínima que o jogador deve se mover para um novo ponto ser adicionado.")]
+    [Tooltip("Minimum distance the player must move before a new path point is added.")]
     [SerializeField] private float pointSpacing = 0.1f;
 
     [Header("World Constraints")]
-    [Tooltip("A coordenada Y do chão.")]
+    [Tooltip("World Y coordinate representing the floor/ground level.")]
     [SerializeField] private float groundY = -2.5f;
-    [Tooltip("A coordenada Y do teto.")]
+
+    [Tooltip("World Y coordinate representing the ceiling level.")]
     [SerializeField] private float ceilingY = 1.5f;
+
+    #endregion
+
+    #region Properties & Private State
 
     private LineRenderer lineRenderer;
     private PlayerController playerController;
@@ -23,26 +32,43 @@ public class SignalPath : MonoBehaviour
     private bool isDrawing = true;
     private bool lastGravityInverted;
 
+    /// <summary>
+    /// Read-only access to the list of recorded path points.
+    /// </summary>
     public List<Vector3> PathPoints => pathPoints;
 
+    #endregion
+
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Initializes required components.
+    /// Interacts with <see cref="LineRenderer"/> and <see cref="PlayerController"/>.
+    /// </summary>
     private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
         playerController = GetComponent<PlayerController>();
     }
 
+    /// <summary>
+    /// Initializes path data at level start.
+    /// </summary>
     private void Start()
     {
         InitializePath();
     }
 
+    /// <summary>
+    /// Updates line recording based on player X position and gravity inversion changes.
+    /// Interacts with <see cref="PlayerController"/>.
+    /// </summary>
     private void Update()
     {
         if (!isDrawing) return;
 
         float currentX = transform.position.x;
 
-        // Se o player recuou para x <= 0, limpa tudo e reinicia
         if (currentX <= 0)
         {
             ResetPath();
@@ -77,6 +103,14 @@ public class SignalPath : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Path Generation & Recording
+
+    /// <summary>
+    /// Sets initial path state starting at player position.
+    /// Interacts with <see cref="PlayerController.IsGravityInverted"/>.
+    /// </summary>
     private void InitializePath()
     {
         pathPoints.Clear();
@@ -86,18 +120,9 @@ public class SignalPath : MonoBehaviour
     }
 
     /// <summary>
-    /// Limpa o caminho completamente e reinicia o estado (chamado quando x <= 0).
+    /// Clears recorded path points to append a new point and updates the <see cref="LineRenderer"/>.
     /// </summary>
-    private void ResetPath()
-    {
-        pathPoints.Clear();
-        lineRenderer.positionCount = 0;
-        lastGravityInverted = playerController.IsGravityInverted;
-        float startY = lastGravityInverted ? ceilingY : groundY;
-        lastPointPosition = new Vector3(0f, startY, 0);
-    }
-
-
+    /// <param name="point">World coordinates of new point.</param>
     private void AddPointToPath(Vector3 point)
     {
         pathPoints.Add(point);
@@ -106,6 +131,10 @@ public class SignalPath : MonoBehaviour
         lineRenderer.SetPosition(pathPoints.Count - 1, point);
     }
 
+    /// <summary>
+    /// Trims path points if the player moves backward past previously recorded X coordinates.
+    /// </summary>
+    /// <param name="currentX">Current player X position threshold.</param>
     private void RemovePointsAfter(float currentX)
     {
         int removalIndex = pathPoints.FindIndex(p => p.x > currentX);
@@ -127,6 +156,47 @@ public class SignalPath : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Removes all points that form vertical segments at the specified X coordinate while keeping the preceding horizontal anchor.
+    /// </summary>
+    /// <param name="x">Target X coordinate.</param>
+    private void RemoveVerticalSegmentsAtX(float x)
+    {
+        int firstAtX = pathPoints.FindIndex(p => Mathf.Abs(p.x - x) <= 0.01f);
+        if (firstAtX < 0) return;
+
+        int removeCount = pathPoints.Count - firstAtX;
+        pathPoints.RemoveRange(firstAtX, removeCount);
+        lineRenderer.positionCount = pathPoints.Count;
+
+        if (pathPoints.Count > 0)
+            lastPointPosition = pathPoints[pathPoints.Count - 1];
+        else
+            InitializePath();
+    }
+
+    #endregion
+
+    #region Path Finalization & Reset
+
+    /// <summary>
+    /// Clears the path completely and resets state when player retreats to or behind X <= 0.
+    /// Interacts with <see cref="PlayerController.IsGravityInverted"/>.
+    /// </summary>
+    private void ResetPath()
+    {
+        pathPoints.Clear();
+        lineRenderer.positionCount = 0;
+        lastGravityInverted = playerController.IsGravityInverted;
+        float startY = lastGravityInverted ? ceilingY : groundY;
+        lastPointPosition = new Vector3(0f, startY, 0);
+    }
+
+    /// <summary>
+    /// Extends the final point of the recorded path to the specified end boundary X coordinate.
+    /// Called when level finishes or player dies.
+    /// </summary>
+    /// <param name="finalX">Ending X coordinate limit.</param>
     public void FinalizePath(float finalX)
     {
         if (pathPoints.Count == 0) return;
@@ -136,9 +206,15 @@ public class SignalPath : MonoBehaviour
         AddPointToPath(finalPoint);
     }
 
+    #endregion
+
+    #region Visual Styling
+
     /// <summary>
-    /// Altera a cor de toda a linha para uma única cor sólida.
+    /// Changes line trail color to a solid single color.
+    /// Interacts with <see cref="LineRenderer"/>.
     /// </summary>
+    /// <param name="newColor">Solid color to apply.</param>
     public void SetTrailColor(Color newColor)
     {
         if (lineRenderer == null) return;
@@ -152,8 +228,10 @@ public class SignalPath : MonoBehaviour
     }
 
     /// <summary>
-    /// Altera a cor da linha com base em um gradiente para colorir segmentos.
+    /// Changes line trail color to a custom gradient.
+    /// Interacts with <see cref="LineRenderer"/>.
     /// </summary>
+    /// <param name="newGradient">Color gradient to apply.</param>
     public void SetTrailColor(Gradient newGradient)
     {
         if (lineRenderer != null)
@@ -162,25 +240,5 @@ public class SignalPath : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Remove todos os pontos que formam segmentos verticais no X especificado.
-    /// Mantém o último ponto horizontal antes desse X como âncora.
-    /// </summary>
-    private void RemoveVerticalSegmentsAtX(float x)
-    {
-        // Encontra o índice do primeiro ponto nesse X
-        int firstAtX = pathPoints.FindIndex(p => Mathf.Abs(p.x - x) <= 0.01f);
-        if (firstAtX < 0) return;
-
-        // Remove todos os pontos a partir desse índice
-        int removeCount = pathPoints.Count - firstAtX;
-        pathPoints.RemoveRange(firstAtX, removeCount);
-        lineRenderer.positionCount = pathPoints.Count;
-
-        // Atualiza lastPointPosition para o ponto anterior
-        if (pathPoints.Count > 0)
-            lastPointPosition = pathPoints[pathPoints.Count - 1];
-        else
-            InitializePath();
-    }
+    #endregion
 }

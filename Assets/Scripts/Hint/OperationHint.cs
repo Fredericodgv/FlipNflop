@@ -1,19 +1,17 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using TMPro;
 
 /// <summary>
-/// Displays world-space hint labels at the next clock edge to the right of the player.
-/// Input is handled externally by HintManager — call ShowHint() to trigger.
-///
-/// - J label appears at the J signal row Y
-/// - K label appears at the K signal row Y (auto-adjusted based on async presence)
-/// - Preset/Clear labels appear at their rows (only if level has those signals)
-/// - Operation label appears at outputHighY (fixed)
+/// Displays world-space hint labels at the next clock edge to the right of the player position.
+/// Interacts with <see cref="LevelManager"/> for clock step calculation, <see cref="LevelJsonLoader"/> for parsed signals,
+/// and <see cref="Tilemap"/> for world position positioning.
 /// </summary>
 public class OperationHint : MonoBehaviour
 {
+    #region Serialized Fields
+
     [Header("References")]
     [Tooltip("Player transform used to determine current X position.")]
     [SerializeField] private Transform player;
@@ -64,13 +62,37 @@ public class OperationHint : MonoBehaviour
     [Tooltip("How many seconds the hint stays visible before auto-hiding.")]
     [SerializeField] private float hintDuration = 3f;
 
-    private GameObject labelsRoot;
-    private Coroutine hideCoroutine;
+    #endregion
 
-    private void OnDestroy() => ClearLabels();
+    #region Private Fields
 
     /// <summary>
-    /// Main method to show the operation hint. Calculates the next clock edge, retrieves signal values, determines the operation, and spawns labels accordingly.
+    /// Parent object containing all active TextMeshPro hint labels.
+    /// </summary>
+    private GameObject labelsRoot;
+
+    /// <summary>
+    /// Active coroutine handle for auto-hiding the operation hint.
+    /// </summary>
+    private Coroutine hideCoroutine;
+
+    #endregion
+
+    #region Unity Lifecycle
+
+    /// <summary>
+    /// Ensures active labels are destroyed when this component is destroyed.
+    /// </summary>
+    private void OnDestroy() => ClearLabels();
+
+    #endregion
+
+    #region Public Methods
+
+    /// <summary>
+    /// Shows the operation hint by calculating the next clock edge, retrieving signal values,
+    /// determining the flip-flop operation state, and spawning TextMeshPro labels.
+    /// Interacts with <see cref="LevelManager.Instance"/>, <see cref="LevelJsonLoader"/>, and <see cref="Tilemap"/>.
     /// </summary>
     public void ShowHint()
     {
@@ -104,31 +126,37 @@ public class OperationHint : MonoBehaviour
         ClearLabels();
         labelsRoot = new GameObject("HintLabels");
 
-        // J label
         SpawnLabel(labelsRoot.transform, $"J = {B(j)}", xPos, TileRowToWorldY(jTileRow), signalFontSize, signalColor);
 
-        // K label — row depends on async presence (mirrors LevelJsonLoader logic)
         int kRow = hasAsync ? 10 : 8;
         SpawnLabel(labelsRoot.transform, $"K = {B(k)}", xPos, TileRowToWorldY(kRow), signalFontSize, signalColor);
 
-        // Preset label (only if level has preset)
         if (hasPreset)
             SpawnLabel(labelsRoot.transform, $"Preset = {B(preset)}", xPos, TileRowToWorldY(presetTileRow), signalFontSize, signalColor);
 
-        // Clear label (only if level has clear)
         if (hasClear)
             SpawnLabel(labelsRoot.transform, $"Clear = {B(clear)}", xPos, TileRowToWorldY(clearTileRow), signalFontSize, signalColor);
 
-        // Operation label at fixed output Y
         SpawnLabel(labelsRoot.transform, operation, xPos, outputHighY, operationFontSize, operationColor);
 
         if (hideCoroutine != null) StopCoroutine(hideCoroutine);
         hideCoroutine = StartCoroutine(AutoHide());
     }
 
+    #endregion
+
+    #region Private Methods
+
     /// <summary>
     /// Spawns a single label with the specified text, position, font size, and color under the given parent transform.
+    /// Interacts with <see cref="TextMeshPro"/>.
     /// </summary>
+    /// <param name="parent">Parent transform for the spawned label GameObject.</param>
+    /// <param name="text">Text string to display.</param>
+    /// <param name="x">World X coordinate.</param>
+    /// <param name="y">World Y coordinate.</param>
+    /// <param name="fontSize">Font size for the label.</param>
+    /// <param name="color">Text color for the label.</param>
     private void SpawnLabel(Transform parent, string text, float x, float y, float fontSize, Color color)
     {
         var obj = new GameObject($"Label_{text}");
@@ -146,8 +174,16 @@ public class OperationHint : MonoBehaviour
     }
 
     /// <summary>
-    /// Resolves the operation based on the current signal states and level configuration.
+    /// Resolves the flip-flop operation string based on input signals and asynchronous control states.
     /// </summary>
+    /// <param name="j">State of the J input signal.</param>
+    /// <param name="k">State of the K input signal.</param>
+    /// <param name="preset">State of the Preset signal.</param>
+    /// <param name="clear">State of the Clear signal.</param>
+    /// <param name="hasPreset">Whether Preset signal is defined in level data.</param>
+    /// <param name="hasClear">Whether Clear signal is defined in level data.</param>
+    /// <param name="asyncActiveHigh">True if async signals are active high, false if active low.</param>
+    /// <returns>Descriptive string of the resolved operation state.</returns>
     private string ResolveOperation(bool j, bool k, bool preset, bool clear,
                                      bool hasPreset, bool hasClear, bool asyncActiveHigh)
     {
@@ -163,8 +199,11 @@ public class OperationHint : MonoBehaviour
     }
 
     /// <summary>
-    /// Converts a tile row index to a world Y position using the input tilemap's cell layout. Assumes the label should be centered on the tile row.
+    /// Converts a tile row index to a world Y position using the input tilemap's cell layout.
+    /// Interacts with <see cref="Tilemap"/>.
     /// </summary>
+    /// <param name="tileRow">Tilemap cell Y row index.</param>
+    /// <returns>Centered world Y position for the row.</returns>
     private float TileRowToWorldY(int tileRow)
     {
         Vector3 worldPos = inputTilemap.CellToWorld(new Vector3Int(0, tileRow, 0));
@@ -172,25 +211,41 @@ public class OperationHint : MonoBehaviour
     }
 
     /// <summary>
-    /// Safely retrieves the signal value at the specified index, returning false if the index is out of bounds or the signal array is null.
+    /// Safely retrieves the boolean signal state at a given index.
     /// </summary>
+    /// <param name="signal">Signal array to index into.</param>
+    /// <param name="index">Signal array index.</param>
+    /// <returns>True if high signal, false if low signal or index out of bounds.</returns>
     private static bool GetSignalAt(bool[] signal, int index)
     {
         if (signal == null || index < 0 || index >= signal.Length) return false;
         return signal[index];
     }
 
+    /// <summary>
+    /// Converts a boolean value to binary string representation ("1" or "0").
+    /// </summary>
+    /// <param name="v">Boolean value.</param>
+    /// <returns>"1" for true, "0" for false.</returns>
     private static string B(bool v) => v ? "1" : "0";
 
+    /// <summary>
+    /// Destroys all active label GameObjects.
+    /// </summary>
     private void ClearLabels()
     {
         if (labelsRoot != null) { Destroy(labelsRoot); labelsRoot = null; }
     }
 
+    /// <summary>
+    /// Coroutine that waits for <see cref="hintDuration"/> seconds before clearing active labels.
+    /// </summary>
     private IEnumerator AutoHide()
     {
         yield return new WaitForSeconds(hintDuration);
         ClearLabels();
         hideCoroutine = null;
     }
+
+    #endregion
 }
