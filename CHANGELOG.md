@@ -1,3 +1,12 @@
+## [0.12.6](https://github.com/flip-n-flop/game/compare/v0.12.5...v0.12.6) (2026-08-03)
+
+
+### Bug Fixes
+
+* change cofig button name ([7620fae](https://github.com/flip-n-flop/game/commit/7620fae84a94e9b6e312b7dbab7eca57b578904e))
+
+
+
 ## [0.12.5](https://github.com/flip-n-flop/game/compare/v0.12.4...v0.12.5) (2026-07-27)
 
 
@@ -40,15 +49,6 @@
 * adiciona funcionalidade para linha vertical apagar se flipar novamente ([8589062](https://github.com/flip-n-flop/game/commit/858906267ddb76e43d6d3b04942ade0ec7fff546))
 * corrige conflito de esntradas pulo com dash ou flip ([9f9bec7](https://github.com/flip-n-flop/game/commit/9f9bec7395da0e1f5b8e77798e5ee4da8d0ec8da))
 * corrigi hitbox dos obstaculos e feedback de pontuação ([5ee47f4](https://github.com/flip-n-flop/game/commit/5ee47f45f3528af0462812174e689e943ff74e1b))
-
-
-
-## [0.12.1](https://github.com/flip-n-flop/game/compare/v0.12.0...v0.12.1) (2026-06-18)
-
-
-### Bug Fixes
-
-* Adjust hide button visibility ([0d0a25a](https://github.com/flip-n-flop/game/commit/0d0a25ab55b556a67e205046b28e9274b2296e44))
 
 
 
