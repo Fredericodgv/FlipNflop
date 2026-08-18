@@ -31,22 +31,16 @@
     -unity-background-scale-mode: scale-to-fit;
 }
 
-.signal-text-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    align-items: center;
+.signal-text-wrapper {
+    align-items: stretch;
     justify-content: center;
     flex-direction: column;
 }
 
 .signal-overline {
     height: 2px;
-    width: 65%;
     background-color: white;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     display: none;
 }
 

@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 /// <summary>
 /// Positions pre-defined UI Toolkit HUD labels at screen positions matching tilemap signal lines (J, K, Preset, Clear, Clock).
 /// Label elements are defined in <c>HUDLabels.uxml</c> and styled via <c>HUDLabels.uss</c>.
-/// This script only shows/hides and repositions them.
+/// Active-low signals use dedicated overline elements matched to text width.
 /// Invoked by <see cref="LevelJsonLoader"/> during level rendering.
 /// </summary>
 public class SignalLabelRenderer : MonoBehaviour
@@ -159,7 +159,14 @@ public class SignalLabelRenderer : MonoBehaviour
         SetSprite(clearIcon, clearLabelSprite);
         SetSprite(clockIcon, clockLabelSprite);
 
-        // Configure overlines
+        // Configure text
+        if (jText != null) jText.text = "J";
+        if (kText != null) kText.text = "K";
+        if (presetText != null) presetText.text = "PRE";
+        if (clearText != null) clearText.text = "CLR";
+        if (clockText != null) clockText.text = "CLK";
+
+        // Configure overline visibility for active-low signals
         SetOverline(presetOverline, !isAsyncActiveHigh);
         SetOverline(clearOverline, !isAsyncActiveHigh);
         SetOverline(clockOverline, !isClockActiveHigh);
