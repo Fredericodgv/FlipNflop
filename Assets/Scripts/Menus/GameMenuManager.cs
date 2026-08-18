@@ -25,6 +25,10 @@ public class GameMenuManager : MonoBehaviour
     [Tooltip("Input action reference used to toggle the pause menu.")]
     [SerializeField] private InputActionReference pauseAction;
 
+    [Header("HUD")]
+    [Tooltip("Signal label HUD to hide when menu is open.")]
+    [SerializeField] private SignalLabelRenderer signalLabelRenderer;
+
     /// <summary>
     /// Cached reference to the UIDocument component attached to this GameObject.
     /// </summary>
@@ -303,6 +307,9 @@ public class GameMenuManager : MonoBehaviour
 
         DisablePlayerInput();
 
+        if (signalLabelRenderer != null)
+            signalLabelRenderer.HideHUD();
+
         if (menuHudButton != null)
             menuHudButton.style.display = DisplayStyle.None;
 
@@ -341,6 +348,9 @@ public class GameMenuManager : MonoBehaviour
 
         if (menuHudButton != null)
             menuHudButton.style.display = DisplayStyle.Flex;
+
+        if (signalLabelRenderer != null)
+            signalLabelRenderer.ShowHUD();
 
         if (gameMenuOverlay != null)
             gameMenuOverlay.Blur();

@@ -1,0 +1,43 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ui="UnityEngine.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd"
+>
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/HUDLabels.uss"/>
+    <ui:VisualElement name="HudRoot" class="hud-root">
+        <ui:VisualElement name="J_Label" class="signal-label">
+            <ui:VisualElement class="signal-icon" />
+            <ui:VisualElement class="signal-text-container">
+                <ui:VisualElement class="signal-overline" />
+                <ui:Label text="J" class="signal-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="K_Label" class="signal-label">
+            <ui:VisualElement class="signal-icon" />
+            <ui:VisualElement class="signal-text-container">
+                <ui:VisualElement class="signal-overline" />
+                <ui:Label text="K" class="signal-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="Preset_Label" class="signal-label">
+            <ui:VisualElement class="signal-icon" />
+            <ui:VisualElement class="signal-text-container">
+                <ui:VisualElement class="signal-overline" />
+                <ui:Label text="PRE" class="signal-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="Clear_Label" class="signal-label">
+            <ui:VisualElement class="signal-icon" />
+            <ui:VisualElement class="signal-text-container">
+                <ui:VisualElement class="signal-overline" />
+                <ui:Label text="CLR" class="signal-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="Clock_Label" class="signal-label">
+            <ui:VisualElement class="signal-icon" />
+            <ui:VisualElement class="signal-text-container">
+                <ui:VisualElement class="signal-overline" />
+                <ui:Label text="CLK" class="signal-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,9 +1,11 @@
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+using UnityEngine.UIElements;
+using UnityEngine.Tilemaps;
 
 /// <summary>
-/// Dynamically places UI HUD labels at exact screen positions matching tilemap signal lines (J, K, Preset, Clear, Clock).
+/// Positions pre-defined UI Toolkit HUD labels at screen positions matching tilemap signal lines (J, K, Preset, Clear, Clock).
+/// Label elements are defined in <c>HUDLabels.uxml</c> and styled via <c>HUDLabels.uss</c>.
+/// This script only shows/hides and repositions them.
 /// Invoked by <see cref="LevelJsonLoader"/> during level rendering.
 /// </summary>
 public class SignalLabelRenderer : MonoBehaviour
@@ -21,6 +23,9 @@ public class SignalLabelRenderer : MonoBehaviour
     [Tooltip("X offset from left edge of the screen")]
     [SerializeField] private float xOffset = 10f;
 
+    [Tooltip("Y offset applied to all labels (positive = down, negative = up)")]
+    [SerializeField] private float yOffset = 0f;
+
     [Tooltip("Width and height of labels in pixels")]
     [SerializeField] private float labelSizePixels = 50f;
 
@@ -32,22 +37,19 @@ public class SignalLabelRenderer : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private LevelJsonLoader levelJsonLoader;
-    [SerializeField] private UnityEngine.Tilemaps.Tilemap inputTilemap;
+    [SerializeField] private Tilemap inputTilemap;
     [SerializeField] private Camera mainCamera;
-    [SerializeField] private Canvas canvas;
-
-    [Header("Parent Transform (Optional)")]
-    [SerializeField] private Transform labelsParent;
+    [SerializeField] private UIDocument uiDocument;
 
     #endregion
 
     #region Private State
 
-    private GameObject jLabel;
-    private GameObject kLabel;
-    private GameObject presetLabel;
-    private GameObject clearLabel;
-    private GameObject clockLabel;
+    private VisualElement hudRoot;
+    private VisualElement jLabel, kLabel, presetLabel, clearLabel, clockLabel;
+    private VisualElement jIcon, kIcon, presetIcon, clearIcon, clockIcon;
+    private VisualElement jOverline, kOverline, presetOverline, clearOverline, clockOverline;
+    private Label jText, kText, presetText, clearText, clockText;
 
     /// <summary>
     /// Cached Y row coordinates and active state configurations for real-time positioning updates.
@@ -55,41 +57,73 @@ public class SignalLabelRenderer : MonoBehaviour
     private int curJY, curKY, curPresetY, curClearY, curClockY;
     private bool curHasPreset, curHasClear;
     private bool curAsyncActiveHigh, curClockActiveHigh;
+    private bool labelsConfigured;
 
     #endregion
 
     #region Unity Lifecycle
 
-    /// <summary>
-    /// Caches main camera reference if unassigned.
-    /// </summary>
     private void Start()
     {
         if (mainCamera == null) mainCamera = Camera.main;
+        CacheUIElements();
     }
 
-    /// <summary>
-    /// Re-renders label positions in real-time if <see cref="updateInRealTime"/> is enabled.
-    /// </summary>
     private void Update()
     {
-        if (updateInRealTime && jLabel != null)
+        if (updateInRealTime && labelsConfigured)
         {
-            GenerateLabels(curJY, curKY, curPresetY, curClearY, curClockY, curHasPreset, curHasClear, curAsyncActiveHigh, curClockActiveHigh);
+            PositionAllLabels();
         }
     }
 
+    private void OnDestroy() => HideAllLabels();
+
+    #endregion
+
+    #region UI Element Caching
+
     /// <summary>
-    /// Cleans up instantiated label GameObjects on destroy.
+    /// Queries and caches all pre-defined label elements from the UIDocument.
     /// </summary>
-    private void OnDestroy() => ClearExistingLabels();
+    private void CacheUIElements()
+    {
+        if (uiDocument == null) return;
+
+        VisualElement root = uiDocument.rootVisualElement;
+        hudRoot = root.Q<VisualElement>("HudRoot");
+
+        jLabel = root.Q<VisualElement>("J_Label");
+        kLabel = root.Q<VisualElement>("K_Label");
+        presetLabel = root.Q<VisualElement>("Preset_Label");
+        clearLabel = root.Q<VisualElement>("Clear_Label");
+        clockLabel = root.Q<VisualElement>("Clock_Label");
+
+        jIcon = jLabel?.Q<VisualElement>(className: "signal-icon");
+        kIcon = kLabel?.Q<VisualElement>(className: "signal-icon");
+        presetIcon = presetLabel?.Q<VisualElement>(className: "signal-icon");
+        clearIcon = clearLabel?.Q<VisualElement>(className: "signal-icon");
+        clockIcon = clockLabel?.Q<VisualElement>(className: "signal-icon");
+
+        jOverline = jLabel?.Q<VisualElement>(className: "signal-overline");
+        kOverline = kLabel?.Q<VisualElement>(className: "signal-overline");
+        presetOverline = presetLabel?.Q<VisualElement>(className: "signal-overline");
+        clearOverline = clearLabel?.Q<VisualElement>(className: "signal-overline");
+        clockOverline = clockLabel?.Q<VisualElement>(className: "signal-overline");
+
+        jText = jLabel?.Q<Label>(className: "signal-text");
+        kText = kLabel?.Q<Label>(className: "signal-text");
+        presetText = presetLabel?.Q<Label>(className: "signal-text");
+        clearText = clearLabel?.Q<Label>(className: "signal-text");
+        clockText = clockLabel?.Q<Label>(className: "signal-text");
+    }
 
     #endregion
 
     #region Public API
 
     /// <summary>
-    /// Generates and positions all signal labels based on tilemap Y row coordinates.
+    /// Configures and positions all signal labels based on tilemap Y row coordinates.
     /// Invoked by <see cref="LevelJsonLoader.RenderLevel"/>.
     /// </summary>
     /// <param name="jY">Y tile row index for J signal.</param>
@@ -107,124 +141,144 @@ public class SignalLabelRenderer : MonoBehaviour
         curJY = jY; curKY = kY; curPresetY = presetY;
         curClearY = clearY; curClockY = clockY;
         curHasPreset = hasPreset; curHasClear = hasClear;
-
         curAsyncActiveHigh = isAsyncActiveHigh;
         curClockActiveHigh = isClockActiveHigh;
 
-        ClearExistingLabels();
-
-        if (mainCamera == null || inputTilemap == null || canvas == null)
+        if (mainCamera == null || inputTilemap == null || uiDocument == null)
         {
-            Debug.LogWarning("SignalLabelRenderer: Camera, Tilemap, or Canvas reference missing!");
+            Debug.LogWarning("SignalLabelRenderer: Camera, Tilemap, or UIDocument reference missing!");
             return;
         }
 
-        Transform parent = (labelsParent != null) ? labelsParent : canvas.transform;
+        if (hudRoot == null) CacheUIElements();
 
-        jLabel = CreateLabel("J_Label", jLabelSprite, jY, xOffset, parent, true);
-        kLabel = CreateLabel("K_Label", kLabelSprite, kY, xOffset, parent, true);
+        // Configure sprites
+        SetSprite(jIcon, jLabelSprite);
+        SetSprite(kIcon, kLabelSprite);
+        SetSprite(presetIcon, presetLabelSprite);
+        SetSprite(clearIcon, clearLabelSprite);
+        SetSprite(clockIcon, clockLabelSprite);
 
-        clockLabel = CreateLabel("Clock_Label", clockLabelSprite, clockY, xOffset, parent, isClockActiveHigh);
+        // Configure overlines
+        SetOverline(presetOverline, !isAsyncActiveHigh);
+        SetOverline(clearOverline, !isAsyncActiveHigh);
+        SetOverline(clockOverline, !isClockActiveHigh);
 
-        if (hasPreset) presetLabel = CreateLabel("Preset_Label", presetLabelSprite, presetY, xOffset, parent, isAsyncActiveHigh);
-        if (hasClear) clearLabel = CreateLabel("Clear_Label", clearLabelSprite, clearY, xOffset, parent, isAsyncActiveHigh);
+        // Show/hide based on level configuration
+        ShowLabel(jLabel, true);
+        ShowLabel(kLabel, true);
+        ShowLabel(clockLabel, true);
+        ShowLabel(presetLabel, hasPreset);
+        ShowLabel(clearLabel, hasClear);
+
+        labelsConfigured = true;
+        PositionAllLabels();
+    }
+
+    /// <summary>
+    /// Hides the entire HUD overlay. Called by menu systems to prevent labels from appearing above menus.
+    /// </summary>
+    public void HideHUD()
+    {
+        if (hudRoot != null)
+            hudRoot.style.display = DisplayStyle.None;
+    }
+
+    /// <summary>
+    /// Shows the HUD overlay. Called when returning to gameplay.
+    /// </summary>
+    public void ShowHUD()
+    {
+        if (hudRoot != null)
+            hudRoot.style.display = DisplayStyle.Flex;
     }
 
     #endregion
 
-    #region Label Creation & Helpers
+    #region Positioning
 
     /// <summary>
-    /// Converts a tilemap Y row index into Canvas UI coordinates and creates a UI label object with optional overline.
+    /// Positions all visible labels at their corresponding tilemap Y row screen positions.
     /// </summary>
-    private GameObject CreateLabel(string name, Sprite sprite, int tileY, float xPixels, Transform parent, bool isActiveHigh)
+    private void PositionAllLabels()
     {
-        if (sprite == null) return null;
+        PositionLabel(jLabel, curJY);
+        PositionLabel(kLabel, curKY);
+        PositionLabel(clockLabel, curClockY);
+        if (curHasPreset) PositionLabel(presetLabel, curPresetY);
+        if (curHasClear) PositionLabel(clearLabel, curClearY);
+    }
 
-        GameObject labelObj = new GameObject(name);
-        labelObj.transform.SetParent(parent, false);
+    /// <summary>
+    /// Positions a single label element at the screen position corresponding to a tilemap Y row.
+    /// </summary>
+    private void PositionLabel(VisualElement label, int tileY)
+    {
+        if (label == null) return;
 
-        RectTransform rt = labelObj.AddComponent<RectTransform>();
-        float scaledSize = labelSizePixels * labelScale;
-        rt.sizeDelta = new Vector2(scaledSize, scaledSize);
-
+        // Compute world position at the center of the tile row.
         Vector3 worldPos = inputTilemap.CellToWorld(new Vector3Int(0, tileY, 0));
         worldPos.y += inputTilemap.cellSize.y / 2f;
 
-        Vector3 screenPos = mainCamera.WorldToScreenPoint(worldPos);
+        // Convert world position directly to UI Toolkit panel coordinates.
+        // Handles camera projection, scaling, DPI, and Y-axis inversion automatically.
+        Vector2 panelPos = RuntimePanelUtils.CameraTransformWorldToPanel(
+            uiDocument.rootVisualElement.panel,
+            worldPos,
+            mainCamera
+        );
 
-        RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-        Camera cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : mainCamera;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPos, cam, out Vector2 canvasLocalPoint);
+        float scaledSize = labelSizePixels * labelScale;
+        label.style.width = scaledSize;
+        label.style.height = scaledSize;
+        label.style.left = xOffset;
+        label.style.top = panelPos.y - (scaledSize / 2f) + yOffset;
+    }
 
-        rt.anchorMin = new Vector2(0, 0.5f);
-        rt.anchorMax = new Vector2(0, 0.5f);
-        rt.pivot = new Vector2(0, 0.5f);
-        rt.anchoredPosition = new Vector2(xPixels, canvasLocalPoint.y);
+    #endregion
 
-        Image img = labelObj.AddComponent<Image>();
-        img.sprite = sprite;
+    #region Helpers
 
-        GameObject textObj = new GameObject("Text");
-        textObj.transform.SetParent(labelObj.transform, false);
-        TextMeshProUGUI tmp = textObj.AddComponent<TextMeshProUGUI>();
-        tmp.text = GetSigla(name);
-        tmp.fontSize = 24;
-        tmp.color = Color.white;
-        tmp.alignment = TextAlignmentOptions.Center;
-
-        RectTransform textRt = textObj.GetComponent<RectTransform>();
-        textRt.sizeDelta = rt.sizeDelta;
-        textRt.anchorMin = new Vector2(0, 1);
-        textRt.anchorMax = new Vector2(0, 1);
-        textRt.pivot = new Vector2(0, 1);
-        textRt.anchoredPosition = Vector2.zero;
-
-        if (!isActiveHigh)
-        {
-            GameObject overlineObj = new GameObject("Overline");
-            overlineObj.transform.SetParent(textObj.transform, false);
-            Image lineImg = overlineObj.AddComponent<Image>();
-            lineImg.color = Color.white;
-
-            RectTransform lineRt = overlineObj.GetComponent<RectTransform>();
-
-            lineRt.anchorMin = new Vector2(0.2f, 0.5f);
-            lineRt.anchorMax = new Vector2(0.8f, 0.5f);
-            lineRt.pivot = new Vector2(0.5f, 0f);
-
-            lineRt.sizeDelta = new Vector2(0, 2);
-
-            float yOffset = (tmp.fontSize / 2f) + 2f;
-            lineRt.anchoredPosition = new Vector2(0, yOffset);
-        }
-
-        return labelObj;
+    /// <summary>
+    /// Sets the background image of a signal icon element from a sprite.
+    /// </summary>
+    private void SetSprite(VisualElement icon, Sprite sprite)
+    {
+        if (icon == null || sprite == null) return;
+        icon.style.backgroundImage = new StyleBackground(sprite);
     }
 
     /// <summary>
-    /// Returns abbreviated acronym string label for a signal key name.
+    /// Toggles the "active" USS class on an overline element for active-low signal indication.
     /// </summary>
-    private string GetSigla(string name)
+    private void SetOverline(VisualElement overline, bool active)
     {
-        if (name.Contains("J")) return "J";
-        if (name.Contains("K")) return "K";
-        if (name.Contains("Preset")) return "PRE";
-        if (name.Contains("Clear")) return "CLR";
-        if (name.Contains("Clock")) return "CLK";
-        return "";
+        if (overline == null) return;
+        if (active)
+            overline.AddToClassList("active");
+        else
+            overline.RemoveFromClassList("active");
     }
 
     /// <summary>
-    /// Destroys all currently instantiated label GameObjects.
+    /// Shows or hides a label element.
     /// </summary>
-    private void ClearExistingLabels()
+    private void ShowLabel(VisualElement label, bool show)
     {
-        if (jLabel != null) Destroy(jLabel);
-        if (kLabel != null) Destroy(kLabel);
-        if (presetLabel != null) Destroy(presetLabel);
-        if (clearLabel != null) Destroy(clearLabel);
-        if (clockLabel != null) Destroy(clockLabel);
+        if (label == null) return;
+        label.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+    }
+
+    /// <summary>
+    /// Hides all label elements.
+    /// </summary>
+    private void HideAllLabels()
+    {
+        ShowLabel(jLabel, false);
+        ShowLabel(kLabel, false);
+        ShowLabel(presetLabel, false);
+        ShowLabel(clearLabel, false);
+        ShowLabel(clockLabel, false);
     }
 
     #endregion
