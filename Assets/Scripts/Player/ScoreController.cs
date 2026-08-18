@@ -1,9 +1,9 @@
 using UnityEngine;
-using TMPro;
+using UnityEngine.UIElements;
 
 /// <summary>
-/// Manages level timer tracking, score calculation based on accuracy and elapsed time, and UI display updates.
-/// Interacts with <see cref="TextMeshProUGUI"/> components for UI output and <see cref="ResultScreenController"/> to set end-of-level results.
+/// Manages level timer tracking, score calculation based on accuracy and elapsed time, and UI Toolkit display updates.
+/// Interacts with <see cref="UIDocument"/> / <see cref="Label"/> for UI output and <see cref="ResultScreenController"/> to report final results.
 /// </summary>
 public class ScoreController : MonoBehaviour
 {
@@ -14,17 +14,15 @@ public class ScoreController : MonoBehaviour
     /// </summary>
     public static ScoreController Instance { get; private set; }
 
-    [Header("In-Game UI")]
-    [Tooltip("TMP label showing the running timer during gameplay.")]
-    public TextMeshProUGUI timerText;
-
-    [Tooltip("TMP label showing the final score after the level ends.")]
-    public TextMeshProUGUI scoreText;
+    [Header("In-Game UI Toolkit")]
+    [Tooltip("UIDocument containing the HUD layout (HUDLabels.uxml).")]
+    [SerializeField] private UIDocument uiDocument;
 
     [Header("Score Settings")]
     [Tooltip("Maximum possible score (achieved with 100% accuracy in 0 seconds).")]
     [SerializeField] private int maxScore = 1000;
 
+    private Label timerLabel;
     private float elapsedTime;
     private bool isRunning;
 
@@ -42,11 +40,11 @@ public class ScoreController : MonoBehaviour
     }
 
     /// <summary>
-    /// Hides score text display if present and starts the timer.
+    /// Initializes UI elements and starts the timer.
     /// </summary>
     private void Start()
     {
-        if (scoreText != null) scoreText.gameObject.SetActive(false);
+        InitUI();
         StartTimer();
     }
 
@@ -58,6 +56,21 @@ public class ScoreController : MonoBehaviour
         if (!isRunning) return;
         elapsedTime += Time.deltaTime;
         UpdateTimerUI();
+    }
+
+    #endregion
+
+    #region UI Initialization
+
+    /// <summary>
+    /// Queries the TimerText label from the UIDocument if assigned.
+    /// </summary>
+    private void InitUI()
+    {
+        if (uiDocument != null)
+        {
+            timerLabel = uiDocument.rootVisualElement.Q<Label>("TimerText");
+        }
     }
 
     #endregion
@@ -119,15 +132,14 @@ public class ScoreController : MonoBehaviour
     #region Private Helpers
 
     /// <summary>
-    /// Updates the TMP text component with formatted MM:SS elapsed time.
-    /// Interacts with <see cref="TextMeshProUGUI"/>.
+    /// Updates the UI Toolkit Label with formatted MM:SS elapsed time.
     /// </summary>
     private void UpdateTimerUI()
     {
-        if (timerText == null) return;
+        if (timerLabel == null) return;
         int m = Mathf.FloorToInt(elapsedTime / 60f);
         int s = Mathf.FloorToInt(elapsedTime % 60f);
-        timerText.text = $"{m:00}:{s:00}";
+        timerLabel.text = $"{m:00}:{s:00}";
     }
 
     /// <summary>

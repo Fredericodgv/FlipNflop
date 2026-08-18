@@ -2,7 +2,7 @@
     -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&guid=06cc052497f62034fb43e3edf087d21a&type=3#Exo2-VariableFont_wght");
 }
 
-/* ── HUD Signal Labels ── */
+/* ── HUD Root ── */
 
 .hud-root {
     position: absolute;
@@ -13,6 +13,64 @@
     /* No pointer events on the root so it doesn't block gameplay input */
     pointer-events: none;
 }
+
+/* ── In-Game Timer (Top-Left) ── */
+
+.hud-timer-container {
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    height: 64px;
+    min-width: 120px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: rgba(30, 30, 30, 0.95);
+    border-radius: 15px;
+    border-width: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.hud-timer-text {
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&guid=06cc052497f62034fb43e3edf087d21a&type=3#Exo2-VariableFont_wght");
+    -unity-font-style: bold;
+    font-size: 24px;
+    color: #F5F7FA;
+    -unity-text-align: middle-center;
+    padding: 0;
+    margin: 0;
+}
+
+/* ── Level Title (Top-Center) ── */
+
+.hud-title-wrapper {
+    position: absolute;
+    top: 18px;
+    left: 0;
+    right: 0;
+    align-items: center;
+    justify-content: flex-start;
+    pointer-events: none;
+}
+
+.hud-title-container {
+    background-color: transparent;
+    border-width: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.hud-title-text {
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/Exo2-VariableFont_wght.ttf?fileID=12800000&guid=06cc052497f62034fb43e3edf087d21a&type=3#Exo2-VariableFont_wght");
+    -unity-font-style: bold;
+    font-size: 28px;
+    color: #FFFFFF;
+    -unity-text-align: middle-center;
+    padding: 0;
+    margin: 0;
+}
+
+/* ── Signal HUD Labels ── */
 
 .signal-label {
     position: absolute;
