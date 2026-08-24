@@ -1,130 +1,288 @@
-using UnityEngine;
 using System;
+using UnityEngine;
 using UnityEngine.Localization.Settings;
 
 /// <summary>
-/// Proxy/bridge for signal color settings, delegating data storage to <see cref="GameSettings"/>.
-/// Maintains backward-compatible public API (properties, methods, events) so that all existing consumers
-/// (<see cref="LevelJsonLoader"/>, <see cref="PathVerifier"/>, <see cref="ColorSettingsTab"/>) continue working unchanged.
-/// Persists as a singleton MonoBehaviour via <see cref="Object.DontDestroyOnLoad(Object)"/>.
-/// Interacts with <see cref="GameSettings"/> for data, <see cref="LocalizationSettings"/> for palette localization.
+/// Scene-independent data manager for signal colors and accessibility palettes.
+/// Encapsulates preset swatches, colorblind/contrast palettes, custom RGB colors, PlayerPrefs persistence, and change events.
+/// Interacted with by <see cref="ColorSettingsTab"/> for UI, and consumed by <see cref="LevelJsonLoader"/> and <see cref="PathVerifier"/>.
 /// </summary>
-public class SignalColorManager : MonoBehaviour
+public class SignalColorManager
 {
-    #region Events & Singleton
+    #region Singleton
+
+    private static SignalColorManager _instance;
+
+    /// <summary>
+    /// Gets the singleton instance, auto-initializing on first access.
+    /// </summary>
+    public static SignalColorManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+                Initialize();
+            return _instance;
+        }
+    }
+
+    /// <summary>
+    /// Creates the singleton instance and loads color preferences from <see cref="PlayerPrefs"/>.
+    /// </summary>
+    public static void Initialize()
+    {
+        if (_instance == null)
+        {
+            _instance = new SignalColorManager();
+            _instance.Load();
+        }
+    }
+
+    #endregion
+
+    #region Events
 
     /// <summary>
     /// Event invoked whenever any signal color configuration is changed.
-    /// Forwards from <see cref="GameSettings.OnColorsChanged"/>.
+    /// Listened to by <see cref="LevelJsonLoader"/> and <see cref="PathVerifier"/>.
     /// </summary>
-    public static event Action OnColorsChanged
-    {
-        add => GameSettings.OnColorsChanged += value;
-        remove => GameSettings.OnColorsChanged -= value;
-    }
-
-    /// <summary>
-    /// Singleton instance for global access to <see cref="SignalColorManager"/>.
-    /// </summary>
-    public static SignalColorManager Instance { get; private set; }
+    public static event Action OnColorsChanged;
 
     #endregion
 
-    #region Public Constants & Static Data (delegated to GameSettings)
+    #region Constants & Defaults
 
-    /// <summary>
-    /// Special index (-1) used to indicate that a signal is using a custom RGB color.
-    /// </summary>
-    public const int CUSTOM_INDEX = GameSettings.CUSTOM_INDEX;
+    public const int CUSTOM_INDEX = -1;
+
+    private const int DEFAULT_J_IDX = 0;
+    private const int DEFAULT_K_IDX = 0;
+    private const int DEFAULT_CLK_IDX = 6;
+    private const int DEFAULT_PRESET_IDX = 0;
+    private const int DEFAULT_CLEAR_IDX = 0;
+    private const int DEFAULT_FEEDBACK_SUC_IDX = 4;
+    private const int DEFAULT_FEEDBACK_FAIL_IDX = 7;
+
+    private const string KEY_J_IDX = "SignalJ_Index";
+    private const string KEY_K_IDX = "SignalK_Index";
+    private const string KEY_CLK_IDX = "SignalCLK_Index";
+    private const string KEY_PRESET_IDX = "SignalPreset_Index";
+    private const string KEY_CLEAR_IDX = "SignalClear_Index";
+    private const string KEY_FEEDBACK_SUC_IDX = "SignalFeedbackSuccess_Index";
+    private const string KEY_FEEDBACK_FAIL_IDX = "SignalFeedbackFailure_Index";
+
+    private const string KEY_J_R = "SignalJ_R";
+    private const string KEY_J_G = "SignalJ_G";
+    private const string KEY_J_B = "SignalJ_B";
+    private const string KEY_K_R = "SignalK_R";
+    private const string KEY_K_G = "SignalK_G";
+    private const string KEY_K_B = "SignalK_B";
+    private const string KEY_CLK_R = "SignalCLK_R";
+    private const string KEY_CLK_G = "SignalCLK_G";
+    private const string KEY_CLK_B = "SignalCLK_B";
+    private const string KEY_PRESET_R = "SignalPreset_R";
+    private const string KEY_PRESET_G = "SignalPreset_G";
+    private const string KEY_PRESET_B = "SignalPreset_B";
+    private const string KEY_CLEAR_R = "SignalClear_R";
+    private const string KEY_CLEAR_G = "SignalClear_G";
+    private const string KEY_CLEAR_B = "SignalClear_B";
+    private const string KEY_FSUC_R = "SignalFSuc_R";
+    private const string KEY_FSUC_G = "SignalFSuc_G";
+    private const string KEY_FSUC_B = "SignalFSuc_B";
+    private const string KEY_FFAIL_R = "SignalFFail_R";
+    private const string KEY_FFAIL_G = "SignalFFail_G";
+    private const string KEY_FFAIL_B = "SignalFFail_B";
+
+    #endregion
+
+    #region Preset Colors & Palettes
 
     /// <summary>
     /// Array of predefined preset colors available for signal swatch selection.
-    /// Delegates to <see cref="GameSettings.PresetColors"/>.
+    /// Index order: 0 White, 1 Yellow, 2 Cyan, 3 Orange, 4 Green, 5 Magenta, 6 Blue, 7 Red, 8 Pink, 9 Purple.
     /// </summary>
-    public static Color[] PresetColors => GameSettings.PresetColors;
-
-    /// <summary>
-    /// Array of accessibility color palettes.
-    /// Delegates to <see cref="GameSettings.Palettes"/>.
-    /// </summary>
-    public static int[][] Palettes => GameSettings.Palettes;
-
-    #endregion
-
-    #region Public Properties (delegated to GameSettings)
-
-    /// <summary>Current calculated <see cref="Color"/> for J signal.</summary>
-    public Color ColorJ => GameSettings.Instance.ColorJ;
-
-    /// <summary>Current calculated <see cref="Color"/> for K signal.</summary>
-    public Color ColorK => GameSettings.Instance.ColorK;
-
-    /// <summary>Current calculated <see cref="Color"/> for CLK signal.</summary>
-    public Color ColorCLK => GameSettings.Instance.ColorCLK;
-
-    /// <summary>Current calculated <see cref="Color"/> for Preset signal.</summary>
-    public Color ColorPreset => GameSettings.Instance.ColorPreset;
-
-    /// <summary>Current calculated <see cref="Color"/> for Clear signal.</summary>
-    public Color ColorClear => GameSettings.Instance.ColorClear;
-
-    /// <summary>Current calculated <see cref="Color"/> for Feedback Success visual element.</summary>
-    public Color ColorFeedbackSuccess => GameSettings.Instance.ColorFeedbackSuccess;
-
-    /// <summary>Current calculated <see cref="Color"/> for Feedback Failure visual element.</summary>
-    public Color ColorFeedbackFailure => GameSettings.Instance.ColorFeedbackFailure;
-
-    /// <summary>Preset index for J signal, or <see cref="CUSTOM_INDEX"/> (-1).</summary>
-    public int IndexJ => GameSettings.Instance.IndexJ;
-
-    /// <summary>Preset index for K signal, or <see cref="CUSTOM_INDEX"/> (-1).</summary>
-    public int IndexK => GameSettings.Instance.IndexK;
-
-    /// <summary>Preset index for CLK signal, or <see cref="CUSTOM_INDEX"/> (-1).</summary>
-    public int IndexCLK => GameSettings.Instance.IndexCLK;
-
-    /// <summary>Preset index for Preset signal, or <see cref="CUSTOM_INDEX"/> (-1).</summary>
-    public int IndexPreset => GameSettings.Instance.IndexPreset;
-
-    /// <summary>Preset index for Clear signal, or <see cref="CUSTOM_INDEX"/> (-1).</summary>
-    public int IndexClear => GameSettings.Instance.IndexClear;
-
-    /// <summary>Preset index for Feedback Success signal, or <see cref="CUSTOM_INDEX"/> (-1).</summary>
-    public int IndexFeedbackSuccess => GameSettings.Instance.IndexFeedbackSuccess;
-
-    /// <summary>Preset index for Feedback Failure signal, or <see cref="CUSTOM_INDEX"/> (-1).</summary>
-    public int IndexFeedbackFailure => GameSettings.Instance.IndexFeedbackFailure;
-
-    #endregion
-
-    #region Unity Lifecycle
-
-    /// <summary>
-    /// Configures singleton instance, ensures <see cref="GameSettings"/> is initialized,
-    /// and marks this object persistent across scene loads via <see cref="Object.DontDestroyOnLoad(Object)"/>.
-    /// </summary>
-    private void Awake()
+    public static readonly Color[] PresetColors = new Color[]
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            if (transform.parent != null)
-            {
-                transform.SetParent(null);
-            }
-            DontDestroyOnLoad(gameObject);
+        Color.white,                            // 0 White
+        new Color(1.00f, 0.93f, 0.00f),         // 1 Yellow
+        new Color(0.00f, 1.00f, 1.00f),         // 2 Cyan
+        new Color(1.00f, 0.55f, 0.00f),         // 3 Orange
+        new Color(0.27f, 1.00f, 0.27f),         // 4 Green
+        new Color(1.00f, 0.13f, 1.00f),         // 5 Magenta
+        new Color(0.11f, 0.56f, 1.00f),         // 6 Blue
+        new Color(1.00f, 0.20f, 0.20f),         // 7 Red
+        new Color(1.00f, 0.53f, 0.80f),         // 8 Pink
+        new Color(0.73f, 0.27f, 1.00f),         // 9 Purple
+    };
 
-            GameSettings.Initialize();
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+    /// <summary>
+    /// Array of accessibility color palettes mapping preset color indices for each signal.
+    /// Order per palette: [J, K, Preset, Clear, CLK, FeedbackSuccess, FeedbackFailure].
+    /// [0] Default, [1] Colorblindness, [2] High Contrast.
+    /// </summary>
+    public static readonly int[][] Palettes = new int[][]
+    {
+        new[] { 0, 0, 3, 3, 6, 4, 7 }, // Default
+        new[] { 1, 9, 2, 3, 6, 7, 5 }, // Colorblind
+        new[] { 1, 5, 3, 2, 6, 4, 7 }, // High Contrast
+    };
+
+    #endregion
+
+    #region Properties
+
+    public Color ColorJ { get; set; }
+    public Color ColorK { get; set; }
+    public Color ColorCLK { get; set; }
+    public Color ColorPreset { get; set; }
+    public Color ColorClear { get; set; }
+    public Color ColorFeedbackSuccess { get; set; }
+    public Color ColorFeedbackFailure { get; set; }
+
+    public int IndexJ { get; set; }
+    public int IndexK { get; set; }
+    public int IndexCLK { get; set; }
+    public int IndexPreset { get; set; }
+    public int IndexClear { get; set; }
+    public int IndexFeedbackSuccess { get; set; }
+    public int IndexFeedbackFailure { get; set; }
+
+    #endregion
+
+    #region Load & Save
+
+    /// <summary>
+    /// Loads stored signal preset indices and custom RGB color values from <see cref="PlayerPrefs"/>.
+    /// </summary>
+    public void Load()
+    {
+        IndexJ = PlayerPrefs.GetInt(KEY_J_IDX, DEFAULT_J_IDX);
+        IndexK = PlayerPrefs.GetInt(KEY_K_IDX, DEFAULT_K_IDX);
+        IndexCLK = PlayerPrefs.GetInt(KEY_CLK_IDX, DEFAULT_CLK_IDX);
+        IndexPreset = PlayerPrefs.GetInt(KEY_PRESET_IDX, DEFAULT_PRESET_IDX);
+        IndexClear = PlayerPrefs.GetInt(KEY_CLEAR_IDX, DEFAULT_CLEAR_IDX);
+        IndexFeedbackSuccess = PlayerPrefs.GetInt(KEY_FEEDBACK_SUC_IDX, DEFAULT_FEEDBACK_SUC_IDX);
+        IndexFeedbackFailure = PlayerPrefs.GetInt(KEY_FEEDBACK_FAIL_IDX, DEFAULT_FEEDBACK_FAIL_IDX);
+
+        ColorJ = LoadColorForSignal("J", IndexJ, DEFAULT_J_IDX);
+        ColorK = LoadColorForSignal("K", IndexK, DEFAULT_K_IDX);
+        ColorCLK = LoadColorForSignal("CLK", IndexCLK, DEFAULT_CLK_IDX);
+        ColorPreset = LoadColorForSignal("Preset", IndexPreset, DEFAULT_PRESET_IDX);
+        ColorClear = LoadColorForSignal("Clear", IndexClear, DEFAULT_CLEAR_IDX);
+        ColorFeedbackSuccess = LoadColorForSignal("FeedbackSuccess", IndexFeedbackSuccess, DEFAULT_FEEDBACK_SUC_IDX);
+        ColorFeedbackFailure = LoadColorForSignal("FeedbackFailure", IndexFeedbackFailure, DEFAULT_FEEDBACK_FAIL_IDX);
+    }
+
+    /// <summary>
+    /// Saves all changes to <see cref="PlayerPrefs"/> and invokes <see cref="OnColorsChanged"/>.
+    /// </summary>
+    public void NotifyColorsChanged()
+    {
+        PlayerPrefs.Save();
+        OnColorsChanged?.Invoke();
     }
 
     #endregion
 
-    #region Localization
+    #region Public Color API
+
+    /// <summary>
+    /// Applies a preset color palette by index across all signals and saves choices to <see cref="PlayerPrefs"/>.
+    /// Invokes <see cref="OnColorsChanged"/>.
+    /// </summary>
+    /// <param name="paletteIndex">Index of palette to apply from <see cref="Palettes"/>.</param>
+    public void ApplyPalette(int paletteIndex)
+    {
+        if (paletteIndex < 0 || paletteIndex >= Palettes.Length)
+            return;
+
+        int[] palette = Palettes[paletteIndex];
+
+        SetColorByIndex("J", palette[0]);
+        SetColorByIndex("K", palette[1]);
+        SetColorByIndex("Preset", palette[2]);
+        SetColorByIndex("Clear", palette[3]);
+        SetColorByIndex("CLK", palette[4]);
+        SetColorByIndex("FeedbackSuccess", palette[5]);
+        SetColorByIndex("FeedbackFailure", palette[6]);
+
+        NotifyColorsChanged();
+    }
+
+    /// <summary>
+    /// Sets a signal color by preset index and saves to <see cref="PlayerPrefs"/> without firing notifications.
+    /// </summary>
+    /// <param name="signal">Signal name string ("J", "K", "CLK", "Preset", "Clear", "FeedbackSuccess", "FeedbackFailure").</param>
+    /// <param name="colorIndex">Index from <see cref="PresetColors"/>.</param>
+    public void SetColorByIndex(string signal, int colorIndex)
+    {
+        if (colorIndex < 0 || colorIndex >= PresetColors.Length) return;
+        ApplyToSignal(signal, colorIndex, PresetColors[colorIndex]);
+        SaveIndex(signal, colorIndex);
+    }
+
+    /// <summary>
+    /// Sets a signal color by preset index, saves to <see cref="PlayerPrefs"/>, and triggers <see cref="OnColorsChanged"/>.
+    /// </summary>
+    /// <param name="signal">Signal name string.</param>
+    /// <param name="colorIndex">Index from <see cref="PresetColors"/>.</param>
+    public void SetAndNotify(string signal, int colorIndex)
+    {
+        SetColorByIndex(signal, colorIndex);
+        NotifyColorsChanged();
+    }
+
+    /// <summary>
+    /// Sets a custom RGB color for a signal, updates index to <see cref="CUSTOM_INDEX"/>, saves to <see cref="PlayerPrefs"/>, and triggers <see cref="OnColorsChanged"/>.
+    /// </summary>
+    /// <param name="signal">Signal name string.</param>
+    /// <param name="color">Custom RGBA <see cref="Color"/> value.</param>
+    public void SetCustomColor(string signal, Color color)
+    {
+        ApplyToSignal(signal, CUSTOM_INDEX, color);
+        SaveCustomColor(signal, color);
+        SaveIndex(signal, CUSTOM_INDEX);
+        NotifyColorsChanged();
+    }
+
+    /// <summary>
+    /// Restores all signal colors to default preset indices, saves to <see cref="PlayerPrefs"/>, and triggers <see cref="OnColorsChanged"/>.
+    /// </summary>
+    public void RestoreDefaultColors()
+    {
+        SetColorByIndex("J", DEFAULT_J_IDX);
+        SetColorByIndex("K", DEFAULT_K_IDX);
+        SetColorByIndex("CLK", DEFAULT_CLK_IDX);
+        SetColorByIndex("Preset", DEFAULT_PRESET_IDX);
+        SetColorByIndex("Clear", DEFAULT_CLEAR_IDX);
+        SetColorByIndex("FeedbackSuccess", DEFAULT_FEEDBACK_SUC_IDX);
+        SetColorByIndex("FeedbackFailure", DEFAULT_FEEDBACK_FAIL_IDX);
+        NotifyColorsChanged();
+    }
+
+    /// <summary>
+    /// Evaluates current active signal indices to determine matching preset palette index from <see cref="Palettes"/>, or returns <see cref="CUSTOM_INDEX"/>.
+    /// </summary>
+    /// <returns>Palette index (0, 1, 2) or <see cref="CUSTOM_INDEX"/> (-1).</returns>
+    public int GetCurrentPaletteIndex()
+    {
+        for (int i = 0; i < Palettes.Length; i++)
+        {
+            int[] palette = Palettes[i];
+
+            if (palette[0] == IndexJ &&
+                palette[1] == IndexK &&
+                palette[2] == IndexPreset &&
+                palette[3] == IndexClear &&
+                palette[4] == IndexCLK &&
+                palette[5] == IndexFeedbackSuccess &&
+                palette[6] == IndexFeedbackFailure)
+            {
+                return i;
+            }
+        }
+
+        return CUSTOM_INDEX;
+    }
 
     /// <summary>
     /// Retrieves localized palette name string from Unity Localization table ("ConfigMenu").
@@ -149,68 +307,82 @@ public class SignalColorManager : MonoBehaviour
 
     #endregion
 
-    #region Public API (delegated to GameSettings)
+    #region Private Helpers
 
-    /// <summary>
-    /// Applies a preset color palette by index across all signals.
-    /// Delegates to <see cref="GameSettings.ApplyPalette(int)"/>.
-    /// </summary>
-    /// <param name="paletteIndex">Index of palette to apply from <see cref="Palettes"/>.</param>
-    public void ApplyPalette(int paletteIndex)
+    private void ApplyToSignal(string signal, int index, Color color)
     {
-        GameSettings.Instance.ApplyPalette(paletteIndex);
+        switch (signal)
+        {
+            case "J": IndexJ = index; ColorJ = color; break;
+            case "K": IndexK = index; ColorK = color; break;
+            case "CLK": IndexCLK = index; ColorCLK = color; break;
+            case "Preset": IndexPreset = index; ColorPreset = color; break;
+            case "Clear": IndexClear = index; ColorClear = color; break;
+            case "FeedbackSuccess": IndexFeedbackSuccess = index; ColorFeedbackSuccess = color; break;
+            case "FeedbackFailure": IndexFeedbackFailure = index; ColorFeedbackFailure = color; break;
+        }
     }
 
-    /// <summary>
-    /// Sets a signal color by preset index and saves without firing notifications.
-    /// Delegates to <see cref="GameSettings.SetColorByIndex(string, int)"/>.
-    /// </summary>
-    /// <param name="signal">Signal name string.</param>
-    /// <param name="colorIndex">Index from <see cref="PresetColors"/>.</param>
-    public void SetColorByIndex(string signal, int colorIndex)
+    private void SaveIndex(string signal, int index)
     {
-        GameSettings.Instance.SetColorByIndex(signal, colorIndex);
+        switch (signal)
+        {
+            case "J": PlayerPrefs.SetInt(KEY_J_IDX, index); break;
+            case "K": PlayerPrefs.SetInt(KEY_K_IDX, index); break;
+            case "CLK": PlayerPrefs.SetInt(KEY_CLK_IDX, index); break;
+            case "Preset": PlayerPrefs.SetInt(KEY_PRESET_IDX, index); break;
+            case "Clear": PlayerPrefs.SetInt(KEY_CLEAR_IDX, index); break;
+            case "FeedbackSuccess": PlayerPrefs.SetInt(KEY_FEEDBACK_SUC_IDX, index); break;
+            case "FeedbackFailure": PlayerPrefs.SetInt(KEY_FEEDBACK_FAIL_IDX, index); break;
+        }
     }
 
-    /// <summary>
-    /// Sets a signal color by preset index, saves, and triggers color change notification.
-    /// Delegates to <see cref="GameSettings.SetAndNotify(string, int)"/>.
-    /// </summary>
-    /// <param name="signal">Signal name string.</param>
-    /// <param name="colorIndex">Index from <see cref="PresetColors"/>.</param>
-    public void SetAndNotify(string signal, int colorIndex)
+    private void SaveCustomColor(string signal, Color c)
     {
-        GameSettings.Instance.SetAndNotify(signal, colorIndex);
+        switch (signal)
+        {
+            case "J":
+                PlayerPrefs.SetFloat(KEY_J_R, c.r); PlayerPrefs.SetFloat(KEY_J_G, c.g); PlayerPrefs.SetFloat(KEY_J_B, c.b);
+                break;
+            case "K":
+                PlayerPrefs.SetFloat(KEY_K_R, c.r); PlayerPrefs.SetFloat(KEY_K_G, c.g); PlayerPrefs.SetFloat(KEY_K_B, c.b);
+                break;
+            case "CLK":
+                PlayerPrefs.SetFloat(KEY_CLK_R, c.r); PlayerPrefs.SetFloat(KEY_CLK_G, c.g); PlayerPrefs.SetFloat(KEY_CLK_B, c.b);
+                break;
+            case "Preset":
+                PlayerPrefs.SetFloat(KEY_PRESET_R, c.r); PlayerPrefs.SetFloat(KEY_PRESET_G, c.g); PlayerPrefs.SetFloat(KEY_PRESET_B, c.b);
+                break;
+            case "Clear":
+                PlayerPrefs.SetFloat(KEY_CLEAR_R, c.r); PlayerPrefs.SetFloat(KEY_CLEAR_G, c.g); PlayerPrefs.SetFloat(KEY_CLEAR_B, c.b);
+                break;
+            case "FeedbackSuccess":
+                PlayerPrefs.SetFloat(KEY_FSUC_R, c.r); PlayerPrefs.SetFloat(KEY_FSUC_G, c.g); PlayerPrefs.SetFloat(KEY_FSUC_B, c.b);
+                break;
+            case "FeedbackFailure":
+                PlayerPrefs.SetFloat(KEY_FFAIL_R, c.r); PlayerPrefs.SetFloat(KEY_FFAIL_G, c.g); PlayerPrefs.SetFloat(KEY_FFAIL_B, c.b);
+                break;
+        }
     }
 
-    /// <summary>
-    /// Sets a custom RGB color for a signal, updates index to <see cref="CUSTOM_INDEX"/>, and triggers notification.
-    /// Delegates to <see cref="GameSettings.SetCustomColor(string, Color)"/>.
-    /// </summary>
-    /// <param name="signal">Signal name string.</param>
-    /// <param name="color">Custom RGBA <see cref="Color"/> value.</param>
-    public void SetCustomColor(string signal, Color color)
+    private Color LoadColorForSignal(string signal, int index, int defaultIndex)
     {
-        GameSettings.Instance.SetCustomColor(signal, color);
-    }
+        if (index == CUSTOM_INDEX)
+        {
+            switch (signal)
+            {
+                case "J": return new Color(PlayerPrefs.GetFloat(KEY_J_R, 1f), PlayerPrefs.GetFloat(KEY_J_G, 1f), PlayerPrefs.GetFloat(KEY_J_B, 1f));
+                case "K": return new Color(PlayerPrefs.GetFloat(KEY_K_R, 1f), PlayerPrefs.GetFloat(KEY_K_G, 1f), PlayerPrefs.GetFloat(KEY_K_B, 1f));
+                case "CLK": return new Color(PlayerPrefs.GetFloat(KEY_CLK_R, 1f), PlayerPrefs.GetFloat(KEY_CLK_G, 1f), PlayerPrefs.GetFloat(KEY_CLK_B, 1f));
+                case "Preset": return new Color(PlayerPrefs.GetFloat(KEY_PRESET_R, 1f), PlayerPrefs.GetFloat(KEY_PRESET_G, 1f), PlayerPrefs.GetFloat(KEY_PRESET_B, 1f));
+                case "Clear": return new Color(PlayerPrefs.GetFloat(KEY_CLEAR_R, 1f), PlayerPrefs.GetFloat(KEY_CLEAR_G, 1f), PlayerPrefs.GetFloat(KEY_CLEAR_B, 1f));
+                case "FeedbackSuccess": return new Color(PlayerPrefs.GetFloat(KEY_FSUC_R, 1f), PlayerPrefs.GetFloat(KEY_FSUC_G, 1f), PlayerPrefs.GetFloat(KEY_FSUC_B, 1f));
+                case "FeedbackFailure": return new Color(PlayerPrefs.GetFloat(KEY_FFAIL_R, 1f), PlayerPrefs.GetFloat(KEY_FFAIL_G, 1f), PlayerPrefs.GetFloat(KEY_FFAIL_B, 1f));
+            }
+        }
 
-    /// <summary>
-    /// Restores all signal colors to default preset indices.
-    /// Delegates to <see cref="GameSettings.RestoreDefaultColors"/>.
-    /// </summary>
-    public void RestoreDefaultColors()
-    {
-        GameSettings.Instance.RestoreDefaultColors();
-    }
-
-    /// <summary>
-    /// Evaluates current active signal indices to determine matching preset palette index.
-    /// Delegates to <see cref="GameSettings.GetCurrentPaletteIndex"/>.
-    /// </summary>
-    /// <returns>Palette index (0, 1, 2) or <see cref="CUSTOM_INDEX"/> (-1).</returns>
-    public int GetCurrentPaletteIndex()
-    {
-        return GameSettings.Instance.GetCurrentPaletteIndex();
+        int clamped = Mathf.Clamp(index, 0, PresetColors.Length - 1);
+        return PresetColors[clamped];
     }
 
     #endregion

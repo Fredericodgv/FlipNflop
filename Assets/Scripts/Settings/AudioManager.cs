@@ -2,97 +2,72 @@ using UnityEngine;
 using UnityEngine.Audio;
 
 /// <summary>
-/// Manages runtime audio playback and applies volume settings from <see cref="GameSettings"/> to the Unity <see cref="AudioMixer"/>.
-/// Acts as a bridge between the scene-independent <see cref="GameSettings"/> data store and the scene-bound <see cref="AudioMixer"/>/<see cref="AudioSource"/>.
-/// Persists as a singleton MonoBehaviour via <see cref="Object.DontDestroyOnLoad(Object)"/>.
-/// Interacts with <see cref="GameSettings"/> for volume data, <see cref="AudioMixer"/> for runtime mixing, <see cref="AudioSource"/> for music playback.
+/// Scene runtime audio player and AudioMixer synchronizer.
+/// Applies volume configurations from <see cref="AudioSettings"/> to the Unity <see cref="AudioMixer"/>, and controls background music.
+/// Interacts with <see cref="AudioSettings"/> for volume data and events, <see cref="AudioMixer"/> for output mixing, and <see cref="AudioSource"/> for playback.
 /// </summary>
 public class AudioManager : MonoBehaviour
 {
     #region Inspector Fields
 
-    /// <summary>
-    /// Reference to the main <see cref="AudioMixer"/> controlling audio groups (Master, Music, SFX).
-    /// </summary>
     [Header("Audio Mixer")]
+    [Tooltip("Main AudioMixer controlling Master, Music, and SFX channels.")]
     [SerializeField] private AudioMixer audioMixer;
 
-    /// <summary>
-    /// Background music <see cref="AudioSource"/> routed to the Music audio group in the <see cref="AudioMixer"/>.
-    /// </summary>
     [Header("Background Music")]
+    [Tooltip("AudioSource component used to play background music.")]
     [SerializeField] private AudioSource musicSource;
 
     #endregion
 
     #region Constants & Fields
 
-    /// <summary>
-    /// Audio Mixer parameter name for the Master volume control.
-    /// </summary>
     private const string PARAM_MASTER = "VolumeMaster";
-
-    /// <summary>
-    /// Audio Mixer parameter name for the Music volume control.
-    /// </summary>
     private const string PARAM_MUSIC = "VolumeMusica";
-
-    /// <summary>
-    /// Audio Mixer parameter name for the SFX volume control.
-    /// </summary>
     private const string PARAM_SFX = "VolumeSons";
 
-    /// <summary>
-    /// Default Master volume setting (100% / 1.0). Delegates to <see cref="GameSettings.DEFAULT_MASTER"/>.
-    /// </summary>
-    public const float DEFAULT_MASTER = GameSettings.DEFAULT_MASTER;
+    public const float DEFAULT_MASTER = AudioSettings.DEFAULT_MASTER;
+    public const float DEFAULT_SFX = AudioSettings.DEFAULT_SFX;
+    public const float DEFAULT_MUSIC = AudioSettings.DEFAULT_MUSIC;
 
     /// <summary>
-    /// Default SFX volume setting (100% / 1.0). Delegates to <see cref="GameSettings.DEFAULT_SFX"/>.
-    /// </summary>
-    public const float DEFAULT_SFX = GameSettings.DEFAULT_SFX;
-
-    /// <summary>
-    /// Default Music volume setting (25% / 0.25). Delegates to <see cref="GameSettings.DEFAULT_MUSIC"/>.
-    /// </summary>
-    public const float DEFAULT_MUSIC = GameSettings.DEFAULT_MUSIC;
-
-    /// <summary>
-    /// Singleton instance for global access to <see cref="AudioManager"/>.
+    /// Singleton instance for scene audio playback access.
     /// </summary>
     public static AudioManager Instance { get; private set; }
 
     #endregion
 
-    #region Initialization
+    #region Unity Lifecycle
 
-    /// <summary>
-    /// Configures the singleton instance and enforces persistence across scene loads using <see cref="Object.DontDestroyOnLoad(Object)"/>.
-    /// </summary>
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
             if (transform.parent != null)
-            {
                 transform.SetParent(null);
-            }
+
             DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
-            return;
         }
     }
 
-    /// <summary>
-    /// Loads saved volume preferences from <see cref="GameSettings"/> via <see cref="LoadVolumes"/> and starts background music playback if assigned.
-    /// </summary>
+    private void OnEnable()
+    {
+        AudioSettings.OnAudioChanged += ApplyMixerVolumes;
+    }
+
+    private void OnDisable()
+    {
+        AudioSettings.OnAudioChanged -= ApplyMixerVolumes;
+    }
+
     private void Start()
     {
-        LoadVolumes();
+        ApplyMixerVolumes();
 
         if (musicSource != null && !musicSource.isPlaying)
             musicSource.Play();
@@ -100,81 +75,54 @@ public class AudioManager : MonoBehaviour
 
     #endregion
 
-    #region Volume Control
+    #region Volume Application
 
     /// <summary>
-    /// Sets the Master volume, updates the <see cref="AudioMixer"/>, and saves the value to <see cref="GameSettings"/>.
+    /// Synchronizes all <see cref="AudioMixer"/> group decibel levels with values stored in <see cref="AudioSettings.Instance"/>.
     /// </summary>
-    /// <param name="value">Linear volume scale between 0.0001 and 1.0.</param>
+    public void ApplyMixerVolumes()
+    {
+        if (audioMixer == null)
+            return;
+
+        audioMixer.SetFloat(PARAM_MASTER, LinearToDecibel(AudioSettings.Instance.VolumeMaster));
+        audioMixer.SetFloat(PARAM_MUSIC, LinearToDecibel(AudioSettings.Instance.VolumeMusic));
+        audioMixer.SetFloat(PARAM_SFX, LinearToDecibel(AudioSettings.Instance.VolumeSFX));
+    }
+
+    /// <summary>
+    /// Updates Master volume in <see cref="AudioSettings"/> and applies it to the mixer.
+    /// </summary>
+    /// <param name="value">Linear volume scale (0.0001 to 1.0).</param>
     public void SetMasterVolume(float value)
     {
-        audioMixer.SetFloat(PARAM_MASTER, LinearToDecibel(value));
-        GameSettings.Instance.VolumeMaster = value;
-        PlayerPrefs.SetFloat("AudioMaster", value);
+        AudioSettings.Instance.VolumeMaster = value;
+        AudioSettings.Instance.SaveAndNotify();
     }
 
     /// <summary>
-    /// Sets the Music volume, updates the <see cref="AudioMixer"/>, and saves the value to <see cref="GameSettings"/>.
+    /// Updates Music volume in <see cref="AudioSettings"/> and applies it to the mixer.
     /// </summary>
-    /// <param name="value">Linear volume scale between 0.0001 and 1.0.</param>
+    /// <param name="value">Linear volume scale (0.0001 to 1.0).</param>
     public void SetMusicVolume(float value)
     {
-        audioMixer.SetFloat(PARAM_MUSIC, LinearToDecibel(value));
-        GameSettings.Instance.VolumeMusic = value;
-        PlayerPrefs.SetFloat("AudioMusica", value);
+        AudioSettings.Instance.VolumeMusic = value;
+        AudioSettings.Instance.SaveAndNotify();
     }
 
     /// <summary>
-    /// Sets the SFX volume, updates the <see cref="AudioMixer"/>, and saves the value to <see cref="GameSettings"/>.
+    /// Updates SFX volume in <see cref="AudioSettings"/> and applies it to the mixer.
     /// </summary>
-    /// <param name="value">Linear volume scale between 0.0001 and 1.0.</param>
+    /// <param name="value">Linear volume scale (0.0001 to 1.0).</param>
     public void SetSFXVolume(float value)
     {
-        audioMixer.SetFloat(PARAM_SFX, LinearToDecibel(value));
-        GameSettings.Instance.VolumeSFX = value;
-        PlayerPrefs.SetFloat("AudioSons", value);
+        AudioSettings.Instance.VolumeSFX = value;
+        AudioSettings.Instance.SaveAndNotify();
     }
 
-    /// <summary>
-    /// Retrieves the stored Master volume setting from <see cref="GameSettings"/>.
-    /// </summary>
-    /// <returns>Stored Master volume float value.</returns>
-    public float GetMasterVolume() => GameSettings.Instance.VolumeMaster;
-
-    /// <summary>
-    /// Retrieves the stored Music volume setting from <see cref="GameSettings"/>.
-    /// </summary>
-    /// <returns>Stored Music volume float value.</returns>
-    public float GetMusicVolume() => GameSettings.Instance.VolumeMusic;
-
-    /// <summary>
-    /// Retrieves the stored SFX volume setting from <see cref="GameSettings"/>.
-    /// </summary>
-    /// <returns>Stored SFX volume float value.</returns>
-    public float GetSFXVolume() => GameSettings.Instance.VolumeSFX;
-
-    #endregion
-
-    #region Save / Load / Reset
-
-    /// <summary>
-    /// Loads all volume preferences from <see cref="GameSettings"/> and applies them to the <see cref="AudioMixer"/>.
-    /// </summary>
-    public void LoadVolumes()
-    {
-        SetMasterVolume(GetMasterVolume());
-        SetMusicVolume(GetMusicVolume());
-        SetSFXVolume(GetSFXVolume());
-    }
-
-    /// <summary>
-    /// Restores all volumes to defaults via <see cref="GameSettings.RestoreDefaultAudio"/> and reloads them into the <see cref="AudioMixer"/>.
-    /// </summary>
-    public void RestoreDefaultVolumes()
-    {
-        GameSettings.Instance.RestoreDefaultAudio();
-        LoadVolumes();
-    }
+    public float GetMasterVolume() => AudioSettings.Instance.VolumeMaster;
+    public float GetMusicVolume() => AudioSettings.Instance.VolumeMusic;
+    public float GetSFXVolume() => AudioSettings.Instance.VolumeSFX;
 
     #endregion
 

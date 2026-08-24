@@ -4,31 +4,20 @@ using UnityEngine.Localization.Settings;
 
 /// <summary>
 /// Encapsulates all logic for the "Video" tab in the settings menu, including contrast adjustment overlay and language toggling.
-/// Reads and writes contrast data through <see cref="GameSettings"/> instead of <see cref="PlayerPrefs"/> directly.
-/// Interacts with <see cref="SpriteRenderer"/>, <see cref="GameSettings"/>, <see cref="LocalizationSettings"/>, and UI Toolkit elements.
+/// Reads and writes contrast preferences through <see cref="PlayerPrefs"/>.
+/// Interacts with <see cref="SpriteRenderer"/>, <see cref="LocalizationSettings"/>, and UI Toolkit elements.
 /// </summary>
 public class VideoSettingsTab : ISettingsTab
 {
     #region Constants & Fields
 
-    /// <summary>
-    /// Sprite renderer reference acting as a visual contrast overlay.
-    /// </summary>
+    private const string KEY_CONTRAST = "ContrastValue";
+    private const float DEFAULT_CONTRAST = 0f;
+
     private readonly SpriteRenderer contrastOverlaySprite;
 
-    /// <summary>
-    /// UI Toolkit Slider control for adjusting contrast level.
-    /// </summary>
     private Slider sliderContrast;
-
-    /// <summary>
-    /// UI Toolkit Button for resetting contrast to default value (0).
-    /// </summary>
     private Button btnResetContrast;
-
-    /// <summary>
-    /// UI Toolkit Button for cycling available game languages.
-    /// </summary>
     private Button btnToggleLanguage;
 
     #endregion
@@ -93,14 +82,14 @@ public class VideoSettingsTab : ISettingsTab
     #region Contrast Control
 
     /// <summary>
-    /// Loads saved contrast value from <see cref="GameSettings"/>, initializes slider control, applies contrast to overlay sprite, and registers slider value change callback.
+    /// Loads saved contrast value from <see cref="PlayerPrefs"/>, initializes slider control, applies contrast to overlay sprite, and registers slider callback.
     /// </summary>
     private void InitContrast()
     {
         if (sliderContrast == null)
             return;
 
-        float savedContrast = GameSettings.Instance.ContrastValue;
+        float savedContrast = PlayerPrefs.GetFloat(KEY_CONTRAST, DEFAULT_CONTRAST);
 
         sliderContrast.SetValueWithoutNotify(savedContrast);
         ApplyContrast(savedContrast);
@@ -115,7 +104,7 @@ public class VideoSettingsTab : ISettingsTab
     private void OnContrastChanged(ChangeEvent<float> evt) => ApplyContrast(evt.newValue);
 
     /// <summary>
-    /// Applies visual contrast color/alpha to <see cref="contrastOverlaySprite"/> and saves value to <see cref="GameSettings"/>.
+    /// Applies visual contrast color/alpha to <see cref="contrastOverlaySprite"/> and saves value to <see cref="PlayerPrefs"/>.
     /// Positive values apply white overlay with alpha, negative values apply black overlay with alpha.
     /// </summary>
     /// <param name="value">Contrast level float between -1.0 and 1.0.</param>
@@ -133,8 +122,8 @@ public class VideoSettingsTab : ISettingsTab
 
         contrastOverlaySprite.color = overlayColor;
 
-        GameSettings.Instance.ContrastValue = value;
-        PlayerPrefs.SetFloat("ContrastValue", value);
+        PlayerPrefs.SetFloat(KEY_CONTRAST, value);
+        PlayerPrefs.Save();
     }
 
     /// <summary>

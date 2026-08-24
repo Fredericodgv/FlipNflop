@@ -3,30 +3,15 @@ using UnityEngine.UIElements;
 
 /// <summary>
 /// Encapsulates all logic for the "Audio" tab in the settings menu.
-/// Interacts with <see cref="AudioManager"/> and UI Toolkit elements (<see cref="VisualElement"/>, <see cref="Slider"/>, <see cref="Button"/>).
+/// Interacts with <see cref="AudioSettings"/> for volume data and UI Toolkit elements (<see cref="VisualElement"/>, <see cref="Slider"/>, <see cref="Button"/>).
 /// </summary>
 public class AudioSettingsTab : ISettingsTab
 {
     #region Private Fields
 
-    /// <summary>
-    /// UI Toolkit Slider control for the Master volume setting.
-    /// </summary>
     private Slider sliderMaster;
-
-    /// <summary>
-    /// UI Toolkit Slider control for the Sound Effects (SFX) volume setting.
-    /// </summary>
     private Slider sliderSons;
-
-    /// <summary>
-    /// UI Toolkit Slider control for the Music volume setting.
-    /// </summary>
     private Slider sliderMusica;
-
-    /// <summary>
-    /// UI Toolkit Button control for resetting audio settings to default values.
-    /// </summary>
     private Button btnResetAudio;
 
     #endregion
@@ -36,7 +21,7 @@ public class AudioSettingsTab : ISettingsTab
     /// <summary>
     /// Caches UI Toolkit elements from the root hierarchy and initializes slider values.
     /// Queries elements: "SliderMaster", "SliderSons", "SliderMusica", and "BtnResetAudio".
-    /// Interacts with <see cref="AudioManager"/>.
+    /// Interacts with <see cref="AudioSettings"/>.
     /// </summary>
     /// <param name="root">The root <see cref="VisualElement"/> container of the options menu.</param>
     public void Init(VisualElement root)
@@ -80,77 +65,59 @@ public class AudioSettingsTab : ISettingsTab
     #region Slider Initialization & Event Handlers
 
     /// <summary>
-    /// Synchronizes UI sliders with stored volume values retrieved from <see cref="GameSettings.Instance"/>
+    /// Synchronizes UI sliders with stored volume values retrieved from <see cref="AudioSettings.Instance"/>
     /// and registers value change callbacks.
-    /// Interacts with <see cref="GameSettings"/> and <see cref="AudioManager"/>.
+    /// Interacts with <see cref="AudioSettings"/>.
     /// </summary>
     private void InitSliders()
     {
         if (sliderMaster != null)
         {
-            sliderMaster.SetValueWithoutNotify(GameSettings.Instance.VolumeMaster);
+            sliderMaster.SetValueWithoutNotify(AudioSettings.Instance.VolumeMaster);
             sliderMaster.RegisterValueChangedCallback(OnMasterVolumeChanged);
         }
 
         if (sliderSons != null)
         {
-            sliderSons.SetValueWithoutNotify(GameSettings.Instance.VolumeSFX);
+            sliderSons.SetValueWithoutNotify(AudioSettings.Instance.VolumeSFX);
             sliderSons.RegisterValueChangedCallback(OnSFXVolumeChanged);
         }
 
         if (sliderMusica != null)
         {
-            sliderMusica.SetValueWithoutNotify(GameSettings.Instance.VolumeMusic);
+            sliderMusica.SetValueWithoutNotify(AudioSettings.Instance.VolumeMusic);
             sliderMusica.RegisterValueChangedCallback(OnMusicVolumeChanged);
         }
     }
 
     /// <summary>
-    /// Handles Master volume slider value changes, updating <see cref="GameSettings.Instance"/> and <see cref="AudioManager.Instance"/> if present.
+    /// Handles Master volume slider value changes, updating <see cref="AudioSettings.Instance"/>.
     /// </summary>
     /// <param name="evt">The UI Toolkit value change event containing the new float volume value.</param>
     private void OnMasterVolumeChanged(ChangeEvent<float> evt)
     {
-        GameSettings.Instance.VolumeMaster = evt.newValue;
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.SetMasterVolume(evt.newValue);
-        else
-        {
-            PlayerPrefs.SetFloat("AudioMaster", evt.newValue);
-            PlayerPrefs.Save();
-        }
+        AudioSettings.Instance.VolumeMaster = evt.newValue;
+        AudioSettings.Instance.SaveAndNotify();
     }
 
     /// <summary>
-    /// Handles SFX volume slider value changes, updating <see cref="GameSettings.Instance"/> and <see cref="AudioManager.Instance"/> if present.
+    /// Handles SFX volume slider value changes, updating <see cref="AudioSettings.Instance"/>.
     /// </summary>
     /// <param name="evt">The UI Toolkit value change event containing the new float volume value.</param>
     private void OnSFXVolumeChanged(ChangeEvent<float> evt)
     {
-        GameSettings.Instance.VolumeSFX = evt.newValue;
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.SetSFXVolume(evt.newValue);
-        else
-        {
-            PlayerPrefs.SetFloat("AudioSons", evt.newValue);
-            PlayerPrefs.Save();
-        }
+        AudioSettings.Instance.VolumeSFX = evt.newValue;
+        AudioSettings.Instance.SaveAndNotify();
     }
 
     /// <summary>
-    /// Handles Music volume slider value changes, updating <see cref="GameSettings.Instance"/> and <see cref="AudioManager.Instance"/> if present.
+    /// Handles Music volume slider value changes, updating <see cref="AudioSettings.Instance"/>.
     /// </summary>
     /// <param name="evt">The UI Toolkit value change event containing the new float volume value.</param>
     private void OnMusicVolumeChanged(ChangeEvent<float> evt)
     {
-        GameSettings.Instance.VolumeMusic = evt.newValue;
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.SetMusicVolume(evt.newValue);
-        else
-        {
-            PlayerPrefs.SetFloat("AudioMusica", evt.newValue);
-            PlayerPrefs.Save();
-        }
+        AudioSettings.Instance.VolumeMusic = evt.newValue;
+        AudioSettings.Instance.SaveAndNotify();
     }
 
     #endregion
@@ -158,25 +125,15 @@ public class AudioSettingsTab : ISettingsTab
     #region Reset Operations
 
     /// <summary>
-    /// Resets all volume sliders and audio settings to default constants, then saves preferences to <see cref="PlayerPrefs"/>.
-    /// Interacts with <see cref="GameSettings"/> and <see cref="AudioManager"/>.
+    /// Resets all volume sliders and audio settings to default constants via <see cref="AudioSettings.Instance"/>.
     /// </summary>
     private void ResetDefaultAudio()
     {
-        sliderMaster?.SetValueWithoutNotify(GameSettings.DEFAULT_MASTER);
-        sliderMusica?.SetValueWithoutNotify(GameSettings.DEFAULT_MUSIC);
-        sliderSons?.SetValueWithoutNotify(GameSettings.DEFAULT_SFX);
+        sliderMaster?.SetValueWithoutNotify(AudioSettings.DEFAULT_MASTER);
+        sliderMusica?.SetValueWithoutNotify(AudioSettings.DEFAULT_MUSIC);
+        sliderSons?.SetValueWithoutNotify(AudioSettings.DEFAULT_SFX);
 
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.RestoreDefaultVolumes();
-        }
-        else
-        {
-            GameSettings.Instance.RestoreDefaultAudio();
-        }
-
-        PlayerPrefs.Save();
+        AudioSettings.Instance.RestoreDefaults();
     }
 
     #endregion

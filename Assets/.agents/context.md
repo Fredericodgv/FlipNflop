@@ -87,16 +87,15 @@ Assets/Scripts/
 
 ### 2.4. Módulo Settings (`Assets/Scripts/Settings/`)
 
-- **`GameSettings.cs`**: Classe pura C# (POCO, não MonoBehaviour) que centraliza **todos** os dados de configuração do jogo (Cores, Áudio, Vídeo). Atua como *Single Source of Truth*: carrega e salva via `PlayerPrefs`, expõe propriedades tipadas, e dispara eventos globais (`OnColorsChanged`, `OnAudioChanged`, `OnVideoChanged`). Contém também as constantes de preset de cores (`PresetColors`, `Palettes`, `CUSTOM_INDEX`) e helpers de paleta.
+- **`SignalColorManager.cs`**: Classe pura C# (POCO Singleton, não MonoBehaviour) que encapsula de forma independente **tudo** sobre cores de sinais e paletas de acessibilidade: presets (`PresetColors`), paletas (`Palettes`, `CUSTOM_INDEX`), persistência via `PlayerPrefs` e o evento `OnColorsChanged`.
+- **`AudioSettings.cs`**: Classe pura C# (POCO Singleton, não MonoBehaviour) que encapsula os dados de volume (Master, SFX, Música), valores padrão, persistência via `PlayerPrefs` e o evento `OnAudioChanged`.
+- **`AudioManager.cs`**: MonoBehaviour singleton (`DontDestroyOnLoad`) responsável exclusivamente pelo runtime de áudio (`AudioMixer`, `AudioSource`). Ouve `AudioSettings.OnAudioChanged` e aplica decibéis ao `AudioMixer`.
 - **`ConfigManager.cs`**: Controlador central da tela de configurações (`UIDocument`). Gerencia as abas (Cores, Áudio, Vídeo, Controles) e delega o comportamento para instâncias que implementam `ISettingsTab`.
 - **`ISettingsTab.cs`**: Contrato genérico (`Init`, `RegisterCallbacks`, `UnregisterCallbacks`, `OnLocaleChanged`) para os módulos de configuração.
-- **`SignalColorManager.cs`**: Proxy/bridge MonoBehaviour singleton (`DontDestroyOnLoad`) que delega todos os dados de cores para `GameSettings`. Mantém API pública retrocompatível para consumidores como `LevelJsonLoader`, `PathVerifier` e `ColorSettingsTab`. Também contém `GetLocalizedPaletteName` (depende de `LocalizationSettings`).
-- **`ColorSettingsTab.cs`**: Interface UI Toolkit para personalização de cores dos sinais lógicos. Interage com `SignalColorManager.Instance` (que delega para `GameSettings`).
-- **`AudioManager.cs`**: Bridge MonoBehaviour singleton (`DontDestroyOnLoad`) que lê volumes de `GameSettings` e os aplica no `AudioMixer`. Mantém API pública retrocompatível para `AudioSettingsTab`.
-- **`AudioSettingsTab.cs`**: Interface UI Toolkit para controle de volume. Interage com `AudioManager.Instance`.
-- **`VideoSettingsTab.cs`**: Interface UI Toolkit para contraste e idioma. Lê/grava contraste via `GameSettings.Instance.ContrastValue`.
+- **`ColorSettingsTab.cs`**: Interface UI Toolkit para personalização de cores dos sinais lógicos. Interage diretamente com `SignalColorManager.Instance`.
+- **`AudioSettingsTab.cs`**: Interface UI Toolkit para controle de volume. Interage diretamente com `AudioSettings.Instance`.
+- **`VideoSettingsTab.cs`**: Interface UI Toolkit para contraste e idioma. Lê/grava contraste via `PlayerPrefs` e aplica no sprite de overlay.
 - **`RebindManager.cs`**: Sistema de remapeamento dinâmico de teclas com suporte a localização e persistência de bindings via JSON (`SaveBindingOverridesAsJson`).
-
 
 ---
 
@@ -122,7 +121,7 @@ Assets/Scripts/
 Toda a interface moderna do projeto é construída via **Unity UI Toolkit**:
 
 - **Layouts (`Assets/UI Toolkit/Layouts/`)**:
-  - `MainMenu.uxml`: Menu inicial, seleção de níveis, tela Sobre e Tutorial.
+  - `MainMenu.uxml`: Menu inicial, seleção de níveis, tela Sobre, Tutorial e Configurações integradas.
   - `GameMenu.uxml`: Menu de pausa em jogo.
   - `ConfigMenu.uxml`: Menu de configurações em abas (Cores, Áudio, Vídeo, Controles).
   - `ResultScreen.uxml`: Modal de vitória e derrota com opção de esconder/mostrar o desenho da onda.
@@ -137,14 +136,14 @@ Toda a interface moderna do projeto é construída via **Unity UI Toolkit**:
 ## 4. Padrões e Boas Práticas Estabelecidas
 
 1. **Separação de Responsabilidades (POCO vs MonoBehaviour):**
-   - Classes puras de C# (POCOs) tratam lógica complexa sem acoplamento com a cena (ex: `FlipFlopSimulator`, `PathChecker`, `GabaritoGenerator`, `TilemapRenderer`, `GameSettings`, `AudioSettingsTab`, `VideoSettingsTab`, `ColorSettingsTab`).
-   - Monobehaviours atuam como orquestradores de ciclo de vida e visualização (`LevelJsonLoader`, `PathVerifier`, `PlayerController`, `ConfigManager`).
-   - Singletons MonoBehaviour (`SignalColorManager`, `AudioManager`) atuam como **proxies/bridges** para `GameSettings`, aplicando dados no runtime (AudioMixer, scene objects) sem possuir os dados diretamente.
+   - Classes puras de C# (POCOs) tratam lógica de dados, simulação e configurações sem acoplamento com a cena (ex: `FlipFlopSimulator`, `PathChecker`, `GabaritoGenerator`, `TilemapRenderer`, `SignalColorManager`, `AudioSettings`, `AudioSettingsTab`, `VideoSettingsTab`, `ColorSettingsTab`).
+   - Monobehaviours atuam como orquestradores de ciclo de vida e visualização (`LevelJsonLoader`, `PathVerifier`, `PlayerController`, `ConfigManager`, `AudioManager`).
 2. **Eventos e Desacoplamento:**
-   - Evento `GameSettings.OnColorsChanged` (acessado via `SignalColorManager.OnColorsChanged`) para atualização reativa das cores em `LevelJsonLoader` e `PathVerifier`.
+   - Evento `SignalColorManager.OnColorsChanged` para atualização reativa das cores em `LevelJsonLoader` e `PathVerifier`.
+   - Evento `AudioSettings.OnAudioChanged` para sincronização reativa do `AudioMixer` em `AudioManager`.
    - Evento `LocalizationSettings.SelectedLocaleChanged` para atualização dinâmica de textos em tempo real.
 3. **Persistência de Dados:**
-   - `GameSettings` centraliza a leitura/escrita de `PlayerPrefs` para preferências do usuário (Volume, Cores, Contraste). Rebinds de Input são gerenciados separadamente por `RebindManager` via JSON.
+   - Cada domínio gerencia seus `PlayerPrefs` (`SignalColorManager` para cores/paletas, `AudioSettings` para volumes, `VideoSettingsTab` para contraste). Rebinds de Input são gerenciados separadamente por `RebindManager` via JSON.
 4. **Input System (Unity New Input System):**
    - Todas as ações do jogador e menus usam `InputActionReference` com callbacks (`performed`, `canceled`) e tratamentos adequados em `OnEnable` / `OnDisable`.
 5. **Simulação de Dupla Resolução:**
