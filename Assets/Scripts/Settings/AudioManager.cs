@@ -44,15 +44,17 @@ public class AudioManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            if (transform.parent != null)
-                transform.SetParent(null);
-
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     private void OnEnable()

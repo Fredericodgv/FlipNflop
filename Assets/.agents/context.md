@@ -89,7 +89,7 @@ Assets/Scripts/
 
 - **`SignalColorManager.cs`**: Classe pura C# (POCO Singleton, não MonoBehaviour) que encapsula de forma independente **tudo** sobre cores de sinais e paletas de acessibilidade: presets (`PresetColors`), paletas (`Palettes`, `CUSTOM_INDEX`), persistência via `PlayerPrefs` e o evento `OnColorsChanged`.
 - **`AudioSettings.cs`**: Classe pura C# (POCO Singleton, não MonoBehaviour) que encapsula os dados de volume (Master, SFX, Música), valores padrão, persistência via `PlayerPrefs` e o evento `OnAudioChanged`.
-- **`AudioManager.cs`**: MonoBehaviour singleton (`DontDestroyOnLoad`) responsável exclusivamente pelo runtime de áudio (`AudioMixer`, `AudioSource`). Ouve `AudioSettings.OnAudioChanged` e aplica decibéis ao `AudioMixer`.
+- **`AudioManager.cs`**: MonoBehaviour de cena na fase responsável pelo runtime de áudio (`AudioMixer`, `AudioSource`). Ouve `AudioSettings.OnAudioChanged` e aplica decibéis ao `AudioMixer`. Destruído naturalmente ao sair da fase para não sobrepor a música do menu principal.
 - **`ConfigManager.cs`**: Controlador central da tela de configurações (`UIDocument`). Gerencia as abas (Cores, Áudio, Vídeo, Controles) e delega o comportamento para instâncias que implementam `ISettingsTab`.
 - **`ISettingsTab.cs`**: Contrato genérico (`Init`, `RegisterCallbacks`, `UnregisterCallbacks`, `OnLocaleChanged`) para os módulos de configuração.
 - **`ColorSettingsTab.cs`**: Interface UI Toolkit para personalização de cores dos sinais lógicos. Interage diretamente com `SignalColorManager.Instance`.
