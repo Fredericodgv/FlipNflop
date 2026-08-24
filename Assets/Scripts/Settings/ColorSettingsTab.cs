@@ -311,13 +311,10 @@ public class ColorSettingsTab : ISettingsTab
 
     /// <summary>
     /// Initializes color dropdown options, generates preset swatches for all signals, and synchronizes the UI.
-    /// Interacts with <see cref="SignalColorManager.Instance"/>.
+    /// Interacts with <see cref="GameSettings.Instance"/>.
     /// </summary>
     private void InitColorSettings()
     {
-        if (SignalColorManager.Instance == null)
-            return;
-
         if (dropdownPaleta != null)
         {
             RefreshPaletteDropdown();
@@ -330,7 +327,7 @@ public class ColorSettingsTab : ISettingsTab
                     return;
 
                 int selectedIndex = -1;
-                for (int i = 0; i < SignalColorManager.Palettes.Length; i++)
+                for (int i = 0; i < GameSettings.Palettes.Length; i++)
                 {
                     if (evt.newValue == SignalColorManager.GetLocalizedPaletteName(i))
                     {
@@ -343,7 +340,7 @@ public class ColorSettingsTab : ISettingsTab
                 {
                     isApplyingPreset = true;
 
-                    SignalColorManager.Instance.ApplyPalette(selectedIndex);
+                    GameSettings.Instance.ApplyPalette(selectedIndex);
                     SyncColorUI();
 
                     dropdownPaleta.SetValueWithoutNotify(evt.newValue);
@@ -366,17 +363,17 @@ public class ColorSettingsTab : ISettingsTab
 
     /// <summary>
     /// Populates the palette dropdown menu with localized names for preset palettes and the custom option.
-    /// Interacts with <see cref="SignalColorManager.GetLocalizedPaletteName(int)"/> and <see cref="SignalColorManager.Instance"/>.
+    /// Interacts with <see cref="SignalColorManager.GetLocalizedPaletteName(int)"/> and <see cref="GameSettings.Instance"/>.
     /// </summary>
     private void RefreshPaletteDropdown()
     {
-        if (dropdownPaleta == null || SignalColorManager.Instance == null)
+        if (dropdownPaleta == null)
             return;
 
         string localizedCustomName = SignalColorManager.GetLocalizedPaletteName(SignalColorManager.CUSTOM_INDEX);
 
         List<string> choices = new List<string>();
-        for (int i = 0; i < SignalColorManager.Palettes.Length; i++)
+        for (int i = 0; i < GameSettings.Palettes.Length; i++)
         {
             choices.Add(SignalColorManager.GetLocalizedPaletteName(i));
         }
@@ -384,7 +381,7 @@ public class ColorSettingsTab : ISettingsTab
 
         dropdownPaleta.choices = choices;
 
-        int activePaletteIndex = SignalColorManager.Instance.GetCurrentPaletteIndex();
+        int activePaletteIndex = GameSettings.Instance.GetCurrentPaletteIndex();
         if (activePaletteIndex >= 0)
         {
             dropdownPaleta.SetValueWithoutNotify(SignalColorManager.GetLocalizedPaletteName(activePaletteIndex));
@@ -445,7 +442,7 @@ public class ColorSettingsTab : ISettingsTab
 
             swatch.clicked += () =>
             {
-                SignalColorManager.Instance.SetAndNotify(signalType.ToString(), colorIndex);
+                GameSettings.Instance.SetAndNotify(signalType.ToString(), colorIndex);
                 SyncColorUI();
             };
 
@@ -455,30 +452,27 @@ public class ColorSettingsTab : ISettingsTab
     }
 
     /// <summary>
-    /// Synchronizes all preview backgrounds, swatch selection borders, and dropdown selections with <see cref="SignalColorManager.Instance"/>.
+    /// Synchronizes all preview backgrounds, swatch selection borders, and dropdown selections with <see cref="GameSettings.Instance"/>.
     /// </summary>
     private void SyncColorUI()
     {
-        if (SignalColorManager.Instance == null)
-            return;
+        previewJ.style.backgroundColor = GameSettings.Instance.ColorJ;
+        previewK.style.backgroundColor = GameSettings.Instance.ColorK;
+        previewCLK.style.backgroundColor = GameSettings.Instance.ColorCLK;
+        previewPreset.style.backgroundColor = GameSettings.Instance.ColorPreset;
+        previewClear.style.backgroundColor = GameSettings.Instance.ColorClear;
+        previewFeedbackSuccess.style.backgroundColor = GameSettings.Instance.ColorFeedbackSuccess;
+        previewFeedbackFailure.style.backgroundColor = GameSettings.Instance.ColorFeedbackFailure;
 
-        previewJ.style.backgroundColor = SignalColorManager.Instance.ColorJ;
-        previewK.style.backgroundColor = SignalColorManager.Instance.ColorK;
-        previewCLK.style.backgroundColor = SignalColorManager.Instance.ColorCLK;
-        previewPreset.style.backgroundColor = SignalColorManager.Instance.ColorPreset;
-        previewClear.style.backgroundColor = SignalColorManager.Instance.ColorClear;
-        previewFeedbackSuccess.style.backgroundColor = SignalColorManager.Instance.ColorFeedbackSuccess;
-        previewFeedbackFailure.style.backgroundColor = SignalColorManager.Instance.ColorFeedbackFailure;
+        UpdateSwatchBorders(swatchesJ, GameSettings.Instance.IndexJ);
+        UpdateSwatchBorders(swatchesK, GameSettings.Instance.IndexK);
+        UpdateSwatchBorders(swatchesCLK, GameSettings.Instance.IndexCLK);
+        UpdateSwatchBorders(swatchesPreset, GameSettings.Instance.IndexPreset);
+        UpdateSwatchBorders(swatchesClear, GameSettings.Instance.IndexClear);
+        UpdateSwatchBorders(swatchesFeedbackSuccess, GameSettings.Instance.IndexFeedbackSuccess);
+        UpdateSwatchBorders(swatchesFeedbackFailure, GameSettings.Instance.IndexFeedbackFailure);
 
-        UpdateSwatchBorders(swatchesJ, SignalColorManager.Instance.IndexJ);
-        UpdateSwatchBorders(swatchesK, SignalColorManager.Instance.IndexK);
-        UpdateSwatchBorders(swatchesCLK, SignalColorManager.Instance.IndexCLK);
-        UpdateSwatchBorders(swatchesPreset, SignalColorManager.Instance.IndexPreset);
-        UpdateSwatchBorders(swatchesClear, SignalColorManager.Instance.IndexClear);
-        UpdateSwatchBorders(swatchesFeedbackSuccess, SignalColorManager.Instance.IndexFeedbackSuccess);
-        UpdateSwatchBorders(swatchesFeedbackFailure, SignalColorManager.Instance.IndexFeedbackFailure);
-
-        int activePaletteIndex = SignalColorManager.Instance.GetCurrentPaletteIndex();
+        int activePaletteIndex = GameSettings.Instance.GetCurrentPaletteIndex();
 
         if (activePaletteIndex >= 0)
         {
@@ -509,13 +503,11 @@ public class ColorSettingsTab : ISettingsTab
     }
 
     /// <summary>
-    /// Resets all signal colors to default palette 0 in <see cref="SignalColorManager.Instance"/> and saves changes using <see cref="PlayerPrefs"/>.
+    /// Resets all signal colors to default palette 0 in <see cref="GameSettings.Instance"/> and saves changes using <see cref="PlayerPrefs"/>.
     /// </summary>
     private void ResetDefaultColors()
     {
-        if (SignalColorManager.Instance == null) return;
-
-        SignalColorManager.Instance.ApplyPalette(0);
+        GameSettings.Instance.ApplyPalette(0);
         SyncColorUI();
         PlayerPrefs.Save();
     }
@@ -547,14 +539,11 @@ public class ColorSettingsTab : ISettingsTab
 
     /// <summary>
     /// Displays the custom RGB overlay for a specific signal type, initializing sliders and preview element with current color values.
-    /// Interacts with <see cref="SignalColorManager.Instance"/>.
+    /// Interacts with <see cref="GameSettings.Instance"/>.
     /// </summary>
     /// <param name="signalType">The signal type to edit.</param>
     private void OpenRGBOverlay(SignalType signalType)
     {
-        if (SignalColorManager.Instance == null)
-            return;
-
         activeCustomSignal = signalType;
 
         if (rgbTitle != null)
@@ -562,13 +551,13 @@ public class ColorSettingsTab : ISettingsTab
 
         Color currentColor = signalType switch
         {
-            SignalType.J => SignalColorManager.Instance.ColorJ,
-            SignalType.K => SignalColorManager.Instance.ColorK,
-            SignalType.CLK => SignalColorManager.Instance.ColorCLK,
-            SignalType.Preset => SignalColorManager.Instance.ColorPreset,
-            SignalType.Clear => SignalColorManager.Instance.ColorClear,
-            SignalType.FeedbackSuccess => SignalColorManager.Instance.ColorFeedbackSuccess,
-            SignalType.FeedbackFailure => SignalColorManager.Instance.ColorFeedbackFailure,
+            SignalType.J => GameSettings.Instance.ColorJ,
+            SignalType.K => GameSettings.Instance.ColorK,
+            SignalType.CLK => GameSettings.Instance.ColorCLK,
+            SignalType.Preset => GameSettings.Instance.ColorPreset,
+            SignalType.Clear => GameSettings.Instance.ColorClear,
+            SignalType.FeedbackSuccess => GameSettings.Instance.ColorFeedbackSuccess,
+            SignalType.FeedbackFailure => GameSettings.Instance.ColorFeedbackFailure,
             _ => Color.white
         };
 
@@ -639,18 +628,15 @@ public class ColorSettingsTab : ISettingsTab
     }
 
     /// <summary>
-    /// Saves selected RGB color to <see cref="SignalColorManager.Instance"/> for the active signal, syncs UI, and closes overlay.
+    /// Saves selected RGB color to <see cref="GameSettings.Instance"/> for the active signal, syncs UI, and closes overlay.
     /// </summary>
     private void ConfirmRGBColor()
     {
-        if (SignalColorManager.Instance == null)
-            return;
-
         float r = (sliderR?.value ?? 255f) / 255f;
         float g = (sliderG?.value ?? 255f) / 255f;
         float b = (sliderB?.value ?? 255f) / 255f;
 
-        SignalColorManager.Instance.SetCustomColor(activeCustomSignal.ToString(), new Color(r, g, b));
+        GameSettings.Instance.SetCustomColor(activeCustomSignal.ToString(), new Color(r, g, b));
 
         SyncColorUI();
         CloseRGBOverlay();

@@ -55,6 +55,11 @@ public class MenuManager : MonoBehaviour
     private VisualElement tutorialPanel;
 
     /// <summary>
+    /// Settings/configuration panel visual element.
+    /// </summary>
+    private VisualElement settingsPanel;
+
+    /// <summary>
     /// Cached reference to the attached UploadMenuManager component.
     /// </summary>
     private UploadMenuManager uploadManager;
@@ -96,12 +101,14 @@ public class MenuManager : MonoBehaviour
         aboutPanel = root.Q<VisualElement>("About");
         levelSelectPanel = root.Q<VisualElement>("LevelSelect");
         tutorialPanel = root.Q<VisualElement>("Tutorial");
+        settingsPanel = root.Q<VisualElement>("Settings");
         backButton = root.Q<Button>("BackButton");
 
         submenus.Clear();
         submenus.Add(aboutPanel);
         submenus.Add(levelSelectPanel);
         submenus.Add(tutorialPanel);
+        submenus.Add(settingsPanel);
 
         if (backButton != null)
             backButton.clicked += CloseActiveSubmenu;
@@ -121,6 +128,10 @@ public class MenuManager : MonoBehaviour
         Button aboutButton = root.Q<Button>("AboutButton");
         if (aboutButton != null)
             aboutButton.clicked += OpenAbout;
+
+        Button settingsButton = root.Q<Button>("SettingsButton");
+        if (settingsButton != null)
+            settingsButton.clicked += OpenSettings;
 
         for (int i = 0; i < levelFiles.Length; i++)
         {
@@ -260,6 +271,32 @@ public class MenuManager : MonoBehaviour
     /// Legacy alias for CloseTutorial.
     /// </summary>
     public void FecharTutorial() => CloseTutorial();
+
+    /// <summary>
+    /// Displays the Settings panel.
+    /// </summary>
+    public void OpenSettings()
+    {
+        OpenSubmenu(settingsPanel);
+    }
+
+    /// <summary>
+    /// Legacy alias for OpenSettings.
+    /// </summary>
+    public void AbrirOpcoes() => OpenSettings();
+
+    /// <summary>
+    /// Closes the Settings panel and returns to the main menu.
+    /// </summary>
+    public void CloseSettings()
+    {
+        CloseSubmenu(settingsPanel);
+    }
+
+    /// <summary>
+    /// Legacy alias for CloseSettings.
+    /// </summary>
+    public void FecharOpcoes() => CloseSettings();
 
     /// <summary>
     /// Closes whatever submenu is currently active.

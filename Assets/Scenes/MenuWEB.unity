@@ -434,6 +434,8 @@ GameObject:
   - component: {fileID: 1801426330}
   - component: {fileID: 1801426332}
   - component: {fileID: 1801426333}
+  - component: {fileID: 1801426334}
+  - component: {fileID: 1801426335}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -515,6 +517,115 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UploadMenuManager
   customSceneName: Custom
+--- !u!114 &1801426334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1801426329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81e105eaf49b0d0419c0347a6ecf18b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConfigManager
+  contrastOverlaySprite: {fileID: 0}
+--- !u!114 &1801426335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1801426329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 185a3c9241c6dc44ea422d7598de8576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RebindManager
+  inputAsset: {fileID: -944628639613478452, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+  actionsToRebind:
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: GUID:229e5976ae5cca94f990c72442131f3f
+      m_TableEntryReference:
+        m_KeyId: 4955471872
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    inputAction: {fileID: -1680190386980627800, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    bindingIndex: 2
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: GUID:229e5976ae5cca94f990c72442131f3f
+      m_TableEntryReference:
+        m_KeyId: 59800190976
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    inputAction: {fileID: -1680190386980627800, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    bindingIndex: 1
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: GUID:229e5976ae5cca94f990c72442131f3f
+      m_TableEntryReference:
+        m_KeyId: 78460649472
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    inputAction: {fileID: 3506434624590365720, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    bindingIndex: 0
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: GUID:229e5976ae5cca94f990c72442131f3f
+      m_TableEntryReference:
+        m_KeyId: 80381640704
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    inputAction: {fileID: -2099379676528639254, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    bindingIndex: 0
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: GUID:229e5976ae5cca94f990c72442131f3f
+      m_TableEntryReference:
+        m_KeyId: 82311020544
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    inputAction: {fileID: -7093669063402427910, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    bindingIndex: 0
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: GUID:229e5976ae5cca94f990c72442131f3f
+      m_TableEntryReference:
+        m_KeyId: 119405445120
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    inputAction: {fileID: -4774699295614695227, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    bindingIndex: 0
+  - labelText:
+      m_TableReference:
+        m_TableCollectionName: GUID:229e5976ae5cca94f990c72442131f3f
+      m_TableEntryReference:
+        m_KeyId: 147683442688
+        m_Key: 
+      m_FallbackState: 0
+      m_WaitForCompletion: 0
+      m_LocalVariables: []
+    inputAction: {fileID: 9063628408651508475, guid: cbc2af35a9502f14eaf2db9b7d191ca4, type: 3}
+    bindingIndex: 0
+  scrollViewName: ControlsScrollView
+  restoreButtonName: BtnRestoreControls
+  references:
+    version: 2
+    RefIds: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

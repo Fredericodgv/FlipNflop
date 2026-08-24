@@ -87,12 +87,16 @@ Assets/Scripts/
 
 ### 2.4. Módulo Settings (`Assets/Scripts/Settings/`)
 
+- **`GameSettings.cs`**: Classe pura C# (POCO, não MonoBehaviour) que centraliza **todos** os dados de configuração do jogo (Cores, Áudio, Vídeo). Atua como *Single Source of Truth*: carrega e salva via `PlayerPrefs`, expõe propriedades tipadas, e dispara eventos globais (`OnColorsChanged`, `OnAudioChanged`, `OnVideoChanged`). Contém também as constantes de preset de cores (`PresetColors`, `Palettes`, `CUSTOM_INDEX`) e helpers de paleta.
 - **`ConfigManager.cs`**: Controlador central da tela de configurações (`UIDocument`). Gerencia as abas (Cores, Áudio, Vídeo, Controles) e delega o comportamento para instâncias que implementam `ISettingsTab`.
 - **`ISettingsTab.cs`**: Contrato genérico (`Init`, `RegisterCallbacks`, `UnregisterCallbacks`, `OnLocaleChanged`) para os módulos de configuração.
-- **`SignalColorManager.cs` & `ColorSettingsTab.cs`**: Sistema completo de personalização de cores para os sinais lógicos (J, K, CLK, Preset, Clear) e feedbacks visuais. Suporta presets, paletas de acessibilidade (Padrão, Daltonismo, Alto Contraste) e seletor de cores customizadas RGB, com persistência via `PlayerPrefs` e evento global `OnColorsChanged`.
-- **`AudioManager.cs` & `AudioSettingsTab.cs`**: Controle de volume dos canais de áudio com persistência.
-- **`VideoSettingsTab.cs`**: Configurações de resolução, tela cheia e overlay de contraste.
+- **`SignalColorManager.cs`**: Proxy/bridge MonoBehaviour singleton (`DontDestroyOnLoad`) que delega todos os dados de cores para `GameSettings`. Mantém API pública retrocompatível para consumidores como `LevelJsonLoader`, `PathVerifier` e `ColorSettingsTab`. Também contém `GetLocalizedPaletteName` (depende de `LocalizationSettings`).
+- **`ColorSettingsTab.cs`**: Interface UI Toolkit para personalização de cores dos sinais lógicos. Interage com `SignalColorManager.Instance` (que delega para `GameSettings`).
+- **`AudioManager.cs`**: Bridge MonoBehaviour singleton (`DontDestroyOnLoad`) que lê volumes de `GameSettings` e os aplica no `AudioMixer`. Mantém API pública retrocompatível para `AudioSettingsTab`.
+- **`AudioSettingsTab.cs`**: Interface UI Toolkit para controle de volume. Interage com `AudioManager.Instance`.
+- **`VideoSettingsTab.cs`**: Interface UI Toolkit para contraste e idioma. Lê/grava contraste via `GameSettings.Instance.ContrastValue`.
 - **`RebindManager.cs`**: Sistema de remapeamento dinâmico de teclas com suporte a localização e persistência de bindings via JSON (`SaveBindingOverridesAsJson`).
+
 
 ---
 
@@ -133,13 +137,14 @@ Toda a interface moderna do projeto é construída via **Unity UI Toolkit**:
 ## 4. Padrões e Boas Práticas Estabelecidas
 
 1. **Separação de Responsabilidades (POCO vs MonoBehaviour):**
-   - Classes puras de C# (POCOs) tratam lógica complexa sem acoplamento com a cena (ex: `FlipFlopSimulator`, `PathChecker`, `GabaritoGenerator`, `TilemapRenderer`, `AudioSettingsTab`, `VideoSettingsTab`, `ColorSettingsTab`).
+   - Classes puras de C# (POCOs) tratam lógica complexa sem acoplamento com a cena (ex: `FlipFlopSimulator`, `PathChecker`, `GabaritoGenerator`, `TilemapRenderer`, `GameSettings`, `AudioSettingsTab`, `VideoSettingsTab`, `ColorSettingsTab`).
    - Monobehaviours atuam como orquestradores de ciclo de vida e visualização (`LevelJsonLoader`, `PathVerifier`, `PlayerController`, `ConfigManager`).
+   - Singletons MonoBehaviour (`SignalColorManager`, `AudioManager`) atuam como **proxies/bridges** para `GameSettings`, aplicando dados no runtime (AudioMixer, scene objects) sem possuir os dados diretamente.
 2. **Eventos e Desacoplamento:**
-   - Evento `SignalColorManager.OnColorsChanged` para atualização reativa das cores em `LevelJsonLoader` e `PathVerifier`.
+   - Evento `GameSettings.OnColorsChanged` (acessado via `SignalColorManager.OnColorsChanged`) para atualização reativa das cores em `LevelJsonLoader` e `PathVerifier`.
    - Evento `LocalizationSettings.SelectedLocaleChanged` para atualização dinâmica de textos em tempo real.
 3. **Persistência de Dados:**
-   - `PlayerPrefs` é utilizado para preferências do usuário (Volume, Cores, Rebinds de Input Asset JSON).
+   - `GameSettings` centraliza a leitura/escrita de `PlayerPrefs` para preferências do usuário (Volume, Cores, Contraste). Rebinds de Input são gerenciados separadamente por `RebindManager` via JSON.
 4. **Input System (Unity New Input System):**
    - Todas as ações do jogador e menus usam `InputActionReference` com callbacks (`performed`, `canceled`) e tratamentos adequados em `OnEnable` / `OnDisable`.
 5. **Simulação de Dupla Resolução:**

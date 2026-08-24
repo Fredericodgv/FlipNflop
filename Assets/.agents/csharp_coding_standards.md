@@ -9,9 +9,10 @@
 ## 1. Documentation & Commenting Rules
 
 ### 1.1. Summary Documentation (`/// <summary>`)
-- Every class, interface, enum, struct, public/protected/private method, and property must have a `/// <summary>` XML documentation block in **English**.
-- **Content Requirements:**
-  - Clear explanation of what the method or class does.
+- Every class, interface, enum, struct, public/protected/private method, event, and complex/non-obvious property must have a `/// <summary>` XML documentation block in **English**.
+- **Exemptions for Simple Variables & Constants:** Self-explanatory properties, simple variables, constants, and private backing fields do **NOT** require redundant `/// <summary>` blocks (e.g., avoid noisy single-line summaries on every trivial field/constant like `public float VolumeMaster { get; set; }` or `private const int DEFAULT_J_IDX = 0;`). Keep code clean and uncluttered.
+- **Content Requirements for Documented Members:**
+  - Clear explanation of what the method, class, or complex member does.
   - **External Dependencies & Connections:** Briefly state any external connections or references (e.g., calls to `LevelManager`, `SignalColorManager`, events, singletons, or UI managers).
 - **Example:**
 ```csharp

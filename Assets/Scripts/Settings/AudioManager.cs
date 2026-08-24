@@ -2,8 +2,10 @@ using UnityEngine;
 using UnityEngine.Audio;
 
 /// <summary>
-/// Manages global audio volume settings and background music playback.
-/// Interacts with Unity <see cref="AudioMixer"/>, <see cref="AudioSource"/>, and persists volume levels using <see cref="PlayerPrefs"/>.
+/// Manages runtime audio playback and applies volume settings from <see cref="GameSettings"/> to the Unity <see cref="AudioMixer"/>.
+/// Acts as a bridge between the scene-independent <see cref="GameSettings"/> data store and the scene-bound <see cref="AudioMixer"/>/<see cref="AudioSource"/>.
+/// Persists as a singleton MonoBehaviour via <see cref="Object.DontDestroyOnLoad(Object)"/>.
+/// Interacts with <see cref="GameSettings"/> for volume data, <see cref="AudioMixer"/> for runtime mixing, <see cref="AudioSource"/> for music playback.
 /// </summary>
 public class AudioManager : MonoBehaviour
 {
@@ -41,34 +43,19 @@ public class AudioManager : MonoBehaviour
     private const string PARAM_SFX = "VolumeSons";
 
     /// <summary>
-    /// <see cref="PlayerPrefs"/> key for storing the Master volume setting.
+    /// Default Master volume setting (100% / 1.0). Delegates to <see cref="GameSettings.DEFAULT_MASTER"/>.
     /// </summary>
-    private const string KEY_MASTER = "AudioMaster";
+    public const float DEFAULT_MASTER = GameSettings.DEFAULT_MASTER;
 
     /// <summary>
-    /// <see cref="PlayerPrefs"/> key for storing the Music volume setting.
+    /// Default SFX volume setting (100% / 1.0). Delegates to <see cref="GameSettings.DEFAULT_SFX"/>.
     /// </summary>
-    private const string KEY_MUSIC = "AudioMusica";
+    public const float DEFAULT_SFX = GameSettings.DEFAULT_SFX;
 
     /// <summary>
-    /// <see cref="PlayerPrefs"/> key for storing the SFX volume setting.
+    /// Default Music volume setting (25% / 0.25). Delegates to <see cref="GameSettings.DEFAULT_MUSIC"/>.
     /// </summary>
-    private const string KEY_SFX = "AudioSons";
-
-    /// <summary>
-    /// Default Master volume setting (100% / 1.0).
-    /// </summary>
-    public const float DEFAULT_MASTER = 1f;
-
-    /// <summary>
-    /// Default SFX volume setting (100% / 1.0).
-    /// </summary>
-    public const float DEFAULT_SFX = 1f;
-
-    /// <summary>
-    /// Default Music volume setting (25% / 0.25).
-    /// </summary>
-    public const float DEFAULT_MUSIC = 0.25f;
+    public const float DEFAULT_MUSIC = GameSettings.DEFAULT_MUSIC;
 
     /// <summary>
     /// Singleton instance for global access to <see cref="AudioManager"/>.
@@ -101,8 +88,7 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Loads saved volume preferences via <see cref="LoadVolumes"/> and starts background music playback if assigned.
-    /// Interacts with <see cref="PlayerPrefs"/> and <see cref="AudioSource"/>.
+    /// Loads saved volume preferences from <see cref="GameSettings"/> via <see cref="LoadVolumes"/> and starts background music playback if assigned.
     /// </summary>
     private void Start()
     {
@@ -117,59 +103,62 @@ public class AudioManager : MonoBehaviour
     #region Volume Control
 
     /// <summary>
-    /// Sets the Master volume, updates the <see cref="AudioMixer"/>, and saves the value to <see cref="PlayerPrefs"/>.
+    /// Sets the Master volume, updates the <see cref="AudioMixer"/>, and saves the value to <see cref="GameSettings"/>.
     /// </summary>
     /// <param name="value">Linear volume scale between 0.0001 and 1.0.</param>
     public void SetMasterVolume(float value)
     {
         audioMixer.SetFloat(PARAM_MASTER, LinearToDecibel(value));
-        PlayerPrefs.SetFloat(KEY_MASTER, value);
+        GameSettings.Instance.VolumeMaster = value;
+        PlayerPrefs.SetFloat("AudioMaster", value);
     }
 
     /// <summary>
-    /// Sets the Music volume, updates the <see cref="AudioMixer"/>, and saves the value to <see cref="PlayerPrefs"/>.
+    /// Sets the Music volume, updates the <see cref="AudioMixer"/>, and saves the value to <see cref="GameSettings"/>.
     /// </summary>
     /// <param name="value">Linear volume scale between 0.0001 and 1.0.</param>
     public void SetMusicVolume(float value)
     {
         audioMixer.SetFloat(PARAM_MUSIC, LinearToDecibel(value));
-        PlayerPrefs.SetFloat(KEY_MUSIC, value);
+        GameSettings.Instance.VolumeMusic = value;
+        PlayerPrefs.SetFloat("AudioMusica", value);
     }
 
     /// <summary>
-    /// Sets the SFX volume, updates the <see cref="AudioMixer"/>, and saves the value to <see cref="PlayerPrefs"/>.
+    /// Sets the SFX volume, updates the <see cref="AudioMixer"/>, and saves the value to <see cref="GameSettings"/>.
     /// </summary>
     /// <param name="value">Linear volume scale between 0.0001 and 1.0.</param>
     public void SetSFXVolume(float value)
     {
         audioMixer.SetFloat(PARAM_SFX, LinearToDecibel(value));
-        PlayerPrefs.SetFloat(KEY_SFX, value);
+        GameSettings.Instance.VolumeSFX = value;
+        PlayerPrefs.SetFloat("AudioSons", value);
     }
 
     /// <summary>
-    /// Retrieves the stored Master volume setting from <see cref="PlayerPrefs"/> or returns <see cref="DEFAULT_MASTER"/>.
+    /// Retrieves the stored Master volume setting from <see cref="GameSettings"/>.
     /// </summary>
     /// <returns>Stored Master volume float value.</returns>
-    public float GetMasterVolume() => PlayerPrefs.GetFloat(KEY_MASTER, DEFAULT_MASTER);
+    public float GetMasterVolume() => GameSettings.Instance.VolumeMaster;
 
     /// <summary>
-    /// Retrieves the stored Music volume setting from <see cref="PlayerPrefs"/> or returns <see cref="DEFAULT_MUSIC"/>.
+    /// Retrieves the stored Music volume setting from <see cref="GameSettings"/>.
     /// </summary>
     /// <returns>Stored Music volume float value.</returns>
-    public float GetMusicVolume() => PlayerPrefs.GetFloat(KEY_MUSIC, DEFAULT_MUSIC);
+    public float GetMusicVolume() => GameSettings.Instance.VolumeMusic;
 
     /// <summary>
-    /// Retrieves the stored SFX volume setting from <see cref="PlayerPrefs"/> or returns <see cref="DEFAULT_SFX"/>.
+    /// Retrieves the stored SFX volume setting from <see cref="GameSettings"/>.
     /// </summary>
     /// <returns>Stored SFX volume float value.</returns>
-    public float GetSFXVolume() => PlayerPrefs.GetFloat(KEY_SFX, DEFAULT_SFX);
+    public float GetSFXVolume() => GameSettings.Instance.VolumeSFX;
 
     #endregion
 
     #region Save / Load / Reset
 
     /// <summary>
-    /// Loads all volume preferences from <see cref="PlayerPrefs"/> and applies them to the <see cref="AudioMixer"/>.
+    /// Loads all volume preferences from <see cref="GameSettings"/> and applies them to the <see cref="AudioMixer"/>.
     /// </summary>
     public void LoadVolumes()
     {
@@ -179,13 +168,11 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Deletes saved volume keys from <see cref="PlayerPrefs"/> and reloads default volumes.
+    /// Restores all volumes to defaults via <see cref="GameSettings.RestoreDefaultAudio"/> and reloads them into the <see cref="AudioMixer"/>.
     /// </summary>
     public void RestoreDefaultVolumes()
     {
-        PlayerPrefs.DeleteKey(KEY_MASTER);
-        PlayerPrefs.DeleteKey(KEY_MUSIC);
-        PlayerPrefs.DeleteKey(KEY_SFX);
+        GameSettings.Instance.RestoreDefaultAudio();
         LoadVolumes();
     }
 
