@@ -1,3 +1,12 @@
+## [0.12.8](https://github.com/flip-n-flop/game/compare/v0.12.7...v0.12.8) (2026-08-25)
+
+
+### Bug Fixes
+
+* best settings support ([95d97d8](https://github.com/flip-n-flop/game/commit/95d97d876671031e646a16105eae1f61c7a4b764))
+
+
+
 ## [0.12.7](https://github.com/flip-n-flop/game/compare/v0.12.6...v0.12.7) (2026-08-24)
 
 
@@ -36,15 +45,6 @@
 * Add Spanish supports ([04842e9](https://github.com/flip-n-flop/game/commit/04842e9cdd100fb043d412667989a7e1ce478cab))
 * Adjust color pallet localization ([eca7508](https://github.com/flip-n-flop/game/commit/eca75081d2a833955ca79e6d2e23a387e21f8f97))
 * create tutorial template ([a6a995a](https://github.com/flip-n-flop/game/commit/a6a995aa5f692847ae9fd95a905e1d7852dfc271))
-
-
-
-## [0.12.3](https://github.com/flip-n-flop/game/compare/v0.12.2...v0.12.3) (2026-07-22)
-
-
-### Bug Fixes
-
-* Localization adjusts ([effc86b](https://github.com/flip-n-flop/game/commit/effc86b5edbf10207c949564d7769d7216f0e5eb))
 
 
 
