@@ -145,7 +145,8 @@ public class VideoSettingsTab : ISettingsTab
     /// </summary>
     private void ToggleLanguage()
     {
-        var locales = LocalizationSettings.AvailableLocales.Locales;
+        var locales = LocalizationSettings.AvailableLocales?.Locales;
+        if (locales == null || locales.Count == 0) return;
 
         int currentIndex = locales.IndexOf(LocalizationSettings.SelectedLocale);
         int nextIndex = (currentIndex + 1) % locales.Count;

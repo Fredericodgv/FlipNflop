@@ -302,7 +302,27 @@ public class SignalColorManager
             _ => "palette_custom"
         };
 
-        return LocalizationSettings.StringDatabase.GetLocalizedString(tableName, key);
+        try
+        {
+            if (LocalizationSettings.InitializationOperation.IsDone && LocalizationSettings.StringDatabase != null)
+            {
+                string localized = LocalizationSettings.StringDatabase.GetLocalizedString(tableName, key);
+                if (!string.IsNullOrEmpty(localized))
+                    return localized;
+            }
+        }
+        catch
+        {
+            // Fallback for cold start before Localization system finishes async initialization
+        }
+
+        return index switch
+        {
+            0 => "Padrão",
+            1 => "Daltonismo",
+            2 => "Alto Contraste",
+            _ => "Personalizado"
+        };
     }
 
     #endregion
