@@ -6,20 +6,17 @@ public enum TipoTutorial { Interativo, Observacional }
 public class TutorialData : ScriptableObject
 {
     [Header("Identificação")]
-    public string id;                    // usado como chave no JSON e na API de save
+    public string id;
     public string titulo;
 
-    [Header("Comportamento")]
+    [Header("Exibição")]
+    [Tooltip("Interativo mostra a tecla-alvo como prompt visual; Observacional mostra só texto/ícone. " +
+             "Não afeta mais a lógica de conclusão — ambos concluem ao sair da zona.")]
     public TipoTutorial tipo;
 
-    [Header("Conteúdo")]
     [TextArea] public string texto;
-    public Sprite icone;
+    // public Sprite icone;
 
-    [Header("Interativo (se aplicável)")]
+    [Tooltip("Usado apenas como prompt visual quando tipo = Interativo (ex: ícone da tecla Space).")]
     public KeyCode teclaAlvo;
-
-    [Header("Observacional (se aplicável)")]
-    public float duracaoMinima = 2f;
-    public bool dismissComQualquerTecla = true;
 }

@@ -5,49 +5,41 @@ public class TutorialManager : MonoBehaviour
 {
     public static TutorialManager Instance { get; private set; }
 
-    [SerializeField] private TutorialCatalog catalogo;
+    // Pilha de tutoriais "dentro dos quais" o jogador está no momento.
+    // Sempre exibimos apenas o mais recente (topo), garantindo um por vez.
+    private readonly List<TutorialData> _pilha = new();
 
-    private ITutorialStrategy _estrategiaAtual;
-    private readonly HashSet<string> _concluidos = new(); // no futuro, populado pela API de save
-
-    void Awake()
+    private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
 
-    void Update()
-    {
-        _estrategiaAtual?.Atualizar();
-    }
-
-    /// Ponto de entrada usado pelo TutorialTrigger.
-    public void ExecutarTutorial(TutorialData dados)
+    public void Mostrar(TutorialData dados)
     {
         if (dados == null) return;
-        if (_concluidos.Contains(dados.id)) return; // não repete se já visto
-        if (_estrategiaAtual != null) return;        // evita sobrepor tutoriais
-
-        Time.timeScale = 0f;
-        _estrategiaAtual = dados.tipo == TipoTutorial.Interativo
-            ? new TutorialInterativo()
-            : new TutorialObservacional();
-
-        _estrategiaAtual.Iniciar(dados, () => ConcluirTutorial(dados));
+        _pilha.Add(dados);
+        AtualizarExibicao();
     }
 
-    /// Sobrecarga que já pensa no futuro fluxo via JSON: resolve o id pelo catálogo.
-    public void ExecutarTutorialPorId(string id)
+    public void Esconder(TutorialData dados)
     {
-        ExecutarTutorial(catalogo.ObterPorId(id));
+        if (dados == null) return;
+        _pilha.Remove(dados); // remove essa entrada específica, onde quer que esteja na pilha
+        AtualizarExibicao();
     }
 
-    private void ConcluirTutorial(TutorialData dados)
+    private void AtualizarExibicao()
     {
-        _estrategiaAtual.Finalizar();
-        _estrategiaAtual = null;
-        _concluidos.Add(dados.id);
-        Time.timeScale = 1f;
-        // TODO: notificar API de save que dados.id foi concluído
+        if (_pilha.Count == 0)
+        {
+            // TutorialUI.Instance.Esconder();
+            Debug.Log("Nenhum tutorial visível");
+            return;
+        }
+
+        var atual = _pilha[_pilha.Count - 1]; // topo = último que entrou e ainda não saiu
+        Debug.Log($"Exibindo: {atual.id} (pilha tem {_pilha.Count} item(ns))");
+        // TutorialUI.Instance.Mostrar(atual);
     }
 }
