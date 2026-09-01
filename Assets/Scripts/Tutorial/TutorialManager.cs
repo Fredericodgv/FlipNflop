@@ -33,13 +33,13 @@ public class TutorialManager : MonoBehaviour
     {
         if (_pilha.Count == 0)
         {
-            // TutorialUI.Instance.Esconder();
+            TutorialUI.Instance.Esconder();
             Debug.Log("Nenhum tutorial visível");
             return;
         }
 
         var atual = _pilha[_pilha.Count - 1]; // topo = último que entrou e ainda não saiu
         Debug.Log($"Exibindo: {atual.id} (pilha tem {_pilha.Count} item(ns))");
-        // TutorialUI.Instance.Mostrar(atual);
+        TutorialUI.Instance.Mostrar(atual);
     }
 }
