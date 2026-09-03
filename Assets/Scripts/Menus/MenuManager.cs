@@ -50,9 +50,9 @@ public class MenuManager : MonoBehaviour
     private VisualElement levelSelectPanel;
 
     /// <summary>
-    /// Tutorial panel visual element.
+    /// HowToPlay panel visual element.
     /// </summary>
-    private VisualElement tutorialPanel;
+    private VisualElement howToPlayPanel;
 
     /// <summary>
     /// Settings/configuration panel visual element.
@@ -100,14 +100,14 @@ public class MenuManager : MonoBehaviour
         mainMenuPanel = root.Q<VisualElement>("MainMenu");
         aboutPanel = root.Q<VisualElement>("About");
         levelSelectPanel = root.Q<VisualElement>("LevelSelect");
-        tutorialPanel = root.Q<VisualElement>("Tutorial");
+        howToPlayPanel = root.Q<VisualElement>("HowToPlay");
         settingsPanel = root.Q<VisualElement>("Settings");
         backButton = root.Q<Button>("BackButton");
 
         submenus.Clear();
         submenus.Add(aboutPanel);
         submenus.Add(levelSelectPanel);
-        submenus.Add(tutorialPanel);
+        submenus.Add(howToPlayPanel);
         submenus.Add(settingsPanel);
 
         if (backButton != null)
@@ -121,9 +121,9 @@ public class MenuManager : MonoBehaviour
         if (uploadButton != null && uploadManager != null)
             uploadButton.clicked += uploadManager.OnClickUpload;
 
-        Button tutorialButton = root.Q<Button>("TutorialButton");
-        if (tutorialButton != null)
-            tutorialButton.clicked += OpenTutorial;
+        Button howToPlayButton = root.Q<Button>("HowToPlayButton");
+        if (howToPlayButton != null)
+            howToPlayButton.clicked += OpenHowToPlay;
 
         Button aboutButton = root.Q<Button>("AboutButton");
         if (aboutButton != null)
@@ -247,30 +247,30 @@ public class MenuManager : MonoBehaviour
     public void FecharSelecaoDeNiveis() => CloseLevelSelect();
 
     /// <summary>
-    /// Displays the Tutorial panel.
+    /// Displays the HowToPlay panel.
     /// </summary>
-    public void OpenTutorial()
+    public void OpenHowToPlay()
     {
-        OpenSubmenu(tutorialPanel);
+        OpenSubmenu(howToPlayPanel);
     }
 
     /// <summary>
-    /// Legacy alias for OpenTutorial.
+    /// Legacy alias for OpenHowToPlay.
     /// </summary>
-    public void AbrirTutorial() => OpenTutorial();
+    public void AbrirHowToPlay() => OpenHowToPlay();
 
     /// <summary>
-    /// Closes the Tutorial panel and returns to the main menu.
+    /// Closes the HowToPlay panel and returns to the main menu.
     /// </summary>
-    public void CloseTutorial()
+    public void CloseHowToPlay()
     {
-        CloseSubmenu(tutorialPanel);
+        CloseSubmenu(howToPlayPanel);
     }
 
     /// <summary>
-    /// Legacy alias for CloseTutorial.
+    /// Legacy alias for CloseHowToPlay.
     /// </summary>
-    public void FecharTutorial() => CloseTutorial();
+    public void FecharHowToPlay() => CloseHowToPlay();
 
     /// <summary>
     /// Displays the Settings panel.

@@ -1,8 +1,8 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements"
     xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd"
     editor-extension-mode="False">
-    <ui:Template name="TutorialMenu"
-        src="project://database/Assets/UI%20Toolkit/Layouts/TutorialMenu.uxml?fileID=9197481963319205126&amp;guid=bc0db67d26e0fe54f90c3c6cc9e71f26&amp;type=3#TutorialMenu" />
+    <ui:Template name="HowToPlayMenu"
+        src="project://database/Assets/UI%20Toolkit/Layouts/HowToPlayMenu.uxml?fileID=9197481963319205126&amp;guid=bc0db67d26e0fe54f90c3c6cc9e71f26&amp;type=3#HowToPlayMenu" />
     <ui:Template name="ConfigMenu"
         src="project://database/Assets/UI%20Toolkit/Layouts/ConfigMenu.uxml?fileID=9197481963319205126&amp;guid=c9199edad8332b34db99cecc978a6c8d&amp;type=3#ConfigMenu" />
     <Style
@@ -25,7 +25,7 @@
                             table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(350805196800)" />
                     </Bindings>
                 </ui:Button>
-                <ui:Button text="Como Jogar" name="TutorialButton" class="btn">
+                <ui:Button text="Como Jogar" name="HowToPlayButton" class="btn">
                     <Bindings>
                         <UnityEngine.Localization.LocalizedString property="text"
                             table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(497320624128)" />
@@ -139,8 +139,8 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="Tutorial" class="panel hidden">
-            <ui:Instance template="TutorialMenu" name="TemplateContainer"
+        <ui:VisualElement name="HowToPlay" class="panel hidden">
+            <ui:Instance template="HowToPlayMenu" name="TemplateContainer"
                 style="flex-grow: 1; align-items: center; align-self: center; justify-content: center; width: 100%; height: 100%;" />
         </ui:VisualElement>
         <ui:VisualElement name="Settings" class="panel hidden">

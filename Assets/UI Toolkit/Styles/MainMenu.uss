@@ -83,7 +83,7 @@
     background-color: rgba(14, 23, 52, 0.96);
 }
 
-.tutorial-page {
+.howToPlay-page {
     padding-bottom: 128px;
 }
 
@@ -216,7 +216,7 @@
 }
 
 .scroll,
-.tutorial-scroll {
+.howToPlay-scroll {
     flex-grow: 1;
     width: 100%;
     margin-bottom: 0;
@@ -227,8 +227,8 @@
     padding-left: 22px;
 }
 
-.tutorial-item,
-.tutorial-row {
+.howToPlay-item,
+.howToPlay-row {
     flex-direction: column;
     min-height: 0;
     margin-bottom: 18px;
@@ -240,11 +240,11 @@
 }
 
 .image-slot,
-.tutorial-image-slot {
+.howToPlay-image-slot {
     display: none;
 }
 
-.tutorial-text {
+.howToPlay-text {
     width: 100%;
     white-space: normal;
     font-size: 23px;

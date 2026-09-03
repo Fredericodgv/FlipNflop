@@ -16,35 +16,35 @@ MonoBehaviour:
   m_TableCollectionNameGuidString: bcdba3d027686d241b4c3261971aa0ab
   m_Entries:
   - m_Id: 596200044527616
-    m_Key: tutorial_game
+    m_Key: howToPlay_game
     m_Metadata:
       m_Items: []
   - m_Id: 650081370112
-    m_Key: tutorial_moviment
+    m_Key: howToPlay_moviment
     m_Metadata:
       m_Items: []
   - m_Id: 29643145500
-    m_Key: tutorial_flip
+    m_Key: howToPlay_flip
     m_Metadata:
       m_Items: []
   - m_Id: 682767581184
-    m_Key: tutorial_jump
+    m_Key: howToPlay_jump
     m_Metadata:
       m_Items: []
   - m_Id: 698110345216
-    m_Key: tutorial_dash
+    m_Key: howToPlay_dash
     m_Metadata:
       m_Items: []
   - m_Id: 119405445200
-    m_Key: tutorial_hints
+    m_Key: howToPlay_hints
     m_Metadata:
       m_Items: []
   - m_Id: 29643145600
-    m_Key: tutorial_end
+    m_Key: howToPlay_end
     m_Metadata:
       m_Items: []
   - m_Id: 26358571719360512
-    m_Key: tutorial_operation
+    m_Key: howToPlay_operation
     m_Metadata:
       m_Items: []
   m_Metadata:
