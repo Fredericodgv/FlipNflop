@@ -50,9 +50,9 @@ public class GameMenuManager : MonoBehaviour
     private VisualElement panelOptions;
 
     /// <summary>
-    /// Tutorial panel displaying game instructions.
+    /// HowToPlay panel displaying game instructions.
     /// </summary>
-    private VisualElement panelTutorial;
+    private VisualElement panelHowToPlay;
 
     /// <summary>
     /// Currently active active submenu panel, or null if on main panel.
@@ -75,9 +75,9 @@ public class GameMenuManager : MonoBehaviour
     private Button retryButton;
 
     /// <summary>
-    /// Button to open the tutorial panel.
+    /// Button to open the howToPlay panel.
     /// </summary>
-    private Button tutorialButton;
+    private Button howToPlayButton;
 
     /// <summary>
     /// Button to navigate back from submenus to the main pause panel.
@@ -157,15 +157,15 @@ public class GameMenuManager : MonoBehaviour
         gameMenuOverlay = root.Q<VisualElement>("GameMenu");
         panelMain = root.Q<VisualElement>("PanelMain");
         panelOptions = root.Q<VisualElement>("PanelOptions");
-        panelTutorial = root.Q<VisualElement>("Tutorial");
+        panelHowToPlay = root.Q<VisualElement>("HowToPlay");
 
         submenus.Clear();
         submenus.Add(panelOptions);
-        submenus.Add(panelTutorial);
+        submenus.Add(panelHowToPlay);
 
         continueButton = root.Q<Button>("Continue");
         retryButton = root.Q<Button>("Retry");
-        tutorialButton = root.Q<Button>("TutorialButton");
+        howToPlayButton = root.Q<Button>("HowToPlayButton");
         backButton = root.Q<Button>("BackButton");
         optionsButton = root.Q<Button>("Options");
         exitButton = root.Q<Button>("Exit");
@@ -213,8 +213,8 @@ public class GameMenuManager : MonoBehaviour
         if (retryButton != null)
             retryButton.clicked += RestartLevel;
 
-        if (tutorialButton != null)
-            tutorialButton.clicked += OpenTutorial;
+        if (howToPlayButton != null)
+            howToPlayButton.clicked += OpenHowToPlay;
 
         if (backButton != null)
             backButton.clicked += CloseActiveSubmenu;
@@ -246,8 +246,8 @@ public class GameMenuManager : MonoBehaviour
         if (retryButton != null)
             retryButton.clicked -= RestartLevel;
 
-        if (tutorialButton != null)
-            tutorialButton.clicked -= OpenTutorial;
+        if (howToPlayButton != null)
+            howToPlayButton.clicked -= OpenHowToPlay;
 
         if (backButton != null)
             backButton.clicked -= CloseActiveSubmenu;
@@ -389,19 +389,19 @@ public class GameMenuManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Opens the tutorial submenu panel.
+    /// Opens the howToPlay submenu panel.
     /// </summary>
-    public void OpenTutorial()
+    public void OpenHowToPlay()
     {
-        OpenSubmenu(panelTutorial);
+        OpenSubmenu(panelHowToPlay);
     }
 
     /// <summary>
-    /// Closes the tutorial panel and returns to the main pause panel.
+    /// Closes the howToPlay panel and returns to the main pause panel.
     /// </summary>
-    public void CloseTutorial()
+    public void CloseHowToPlay()
     {
-        CloseSubmenu(panelTutorial);
+        CloseSubmenu(panelHowToPlay);
     }
 
     #endregion
@@ -468,8 +468,8 @@ public class GameMenuManager : MonoBehaviour
 
         if (submenu == panelOptions && optionsButton != null)
             optionsButton.Focus();
-        else if (tutorialButton != null)
-            tutorialButton.Focus();
+        else if (howToPlayButton != null)
+            howToPlayButton.Focus();
     }
 
     #endregion

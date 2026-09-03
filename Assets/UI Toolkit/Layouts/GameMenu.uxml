@@ -1,56 +1,70 @@
-<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:Template name="ConfigMenu" src="project://database/Assets/UI%20Toolkit/Layouts/ConfigMenu.uxml?fileID=9197481963319205126&amp;guid=c9199edad8332b34db99cecc978a6c8d&amp;type=3#ConfigMenu"/>
-    <ui:Template name="TutorialMenu" src="project://database/Assets/UI%20Toolkit/Layouts/TutorialMenu.uxml?fileID=9197481963319205126&amp;guid=bc0db67d26e0fe54f90c3c6cc9e71f26&amp;type=3#TutorialMenu"/>
-    <Style src="project://database/Assets/UI%20Toolkit/Styles/Panel.uss?fileID=7433441132597879392&amp;guid=5b6ccb061d6f6e54b939846c701d8098&amp;type=3#Panel"/>
-    <Style src="project://database/Assets/UI%20Toolkit/Styles/MainMenu.uss?fileID=7433441132597879392&amp;guid=914addff2ff73d644a3f7eeeebd54bb4&amp;type=3#MainMenu"/>
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements"
+    xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd"
+    editor-extension-mode="False">
+    <ui:Template name="ConfigMenu"
+        src="project://database/Assets/UI%20Toolkit/Layouts/ConfigMenu.uxml?fileID=9197481963319205126&amp;guid=c9199edad8332b34db99cecc978a6c8d&amp;type=3#ConfigMenu" />
+    <ui:Template name="HowToPlayMenu"
+        src="project://database/Assets/UI%20Toolkit/Layouts/HowToPlayMenu.uxml?fileID=9197481963319205126&amp;guid=bc0db67d26e0fe54f90c3c6cc9e71f26&amp;type=3#HowToPlayMenu" />
+    <Style
+        src="project://database/Assets/UI%20Toolkit/Styles/Panel.uss?fileID=7433441132597879392&amp;guid=5b6ccb061d6f6e54b939846c701d8098&amp;type=3#Panel" />
+    <Style
+        src="project://database/Assets/UI%20Toolkit/Styles/MainMenu.uss?fileID=7433441132597879392&amp;guid=914addff2ff73d644a3f7eeeebd54bb4&amp;type=3#MainMenu" />
     <ui:Button text="Menu" name="MenuButton" class="hud-menu-button">
         <Bindings>
-            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(12584910848)"/>
+            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6"
+                entry="Id(12584910848)" />
         </Bindings>
     </ui:Button>
     <ui:VisualElement name="GameMenu" class="flip-screen" style="display: flex;">
         <ui:VisualElement name="Background" class="flip-screen bg-main">
-            <ui:VisualElement class="screen-overlay"/>
+            <ui:VisualElement class="screen-overlay" />
             <ui:VisualElement name="PanelMain" class="screen-panel">
                 <ui:VisualElement class="menu-card game-menu-card">
                     <ui:Button text="Continuar" name="Continue" class="menu-button action-button">
                         <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(39482017465)"/>
+                            <UnityEngine.Localization.LocalizedString property="text"
+                                table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(39482017465)" />
                         </Bindings>
                     </ui:Button>
                     <ui:Button text="Recomeçar" name="Retry" class="menu-button">
                         <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(92017465139)"/>
+                            <UnityEngine.Localization.LocalizedString property="text"
+                                table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(92017465139)" />
                         </Bindings>
                     </ui:Button>
-                    <ui:Button text="Como Jogar" name="TutorialButton" class="menu-button">
+                    <ui:Button text="Como Jogar" name="HowToPlayButton" class="menu-button">
                         <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(497320624128)"/>
+                            <UnityEngine.Localization.LocalizedString property="text"
+                                table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(497320624128)" />
                         </Bindings>
                     </ui:Button>
                     <ui:Button text="Opções" name="Options" class="menu-button">
                         <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" entry="Id(56102938472)" table="GUID:1335d71b210ede741858eb8a611103b6"/>
+                            <UnityEngine.Localization.LocalizedString property="text" entry="Id(56102938472)"
+                                table="GUID:1335d71b210ede741858eb8a611103b6" />
                         </Bindings>
                     </ui:Button>
                     <ui:Button text="Sair" name="Exit" class="menu-button">
                         <Bindings>
-                            <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(47382019560)"/>
+                            <UnityEngine.Localization.LocalizedString property="text"
+                                table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(47382019560)" />
                         </Bindings>
                     </ui:Button>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="PanelOptions" class="screen-panel hidden">
                 <ui:VisualElement class="content-card config-content-card">
-                    <ui:Instance template="ConfigMenu"/>
+                    <ui:Instance template="ConfigMenu" />
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="Tutorial" class="panel hidden">
-                <ui:Instance template="TutorialMenu" style="flex-grow: 1; width: 100%; height: 100%; justify-content: center; align-self: center; align-content: flex-start; align-items: center; display: flex;"/>
+            <ui:VisualElement name="HowToPlay" class="panel hidden">
+                <ui:Instance template="HowToPlayMenu"
+                    style="flex-grow: 1; width: 100%; height: 100%; justify-content: center; align-self: center; align-content: flex-start; align-items: center; display: flex;" />
             </ui:VisualElement>
             <ui:Button text="Voltar" name="BackButton" class="secondary-button hidden">
                 <Bindings>
-                    <UnityEngine.Localization.LocalizedString property="text" table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(29643145216)"/>
+                    <UnityEngine.Localization.LocalizedString property="text"
+                        table="GUID:1335d71b210ede741858eb8a611103b6" entry="Id(29643145216)" />
                 </Bindings>
             </ui:Button>
         </ui:VisualElement>

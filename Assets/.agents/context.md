@@ -77,7 +77,7 @@ Assets/Scripts/
 
 ### 2.3. Módulo Menus (`Assets/Scripts/Menus/`)
 
-- **`MenuManager.cs`**: Gerencia a interface do menu principal usando **UI Toolkit** (`UIDocument`). Controla a navegação entre submenus (`MainMenu`, `About`, `LevelSelect`, `Tutorial`), a seleção de níveis e a integração com upload WebGL.
+- **`MenuManager.cs`**: Gerencia a interface do menu principal usando **UI Toolkit** (`UIDocument`). Controla a navegação entre submenus (`MainMenu`, `About`, `LevelSelect`, `HowToPlay`), a seleção de níveis e a integração com upload WebGL.
 - **`GameMenuManager.cs`**: Gerencia o menu de pausa in-game (`UIDocument`). Trata a parada do tempo (`Time.timeScale = 0`), bloqueia os inputs do jogador (`PlayerInput.Disable()`) e gerencia a navegação entre as opções da pausa.
 - **`ResultScreenController.cs`**: Modal de fim de jogo (Vitória/Derrota). Utiliza **Unity Localization** (`LocalizationSettings`) para internacionalização de títulos e estatísticas (Score, Tempo).
 - **`UploadMenuManager.cs`**: Ponte WebGL (`[DllImport("__Internal")]`) para abrir o seletor de arquivos do navegador e carregar arquivos JSON customizados do usuário.
@@ -121,11 +121,11 @@ Assets/Scripts/
 Toda a interface moderna do projeto é construída via **Unity UI Toolkit**:
 
 - **Layouts (`Assets/UI Toolkit/Layouts/`)**:
-  - `MainMenu.uxml`: Menu inicial, seleção de níveis, tela Sobre, Tutorial e Configurações integradas.
+  - `MainMenu.uxml`: Menu inicial, seleção de níveis, tela Sobre, HowToPlay e Configurações integradas.
   - `GameMenu.uxml`: Menu de pausa em jogo.
   - `ConfigMenu.uxml`: Menu de configurações em abas (Cores, Áudio, Vídeo, Controles).
   - `ResultScreen.uxml`: Modal de vitória e derrota com opção de esconder/mostrar o desenho da onda.
-  - `TutorialMenu.uxml`: Instruções do jogo e conceitos de eletrônica digital.
+  - `HowToPlayMenu.uxml`: Instruções do jogo e conceitos de eletrônica digital.
 - **Estilos (`Assets/UI Toolkit/Styles/`)**:
   - `Panel.uss`: Estilização principal de botões (`.menu-button`), contêineres, abas, seletores de cor, sliders e popups.
   - `MainMenu.uss`: Estilos específicos da tela principal.
