@@ -1,3 +1,12 @@
+## [0.12.9](https://github.com/flip-n-flop/game/compare/v0.12.8...v0.12.9) (2026-09-03)
+
+
+### Bug Fixes
+
+* rename tutorial to howtoPlay ([e5a1665](https://github.com/flip-n-flop/game/commit/e5a166570b58a69b567dd64e10e9767205821d43))
+
+
+
 ## [0.12.8](https://github.com/flip-n-flop/game/compare/v0.12.7...v0.12.8) (2026-08-25)
 
 
@@ -33,18 +42,6 @@
 
 * adjust feedback text ([de1aba9](https://github.com/flip-n-flop/game/commit/de1aba9ce88e711ac530fc6595f5006c39ebab35))
 * change feedback panel from canvas to UItoolkit ([78b9a7d](https://github.com/flip-n-flop/game/commit/78b9a7d6c36fc957aa252231c7ceb3ac66ac6eb1))
-
-
-
-## [0.12.4](https://github.com/flip-n-flop/game/compare/v0.12.3...v0.12.4) (2026-07-23)
-
-
-### Bug Fixes
-
-* Add credits localization ([f297187](https://github.com/flip-n-flop/game/commit/f297187a0d8c9bcbbb76d88c8a3de8b07a4c854f))
-* Add Spanish supports ([04842e9](https://github.com/flip-n-flop/game/commit/04842e9cdd100fb043d412667989a7e1ce478cab))
-* Adjust color pallet localization ([eca7508](https://github.com/flip-n-flop/game/commit/eca75081d2a833955ca79e6d2e23a387e21f8f97))
-* create tutorial template ([a6a995a](https://github.com/flip-n-flop/game/commit/a6a995aa5f692847ae9fd95a905e1d7852dfc271))
 
 
 
